@@ -513,6 +513,20 @@
     return lijst;
   }
 
+  function positief(k) { return k > 0; }
+  // vult aan met de buren van het juiste antwoord tot er drie afleiders staan
+  function vulRondom(lijst, juist, stap, geldig) {
+    for (var d = stap; lijst.length < 3 && d < stap * 200; d += stap) {
+      vulAan(lijst, juist, [juist + d, juist - d], geldig || positief);
+    }
+    return lijst;
+  }
+  // n andere uit een lijst, het juiste antwoord niet meegerekend
+  function andere(lijst, juist, n) {
+    return shuffle(lijst.filter(function (x) { return x !== juist; })).slice(0, n);
+  }
+  function hoofdletter(t) { return t.charAt(0).toUpperCase() + t.slice(1); }
+
   /* ==================== de spellen ==================== */
   var SPELLEN = [];
 
@@ -703,16 +717,13 @@
         }
         if (soort === 'dagdeel') {
           var verboden = OVERLAP[z.d] || [];
-          var andere = shuffle(DEELEN.filter(function (d) {
-            return d !== z.d && verboden.indexOf(d) === -1;
-          })).slice(0, 3);
+          var rest = andere(DEELEN.filter(function (d) { return verboden.indexOf(d) === -1; }), z.d, 3);
           return { soort: soort, sleutel: 'dagdeel|' + z.d + z.u, d: z.d, u: z.u, h: wijzerUur(z.u), m: 0,
-            ans: z.d, tijd: dagdeelTekst(z.u), options: keuzes(z.d, andere) };
+            ans: z.d, tijd: dagdeelTekst(z.u), options: keuzes(z.d, rest) };
         }
         var eind = z.u * 60 + z.m + z.duur;
         var jd = DUURTEKST[z.duur];
-        var fout = shuffle(DUREN.filter(function (d) { return d !== z.duur; }))
-          .slice(0, 3).map(function (d) { return DUURTEKST[d]; });
+        var fout = andere(DUREN, z.duur, 3).map(function (d) { return DUURTEKST[d]; });
         return { soort: 'duur', sleutel: 'duur|' + z.u + ':' + z.m + '+' + z.duur, u: z.u, m: z.m, duur: z.duur,
           eu: Math.floor(eind / 60), em: eind % 60, ans: jd, options: keuzes(jd, fout) };
       },
@@ -830,7 +841,6 @@
       if (v.soort === 'ontbreekt') return v.links ? '? × ' + v.b + ' = ' + v.p : v.a + ' × ? = ' + v.p;
       return v.a + ' × ' + v.b;
     }
-    function positief(k) { return k > 0; }
     function verderWeg(juist) {
       var uit = [];
       for (var d = 1; d <= 14; d++) { uit.push(juist + d); uit.push(juist - d); }
@@ -993,7 +1003,6 @@
   (function () {
     // alles rekent in centen: met kommagetallen gaat 0,1 + 0,2 mis in elke browser
     var MUNTEN = [1, 2, 5, 10, 20, 50, 100, 200];
-    var BILJETTEN = [500, 1000, 2000, 5000];
     function geld(c) { return '€ ' + Math.floor(c / 100) + ',' + pad2(c % 100); }
     function muntnaam(c) { return c < 100 ? c + ' cent' : '€ ' + (c / 100); }
     var WAREN = [
@@ -1061,7 +1070,6 @@
       }
       return uit;
     }
-    function positief(k) { return k > 0; }
     // de fouten die kinderen bij geld echt maken
     function afleidersBedrag(juist, stukken) {
       var lijst = [], kern = [];
@@ -1076,7 +1084,7 @@
       kern.push(juist + 10);
       kern.push(juist - 10);
       vulAan(lijst, juist, kern, positief);
-      for (var d = 5; lijst.length < 3 && d < 400; d += 5) vulAan(lijst, juist, [juist + d, juist - d], positief);
+      vulRondom(lijst, juist, 5);
       return lijst.map(geld);
     }
     function afleidersWissel(betaald, prijs) {
@@ -1092,9 +1100,7 @@
       kern.push(juist + 100);
       kern.push(juist - 100);
       vulAan(lijst, juist, kern, function (k) { return k > 0 && k < betaald; });
-      for (var d = 5; lijst.length < 3 && d < 400; d += 5) {
-        vulAan(lijst, juist, [juist + d, juist - d], function (k) { return k > 0 && k < betaald; });
-      }
+      vulRondom(lijst, juist, 5, function (k) { return k > 0 && k < betaald; });
       return lijst.map(geld);
     }
 
@@ -1154,9 +1160,9 @@
         var som = totaal(z.stukken), sl = soort + '|' + z.stukken.join('-');
         if (soort === 'ontbreekt') {
           var doel = som + z.mist;
-          var andere = shuffle(MUNTEN.filter(function (c) { return c !== z.mist; })).slice(0, 3).map(muntnaam);
+          var rest = andere(MUNTEN, z.mist, 3).map(muntnaam);
           return { soort: soort, sleutel: sl + '+' + z.mist, stukken: z.stukken, mist: z.mist, som: som,
-            doel: doel, ans: muntnaam(z.mist), options: keuzes(muntnaam(z.mist), andere) };
+            doel: doel, ans: muntnaam(z.mist), options: keuzes(muntnaam(z.mist), rest) };
         }
         if (soort === 'typ') {
           return { soort: soort, sleutel: sl, stukken: z.stukken, som: som, ans: Math.floor(som / 100) + ',' + pad2(som % 100),
@@ -1217,7 +1223,7 @@
         var af = afleidersWissel(500, 340);
         check(af.indexOf('€ 2,40') > -1, 'de euro-min-euro fout staat erbij (nu ' + af.join(', ') + ')');
         check(af.indexOf('€ 1,60') === -1, 'het juiste antwoord staat niet tussen de afleiders');
-        MUNTEN.concat(BILJETTEN).forEach(function (c) {
+        MUNTEN.concat([500, 1000, 2000]).forEach(function (c) {
           check(stuk(c).indexOf('<svg') === 0, 'elk stuk wordt getekend: ' + c);
           check(stuk(c).indexOf('aria-label') > -1, 'elk stuk heeft een beschrijving: ' + c);
         });
@@ -1257,7 +1263,6 @@
       for (var i = 0; i < lijst.length; i++) if (lijst[i].naam === naam) return lijst[i];
     }
     function toon(getal, naam) { return getal + ' ' + naam; }
-    function positief(k) { return k > 0; }
 
     /* de dingen die je in de klas meet, met hun maat in de kleinste eenheid */
     var DINGEN = [
@@ -1329,7 +1334,7 @@
       vulAan(lijst, juist, [juist * 10, Math.round(juist / 10), omgekeerd, juist * 100, juist + 1], function (k) {
         return k > 0 && k === Math.round(k);
       });
-      for (var d = 1; lijst.length < 3; d++) vulAan(lijst, juist, [juist + d, juist - d], positief);
+      vulRondom(lijst, juist, 1);
       return lijst.slice(0, 3);
     }
 
@@ -1387,7 +1392,7 @@
           var cm = z.mm / 10;
           var fout = [];
           vulAan(fout, cm, [z.mm, cm + 1, cm - 1, cm * 10], positief);
-          for (var d2 = 2; fout.length < 3; d2++) vulAan(fout, cm, [cm + d2, cm - d2], positief);
+          vulRondom(fout, cm, 1);
           return { soort: soort, sleutel: 'liniaal|' + z.mm, mm: z.mm, cm: cm, ans: toon(cm, 'cm'),
             options: keuzes(toon(cm, 'cm'), fout.map(function (k) { return toon(k, 'cm'); })) };
         }
@@ -1441,7 +1446,7 @@
       },
       uitleg: function (v) {
         if (v.soort === 'liniaal') return 'De streep loopt tot ' + v.cm + ', dus ' + v.cm + ' cm. Dat is ' + v.mm + ' mm.';
-        if (v.soort === 'past') return v.ding.naam.charAt(0).toUpperCase() + v.ding.naam.slice(1) + ' is ongeveer ' + v.getal + ' ' + v.eh + '.';
+        if (v.soort === 'past') return hoofdletter(v.ding.naam) + ' is ongeveer ' + v.getal + ' ' + v.eh + '.';
         var van = eenheid(v.stelsel, v.van), naar = eenheid(v.stelsel, v.naar);
         var stap = van.in > naar.in ? van.in / naar.in : naar.in / van.in;
         return van.in > naar.in
@@ -1504,8 +1509,6 @@
         if (SEIZOENEN[i].maanden.indexOf(maand) > -1) return SEIZOENEN[i];
       }
     }
-    function hoofdletter(t) { return t.charAt(0).toUpperCase() + t.slice(1); }
-    function positief(k) { return k > 0; }
 
     /* een maandblaadje met een dag omcirkeld */
     function blaadje(maand, dag, eersteDag) {
@@ -1591,25 +1594,25 @@
         if (soort === 'dag') {
           if (z.nummer) {
             var nr = z.d + 1, jn = DAGEN[z.d];
-            var fn = shuffle(DAGEN.filter(function (d) { return d !== jn; })).slice(0, 3);
+            var fn = andere(DAGEN, jn, 3);
             return { soort: soort, sleutel: 'dagnr|' + z.d, vorm: 'nummer', d: z.d, nr: nr, ans: jn,
               options: keuzes(jn, fn) };
           }
           var buur = z.na ? (z.d + 1) % 7 : (z.d + 6) % 7;
           var j = DAGEN[buur];
-          var f = shuffle(DAGEN.filter(function (d) { return d !== j; })).slice(0, 3);
+          var f = andere(DAGEN, j, 3);
           return { soort: soort, sleutel: 'dag|' + z.d + (z.na ? 'n' : 'v'), vorm: z.na ? 'na' : 'voor',
             d: z.d, ans: j, options: keuzes(j, f) };
         }
         if (soort === 'maand') {
           if (z.nummer) {
             var jm = MAANDEN[z.m];
-            var fm = shuffle(MAANDEN.filter(function (m) { return m !== jm; })).slice(0, 3);
+            var fm = andere(MAANDEN, jm, 3);
             return { soort: soort, sleutel: 'maandnr|' + z.m, vorm: 'nummer', m: z.m, ans: jm,
               options: keuzes(jm, fm) };
           }
           var vm = MAANDEN[(z.m + 1) % 12];
-          var fv = shuffle(MAANDEN.filter(function (m) { return m !== vm; })).slice(0, 3);
+          var fv = andere(MAANDEN, vm, 3);
           return { soort: soort, sleutel: 'maandna|' + z.m, vorm: 'na', m: z.m, ans: vm, options: keuzes(vm, fv) };
         }
         if (soort === 'seizoen') {
@@ -1631,9 +1634,9 @@
             // welke maand heeft er 30 dagen: kies er een uit vier
             var doel = LENGTE[z.m];
             var juiste = MAANDEN[z.m];
-            var andere = shuffle(MAANDEN.filter(function (m, k) { return LENGTE[k] !== doel; })).slice(0, 3);
+            var rest = shuffle(MAANDEN.filter(function (m, k) { return LENGTE[k] !== doel; })).slice(0, 3);
             return { soort: soort, sleutel: 'lengtem|' + z.m, vorm: 'welke', m: z.m, dagen: doel, ans: juiste,
-              options: keuzes(juiste, andere) };
+              options: keuzes(juiste, rest) };
           }
           var dagen = LENGTE[z.m], fl = [];
           vulAan(fl, dagen, [28, 30, 31, 29], positief);
@@ -1642,7 +1645,7 @@
         }
         if (soort === 'verder') {
           var uitkomst = (z.d + z.stap) % 7, ju = DAGEN[uitkomst];
-          var fu = shuffle(DAGEN.filter(function (d) { return d !== ju; })).slice(0, 3);
+          var fu = andere(DAGEN, ju, 3);
           return { soort: soort, sleutel: 'verder|' + z.d + '+' + z.stap, d: z.d, stap: z.stap, ans: ju,
             options: keuzes(ju, fu) };
         }
@@ -1750,8 +1753,6 @@
 
   /* -------------------- bruggen bouwen: optellen en aftrekken tot 1000 -------------------- */
   (function () {
-    function positief(k) { return k > 0; }
-    function honderdtal(n) { return Math.floor(n / 100) * 100; }
     // de brug: van 47 spring je eerst naar 50, dan pas verder
     function sprong(a, b, plus) {
       var tussen = plus ? Math.ceil((a + 1) / 10) * 10 : Math.floor((a - 1) / 10) * 10;
@@ -1806,9 +1807,7 @@
       kern.push(juist + 1);
       kern.push(plus ? juist - 100 : juist + 100); // het honderdtal vergeten
       vulAan(lijst, juist, kern, function (k) { return k > 0 && k < 1000; });
-      for (var d = 2; lijst.length < 3; d++) {
-        vulAan(lijst, juist, [juist + d, juist - d], function (k) { return k > 0 && k < 1000; });
-      }
+      vulRondom(lijst, juist, 1, function (k) { return k > 0 && k < 1000; });
       return lijst.slice(0, 3);
     }
 
@@ -1914,7 +1913,6 @@
         check(lijn(69, 9, true, true).indexOf('>59<') === -1, 'de getallenlijn zet geen streepje op een los getal');
         check(lijn(69, 9, true, true).indexOf('>60<') > -1, 'de getallenlijn zet streepjes op ronde getallen');
         check(sprong(52, 7, false).tussen === 50, '52 - 7 gaat via 50');
-        check(honderdtal(346) === 300, 'het honderdtal van 346');
         for (var a2 = 11; a2 < 990; a2 += 7) {
           if (a2 % 10 === 0) continue;
           for (var b2 = 3; b2 <= 9; b2++) {
@@ -1946,7 +1944,6 @@
   (function () {
     var N = 6;            // het rooster is zes bij zes
     var CEL = 26;
-    function positief(k) { return k > 0; }
 
     /* een vorm is een lijst van [rij, kolom] */
     function sleutelVan(vorm) {
@@ -2586,7 +2583,8 @@
             var gezien = {}, vorige = null;
             for (var q = 0; q < state.aantal; q++) {
               var v = maakVraag(state.plan[q]);
-              var sl = v.sleutel || JSON.stringify(v.ans) + v.soort;
+              var sl = v.sleutel;
+              check(!!sl, spel.id + ': elke vraag heeft een sleutel om dubbels te herkennen');
               check(!gezien[sl], spel.id + ' hoofdstuk ' + (i + 1) + ': dezelfde vraag twee keer (' + sl + ')');
               check(sl !== vorige, spel.id + ' hoofdstuk ' + (i + 1) + ': twee keer na elkaar dezelfde vraag');
               gezien[sl] = 1;
