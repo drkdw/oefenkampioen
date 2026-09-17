@@ -22,6 +22,12 @@ Elk spel heeft vijf tot zeven hoofdstukken. Een toets telt 10, 15 of 20 vragen, 
 het startscherm, en evenveel punten. Twintig is de bovengrens: langer houdt een kind van acht
 niet vol. De verdeling over de vraagtypes schaalt mee met het gekozen aantal.
 
+Op het startscherm staat ook een schakelaar **op tempo**. Staat die aan, dan loopt er per vraag
+een balk leeg en telt te traag als fout. Elk spel heeft zijn eigen tijd: de tafels krijgen 8
+seconden, want automatiseren betekent niet uitrekenen, en het winkeltje 30, want daar moet je
+eerst munten tellen. Tempotoetsen voor de tafels lopen in Vlaanderen al vanaf het tweede
+leerjaar, dus de schakelaar is niet alleen voor de grootsten. Standaard staat hij uit.
+
 De naam van het kind en de beste score per hoofdstuk blijven bewaard in de browser. Scores
 worden op verhouding vergeleken, zodat 12 op 15 beter telt dan 7 op 10.
 
