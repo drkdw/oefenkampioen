@@ -245,6 +245,19 @@
   .party { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
   .confetti { position: absolute; top: -10px; font-size: 22px; animation: fall 1.3s ease-in forwards; }
   @keyframes fall { to { transform: translateY(330px) rotate(340deg); opacity: 0; } }
+  .tempobalk {
+    height: 10px;
+    border-radius: 999px;
+    background: var(--line);
+    overflow: hidden;
+  }
+  .tempobalk span {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    transform-origin: left center;
+  }
+  @keyframes leeglopen { from { transform: scaleX(1); } to { transform: scaleX(0); } }
   .stempel {
     font-family: Fredoka, sans-serif;
     font-size: 22px;
@@ -427,6 +440,10 @@
       <span class="kaartlabel">Hoeveel vragen?</span>
       <span class="aantallen" id="aantallen"></span>
     </div>
+    <div class="naamkaart" role="group" aria-label="Oefenen op tempo">
+      <span class="kaartlabel">Op tempo?</span>
+      <span class="aantallen" id="tempoKnop"></span>
+    </div>
     <p class="lead" id="lead"></p>
     <div class="menu" id="spellen"></div>
   </div>
@@ -447,6 +464,7 @@
       <span class="score-badge" id="scoreBadge">0 / 10</span>
     </div>
     <div class="dots" id="dots" role="list" aria-label="Voortgang van je toets"></div>
+    <div class="tempobalk" id="tempobalk" hidden><span id="tempovulling"></span></div>
 
     <div class="doek" id="doekCard">
       <div id="doek"></div>
@@ -2202,6 +2220,33 @@
     try { a = parseInt(localStorage.getItem('oefenkampioen-aantal'), 10); } catch (e) { a = NaN; }
     return AANTALLEN.indexOf(a) > -1 ? a : AANTALLEN[0];
   }
+  // hoeveel seconden een vraag mag duren als het op tempo staat. Tafels moeten er het snelst
+  // uit: automatiseren betekent niet uitrekenen. De andere spellen vragen eerst lezen en kijken.
+  var TEMPO = { maal: 8, klok: 25, winkel: 30, maten: 25, kalender: 20, brug: 25, spiegel: 35 };
+  function secondenVoor(spel) { return TEMPO[spel.id] || 25; }
+  function leesTempo() {
+    try { return localStorage.getItem('oefenkampioen-tempo') === 'aan'; } catch (e) { return false; }
+  }
+  function zetTempo(aan) {
+    state.tempo = aan;
+    try { localStorage.setItem('oefenkampioen-tempo', aan ? 'aan' : 'uit'); } catch (e) { /* mag mislukken */ }
+  }
+  function stopKlok() {
+    if (state.klok) clearTimeout(state.klok);
+    state.klok = null;
+    $('tempobalk').hidden = true;
+  }
+  function startKlok() {
+    if (!state.tempo) return;
+    var sec = secondenVoor(state.spel), balk = $('tempovulling');
+    $('tempobalk').hidden = false;
+    // de animatie opnieuw laten beginnen lukt alleen door ze eerst weg te halen
+    balk.style.animation = 'none';
+    void balk.offsetWidth;
+    balk.style.animation = 'leeglopen ' + sec + 's linear forwards';
+    state.klok = setTimeout(function () { antwoord(null, 'te traag', false); }, sec * 1000);
+  }
+
   function zetAantal(a) {
     state.aantal = a;
     try { localStorage.setItem('oefenkampioen-aantal', String(a)); } catch (e) { /* mag mislukken */ }
@@ -2223,7 +2268,7 @@
   /* ==================== toestand ==================== */
   var state = {
     spel: null, hfd: 0, aantal: 10, q: 0, score: 0, results: [], fouten: [],
-    current: null, answered: false, sound: true,
+    current: null, answered: false, sound: true, tempo: false, klok: null,
     plan: [], decks: {}
   };
   var ac = null;
@@ -2292,7 +2337,8 @@
   function lead() {
     var n = naam();
     return (n ? 'Hoi ' + n + '! ' : '') + 'Kies een spel. Elke toets telt ' +
-      state.aantal + ' vragen en ' + state.aantal + ' punten.';
+      state.aantal + ' vragen en ' + state.aantal + ' punten.' +
+      (state.tempo ? ' De klok loopt mee: te traag telt als fout.' : '');
   }
   function kaart(ico, nr, titel, tekst, beste, badge) {
     var b = beste && beste.van ? '<span class="beste">beste ' + beste.score + '/' + beste.van + '</span>' : '';
@@ -2321,6 +2367,13 @@
     Array.prototype.forEach.call($('aantallen').children, function (b) {
       b.onclick = function () { zetAantal(Number(b.dataset.a)); toonStart(); };
     });
+    $('tempoKnop').innerHTML = [false, true].map(function (aan) {
+      return '<button class="aantal" data-t="' + aan + '" aria-pressed="' + (aan === state.tempo) + '">' +
+        (aan ? 'ja, met klok' : 'nee, rustig') + '</button>';
+    }).join('');
+    Array.prototype.forEach.call($('tempoKnop').children, function (b) {
+      b.onclick = function () { zetTempo(b.dataset.t === 'true'); toonStart(); };
+    });
     $('lead').textContent = lead();
     $('kop').innerHTML = 'Oefen<span class="tick">kampioen</span>';
     $('startScherm').hidden = false;
@@ -2329,6 +2382,7 @@
     $('result').hidden = true;
   }
   function toonMenu(spel) {
+    stopKlok();
     state.spel = spel;
     var beste = lees();
     $('menu').innerHTML = spel.hoofdstukken.map(function (h, i) {
@@ -2347,6 +2401,7 @@
     $('result').hidden = true;
   }
   function startHoofdstuk(i) {
+    stopKlok();
     state.hfd = i;
     state.q = 0;
     state.score = 0;
@@ -2422,6 +2477,7 @@
       $('checkBtn').disabled = false;
     }
     if (spel.na) spel.na(v);
+    startKlok();
 
     $('feedback').textContent = '';
     $('feedback').className = 'feedback';
@@ -2433,6 +2489,7 @@
   function antwoord(btn, tekst, ok) {
     if (state.answered) return;
     state.answered = true;
+    stopKlok();
     var v = state.current, fb = $('feedback');
 
     if (v.options) {
@@ -2530,6 +2587,7 @@
   };
 
   state.aantal = leesAantal();
+  state.tempo = leesTempo();
   toonStart();
 
   /* ==================== zelfcheck: open met #test in de adresbalk ==================== */
@@ -2548,6 +2606,7 @@
     });
     check(AANTALLEN[0] === 10 && AANTALLEN[AANTALLEN.length - 1] === 20, 'van tien tot twintig vragen');
     check(SPELLEN.length > 0, 'er staat minstens een spel in');
+    check(leesTempo() === false || leesTempo() === true, 'de tempo-schakelaar leest een ja of een nee');
     var ids = SPELLEN.map(function (s) { return s.id; });
     check(ids.filter(function (x, i) { return ids.indexOf(x) === i; }).length === ids.length, 'elk spel heeft een eigen id');
 
@@ -2560,6 +2619,9 @@
       });
       // een icoon is een teken of twee; staat er meer, dan is een escape blijven staan als tekst
       check(spel.ico.length <= 4, spel.id + ': het spelicoon is geen echt teken (' + spel.ico + ')');
+      var sec = secondenVoor(spel);
+      check(sec >= 5 && sec <= 60, spel.id + ': de tempotijd is bruikbaar (' + sec + 's)');
+      check(TEMPO[spel.id], spel.id + ': heeft een eigen tempotijd, niet de standaard');
       spel.hoofdstukken.forEach(function (h, i) {
         check(h.ico.length <= 4, spel.id + ' hoofdstuk ' + (i + 1) + ': het icoon is geen echt teken (' + h.ico + ')');
       });
