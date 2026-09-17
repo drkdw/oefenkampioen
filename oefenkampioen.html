@@ -1,0 +1,1432 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Oefenkampioen</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+<style>
+  :root {
+    --bg: #EDF3FF;
+    --card: #FFFFFF;
+    --card-2: #F7F9FF;
+    --ink: #1F2A44;
+    --ink-soft: #66739B;
+    --line: #DCE3F7;
+    --accent: #FF7A45;
+    --accent-ink: #FFFFFF;
+    --hand-hour: #2B3A67;
+    --hand-min: #FF7A45;
+    --good: #12A06B;
+    --good-bg: #DFF6EC;
+    --bad: #DB4545;
+    --bad-bg: #FDE6E6;
+    --gold: #FFC43D;
+    --screen: #16203A;
+    --screen-ink: #7FE7FF;
+    --shadow: 0 6px 0 rgba(43,58,103,.14);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121A2C;
+      --card: #1D2740;
+      --card-2: #232F4D;
+      --ink: #EDF2FF;
+      --ink-soft: #9AA7CE;
+      --line: #33405F;
+      --accent: #FF9160;
+      --accent-ink: #1B2337;
+      --hand-hour: #CBD7FA;
+      --hand-min: #FF9160;
+      --good: #35D69B;
+      --good-bg: #163B31;
+      --bad: #FF7B7B;
+      --bad-bg: #40222A;
+      --gold: #FFD166;
+      --screen: #0B1220;
+      --screen-ink: #7FE7FF;
+      --shadow: 0 6px 0 rgba(0,0,0,.35);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  /* zonder deze regel verliest het hidden-attribuut van een flex-container zijn werking */
+  [hidden] { display: none !important; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: Nunito, "Segoe UI", system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+  }
+  .wrap {
+    max-width: 560px;
+    margin: 0 auto;
+    padding-inline: 16px;
+    padding-block: 18px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  h1 {
+    font-family: Fredoka, Nunito, sans-serif;
+    font-weight: 700;
+    font-size: clamp(24px, 6vw, 32px);
+    margin: 0;
+    flex: 1 1 auto;
+    text-wrap: balance;
+    letter-spacing: -.01em;
+  }
+  h1 .tick { color: var(--accent); }
+  .icon-btn {
+    border: 2px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    border-radius: 999px;
+    width: 42px; height: 42px;
+    font-size: 19px;
+    cursor: pointer;
+    line-height: 1;
+    flex: none;
+  }
+  .lead { margin: 0; color: var(--ink-soft); font-size: 15px; }
+  #startScherm, #menuScherm { display: flex; flex-direction: column; gap: 14px; }
+  .naamkaart {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    background: var(--card);
+    border: 3px solid var(--line);
+    border-radius: 20px;
+    padding: 12px 16px;
+  }
+  .naamkaart label, .kaartlabel { font-family: Fredoka, sans-serif; font-size: 16px; }
+  .aantallen { display: flex; gap: 8px; flex-wrap: wrap; }
+  .aantal {
+    font-family: Fredoka, sans-serif;
+    font-size: 16px;
+    border: 2px solid var(--line);
+    background: var(--card-2);
+    color: var(--ink-soft);
+    border-radius: 999px;
+    padding: 8px 16px;
+    cursor: pointer;
+  }
+  .aantal[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--card); }
+  .naamkaart input {
+    flex: 1 1 140px;
+    min-width: 0;
+    font-family: Fredoka, sans-serif;
+    font-size: 17px;
+    color: var(--ink);
+    background: var(--card-2);
+    border: 2px solid var(--line);
+    border-radius: 14px;
+    padding: 8px 12px;
+  }
+  .naamkaart input::placeholder { color: var(--ink-soft); }
+
+  /* spellen en hoofdstukken delen dezelfde kaart */
+  .menu { display: flex; flex-direction: column; gap: 10px; }
+  .hfd {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    text-align: left;
+    background: var(--card);
+    border: 3px solid var(--line);
+    border-radius: 22px;
+    padding: 14px 16px;
+    cursor: pointer;
+    font-family: Nunito, sans-serif;
+    color: var(--ink);
+    box-shadow: var(--shadow);
+    transition: transform .1s;
+  }
+  .hfd:active { transform: translateY(4px); box-shadow: none; }
+  .hfd .ico {
+    flex: none;
+    width: 50px; height: 50px;
+    border-radius: 16px;
+    background: var(--card-2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+  }
+  .hfd .tekst { flex: 1 1 auto; min-width: 0; }
+  .hfd h2 { font-family: Fredoka, sans-serif; font-size: 18px; margin: 0; }
+  .hfd p { margin: 2px 0 0; font-size: 14px; color: var(--ink-soft); }
+  .badge {
+    flex: none;
+    font-family: Fredoka, sans-serif;
+    font-size: 12px;
+    border-radius: 999px;
+    padding: 4px 10px;
+    white-space: nowrap;
+  }
+  .badge.makkelijk { background: var(--good-bg); color: var(--good); }
+  .badge.gemiddeld { background: var(--gold); color: #3A2B00; }
+  .badge.moeilijk  { background: var(--bad-bg); color: var(--bad); }
+  .beste {
+    flex: none;
+    font-family: Fredoka, sans-serif;
+    font-size: 13px;
+    color: var(--good);
+    white-space: nowrap;
+  }
+
+  /* spelscherm */
+  .scorebar { display: flex; align-items: center; gap: 10px; }
+  .score-badge {
+    font-family: Fredoka, sans-serif;
+    background: var(--gold);
+    color: #3A2B00;
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 17px;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .scorebar .titel {
+    flex: 1 1 auto;
+    font-family: Fredoka, sans-serif;
+    font-size: 16px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .dots { display: grid; gap: 6px; }
+  .dot {
+    min-width: 0;
+    height: 26px;
+    border-radius: 9px;
+    background: var(--line);
+    border: 2px solid transparent;
+    color: var(--ink-soft);
+    font-family: Fredoka, sans-serif;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-variant-numeric: tabular-nums;
+    transition: background .2s;
+  }
+  .dot.good { background: var(--good); color: var(--bg); }
+  .dot.bad  { background: var(--bad);  color: var(--bg); }
+  .dot.now  { background: transparent; border-color: var(--accent); color: var(--accent); }
+
+  /* het doek: elk spel tekent hier zijn eigen ding */
+  .doek {
+    position: relative;
+    background: var(--card);
+    border: 3px solid var(--line);
+    border-radius: 28px;
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    overflow: hidden;
+    min-height: 200px;
+  }
+  .party { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .confetti { position: absolute; top: -10px; font-size: 22px; animation: fall 1.3s ease-in forwards; }
+  @keyframes fall { to { transform: translateY(330px) rotate(340deg); opacity: 0; } }
+  .stempel {
+    font-family: Fredoka, sans-serif;
+    font-size: 22px;
+    color: var(--ink-soft);
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* klok */
+  svg.clock { width: min(280px, 72vw); height: auto; max-width: 100%; display: block; }
+  svg.klein { width: min(140px, 34vw); }
+  .pijl { font-size: 26px; flex: none; }
+  .hand { transition: transform .75s cubic-bezier(.22,1.4,.4,1); transform-origin: 100px 100px; }
+
+  /* monster */
+  svg.monster { width: min(215px, 54vw); height: auto; display: block; animation: bob 2.6s ease-in-out infinite; }
+  @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+  svg.monster.gevangen { animation: vangst .7s ease-in forwards; }
+  @keyframes vangst { to { transform: scale(.12) rotate(28deg); opacity: 0; } }
+  svg.monster.mis { animation: mis .4s; }
+  @keyframes mis { 25% { transform: translateX(-11px); } 75% { transform: translateX(11px); } }
+
+  /* het schermpje: som, digitale tijd, bedrag */
+  .scherm-card { display: flex; justify-content: center; }
+  .scherm {
+    font-family: Fredoka, sans-serif;
+    font-size: clamp(32px, 9.5vw, 48px);
+    letter-spacing: .04em;
+    background: var(--screen);
+    color: var(--screen-ink);
+    border-radius: 22px;
+    padding: 16px 28px;
+    font-variant-numeric: tabular-nums;
+    border: 4px solid var(--line);
+    text-align: center;
+  }
+
+  .question {
+    font-family: Fredoka, sans-serif;
+    font-size: clamp(19px, 5vw, 24px);
+    text-align: center;
+    margin: 0;
+  }
+  #game { display: flex; flex-direction: column; gap: 20px; }
+  .qbox { display: flex; flex-direction: column; gap: 6px; }
+  .subq {
+    font-family: Nunito, sans-serif;
+    font-size: 15px;
+    text-align: center;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .opt {
+    font-family: Fredoka, sans-serif;
+    font-size: clamp(17px, 4.6vw, 22px);
+    background: var(--card);
+    color: var(--ink);
+    border: 3px solid var(--line);
+    border-radius: 20px;
+    padding: 16px 10px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: transform .1s;
+    font-variant-numeric: tabular-nums;
+  }
+  .opt:active:not(:disabled) { transform: translateY(4px); box-shadow: none; }
+  .opt:disabled { cursor: default; }
+  .opt.pick-good { background: var(--good-bg); border-color: var(--good); color: var(--good); }
+  .opt.pick-bad  { background: var(--bad-bg);  border-color: var(--bad);  color: var(--bad); }
+  .opt.reveal    { border-color: var(--good); color: var(--good); }
+
+  /* zelf intypen */
+  .typen { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .veld {
+    display: flex; align-items: center; gap: 4px;
+    background: var(--screen);
+    border: 4px solid var(--line);
+    border-radius: 22px;
+    padding: 10px 20px;
+    font-family: Fredoka, sans-serif;
+    font-size: clamp(32px, 10vw, 46px);
+    color: var(--screen-ink);
+  }
+  .veld input {
+    width: 2.6ch;
+    text-align: center;
+    background: transparent;
+    border: none;
+    color: var(--screen-ink);
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+    padding: 0;
+  }
+  .veld input::placeholder { color: #3C5573; }
+  .veld input:disabled { opacity: .8; }
+
+  .feedback {
+    min-height: 30px;
+    text-align: center;
+    font-family: Fredoka, sans-serif;
+    font-size: 18px;
+  }
+  .feedback.good { color: var(--good); }
+  .feedback.bad  { color: var(--bad); }
+  .feedback small { display: block; font-family: Nunito, sans-serif; font-size: 14px; color: var(--ink-soft); }
+
+  .big-btn {
+    font-family: Fredoka, sans-serif;
+    font-size: 20px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    border: none;
+    border-radius: 22px;
+    padding: 18px;
+    width: 100%;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: transform .1s;
+  }
+  .big-btn:active:not(:disabled) { transform: translateY(4px); box-shadow: none; }
+  .big-btn:disabled { opacity: .4; cursor: default; box-shadow: none; }
+  .big-btn.stil { background: var(--card); color: var(--ink); border: 3px solid var(--line); }
+
+  .result {
+    background: var(--card);
+    border: 3px solid var(--line);
+    border-radius: 28px;
+    padding: 26px 18px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .result h2 { font-family: Fredoka, sans-serif; margin: 0; font-size: 26px; }
+  .result .stars { font-size: 40px; letter-spacing: 4px; }
+  .result .big-score {
+    font-family: Fredoka, sans-serif;
+    font-size: 52px;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .result p { margin: 0; color: var(--ink-soft); }
+  .review { text-align: left; display: flex; flex-direction: column; gap: 8px; }
+  .review h3 { font-family: Fredoka, sans-serif; font-size: 17px; margin: 6px 0 0; color: var(--ink); }
+  .rv {
+    background: var(--bad-bg);
+    border-radius: 16px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .rv b { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 15px; color: var(--ink); }
+  .rv .jouw { color: var(--bad); text-decoration: line-through; }
+  .rv .juist { color: var(--good); }
+  .rv em { font-style: normal; font-size: 14px; color: var(--ink-soft); }
+
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+  @media (prefers-reduced-motion: reduce) {
+    .hand { transition: none; }
+    svg.monster { animation: none; }
+    .confetti { display: none; }
+  }
+  @media (max-width: 360px) { .options { grid-template-columns: 1fr; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1 id="kop">Oefen<span class="tick">kampioen</span></h1>
+    <button class="icon-btn" id="soundBtn" aria-label="Geluid aan of uit">&#128266;</button>
+  </header>
+
+  <div id="startScherm">
+    <div class="naamkaart">
+      <label for="naam">Hoe heet jij?</label>
+      <input id="naam" type="text" maxlength="16" placeholder="Typ je naam" autocomplete="given-name">
+    </div>
+    <div class="naamkaart" role="group" aria-label="Aantal vragen per toets">
+      <span class="kaartlabel">Hoeveel vragen?</span>
+      <span class="aantallen" id="aantallen"></span>
+    </div>
+    <p class="lead" id="lead"></p>
+    <div class="menu" id="spellen"></div>
+  </div>
+
+  <div id="menuScherm" hidden>
+    <div class="scorebar">
+      <button class="icon-btn" id="terugBtn" aria-label="Terug naar de spellen">&#127968;</button>
+      <span class="titel" id="spelTitel"></span>
+    </div>
+    <p class="lead" id="spelLead"></p>
+    <div class="menu" id="menu"></div>
+  </div>
+
+  <div id="game" hidden>
+    <div class="scorebar">
+      <button class="icon-btn" id="homeBtn" aria-label="Terug naar de hoofdstukken">&#127968;</button>
+      <span class="titel" id="hfdTitel"></span>
+      <span class="score-badge" id="scoreBadge">0 / 10</span>
+    </div>
+    <div class="dots" id="dots" role="list" aria-label="Voortgang van je toets"></div>
+
+    <div class="doek" id="doekCard">
+      <div id="doek"></div>
+      <div class="party" id="party"></div>
+    </div>
+
+    <div class="scherm-card" id="schermCard" hidden><span class="scherm" id="scherm"></span></div>
+
+    <div class="qbox">
+      <p class="question" id="question"></p>
+      <p class="subq" id="subq" hidden></p>
+    </div>
+
+    <div class="options" id="options"></div>
+
+    <div class="typen" id="typen" hidden>
+      <div class="veld" id="veld"></div>
+      <button class="big-btn" id="checkBtn">Controleer</button>
+    </div>
+
+    <p class="feedback" id="feedback" aria-live="polite"></p>
+    <button class="big-btn" id="nextBtn">Volgende vraag</button>
+  </div>
+
+  <div class="result" id="result" hidden>
+    <div class="stars" id="stars">&#11088;</div>
+    <h2 id="resultTitle">Goed gedaan!</h2>
+    <div class="big-score" id="resultScore">0 / 10</div>
+    <p id="resultMsg"></p>
+    <div class="review" id="review" hidden></div>
+    <button class="big-btn" id="againBtn">&#128257; Nog een toets</button>
+    <button class="big-btn stil" id="menuBtn">&#127968; Naar de hoofdstukken</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  /* ==================== gereedschap ==================== */
+  // meer dan twintig vragen houdt een kind van acht niet vol
+  var AANTALLEN = [10, 15, 20];
+  var $ = function (id) { return document.getElementById(id); };
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function shuffle(a) {
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+  function pad2(n) { return n < 10 ? '0' + n : String(n); }
+  // maakt van een juist antwoord en drie afleiders vier keuzes in willekeurige volgorde
+  function keuzes(juist, fout) {
+    return shuffle(fout.concat([juist])).map(function (t) {
+      return { text: String(t), ok: String(t) === String(juist) };
+    });
+  }
+  // vult een lijst afleiders aan tot er drie zijn, zonder dubbels en zonder het juiste antwoord
+  function vulAan(lijst, juist, kandidaten, geldig) {
+    kandidaten.forEach(function (k) {
+      if (lijst.length < 3 && String(k) !== String(juist) && lijst.indexOf(k) === -1 &&
+          (!geldig || geldig(k))) lijst.push(k);
+    });
+    return lijst;
+  }
+
+  /* ==================== de spellen ==================== */
+  var SPELLEN = [];
+
+
+  /* -------------------- klokkijken -------------------- */
+  (function () {
+    // "over" is standaardtaal in het hele taalgebied; "na" is in Belgie gebruikelijk maar
+    // Taaladvies noemt de status ervan onduidelijk, dus voor een toets kiezen we "over".
+    var WOORD = { 5: 'vijf', 10: 'tien' };
+    function nextHour(h) { return h === 12 ? 1 : h + 1; }
+    function prevHour(h) { return h === 1 ? 12 : h - 1; }
+    function label(h, m) {
+      if (m === 0) return h + ' uur';
+      if (m === 15) return 'kwart over ' + h;
+      if (m === 30) return 'half ' + nextHour(h);
+      if (m === 45) return 'kwart voor ' + nextHour(h);
+      if (m < 15) return WOORD[m] + ' over ' + h;
+      if (m < 30) return WOORD[30 - m] + ' voor half ' + nextHour(h);
+      if (m < 45) return WOORD[m - 30] + ' over half ' + nextHour(h);
+      return WOORD[60 - m] + ' voor ' + nextHour(h);
+    }
+    function fmt24(h, m) { return pad2(h) + ':' + pad2(m); }
+    function wijzerUur(u) { return u % 12 || 12; }
+
+    // Zes dagdelen zoals ze in Belgie gebruikt worden, volgens Team Taaladvies. Middag stopt
+    // hier op 14 uur zodat middag en namiddag niet overlappen: een toets kan geen twee juiste
+    // antwoorden hebben. GRENZEN is de enige plaats waar de uren staan.
+    var DEELEN = ['Nacht', 'Ochtend', 'Voormiddag', 'Middag', 'Namiddag', 'Avond'];
+    var GRENZEN = [0, 6, 9, 12, 14, 18];
+    function deelVan(u) {
+      for (var i = GRENZEN.length - 1; i >= 0; i--) if (u >= GRENZEN[i]) return DEELEN[i];
+    }
+    // Ochtend en voormiddag overlappen in het gewone taalgebruik, net als middag en namiddag.
+    // Die mogen nooit samen als keuze verschijnen.
+    var OVERLAP = { Ochtend: ['Voormiddag'], Voormiddag: ['Ochtend'], Middag: ['Namiddag'], Namiddag: ['Middag'] };
+    var DUIDELIJK = {
+      Nacht: [1, 2, 3, 4], Ochtend: [7, 8], Voormiddag: [10, 11],
+      Middag: [12, 13], Namiddag: [15, 16, 17], Avond: [19, 20, 21]
+    };
+    // 's morgens dekt ochtend en voormiddag, 's middags dekt middag en namiddag: de marker pint
+    // het uur vast zonder het gevraagde dagdeel weg te geven.
+    function dagdeelTekst(u) {
+      var marker = u < 6 ? '’s nachts' : u < 12 ? '’s morgens' : u < 18 ? '’s middags' : '’s avonds';
+      return wijzerUur(u) + ' uur ' + marker;
+    }
+    function bereikTekst(deel) {
+      var i = DEELEN.indexOf(deel);
+      var tot = i + 1 < GRENZEN.length ? GRENZEN[i + 1] : 24;
+      return deel + ' is ongeveer van ' + GRENZEN[i] + ' tot ' + tot + ' uur.';
+    }
+
+    var DUREN = [15, 30, 45, 60, 90, 120, 150, 180];
+    var DUURTEKST = {
+      15: 'een kwartier', 30: 'een half uur', 45: 'drie kwartier', 60: '1 uur',
+      90: 'anderhalf uur', 120: '2 uur', 150: 'twee en een half uur', 180: '3 uur'
+    };
+    var ALLE_MIN = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+
+    function afleidersTijd(h, m, minuten) {
+      var juist = label(h, m);
+      // de fouten die kinderen van 7 en 8 echt maken
+      var lijst = [];
+      if (m > 0) lijst.push(label(h, 60 - m));                 // over en voor verwisseld
+      lijst.push(m >= 20 ? label(prevHour(h), m)               // bij half het uur pakken dat al geweest is
+                         : label(nextHour(h), m));             // bij kwart over een uur te ver tellen
+      lijst.push(label(m / 5 || 12, 0));                       // de minuutwijzer als urenwijzer lezen
+      lijst = lijst.filter(function (t, i, a) { return t !== juist && a.indexOf(t) === i; }).slice(0, 3);
+
+      var cMin = (h % 12) * 60 + m, buren = [];
+      for (var hh = 1; hh <= 12; hh++) {
+        minuten.forEach(function (mm) {
+          var L = label(hh, mm);
+          if (L === juist) return;
+          var d = Math.abs((hh % 12) * 60 + mm - cMin);
+          buren.push({ L: L, d: Math.min(d, 720 - d) });
+        });
+      }
+      buren.sort(function (a, b) { return a.d - b.d; });
+      vulAan(lijst, juist, shuffle(buren.slice(0, 8)).map(function (b) { return b.L; }));
+      for (var h2 = 1; lijst.length < 3 && h2 <= 12; h2++) vulAan(lijst, juist, [label(h2, m)]);
+      return lijst.slice(0, 3);
+    }
+
+    /* de wijzerplaat */
+    function gezicht() {
+      var p = ['<circle cx="100" cy="100" r="96" fill="var(--card-2)" stroke="var(--line)" stroke-width="6"/>'];
+      for (var i = 0; i < 60; i++) {
+        var a = (i * 6 - 90) * Math.PI / 180, big = i % 5 === 0;
+        var r1 = big ? 78 : 83, r2 = 88;
+        p.push('<line x1="' + (100 + Math.cos(a) * r1).toFixed(1) + '" y1="' + (100 + Math.sin(a) * r1).toFixed(1) +
+          '" x2="' + (100 + Math.cos(a) * r2).toFixed(1) + '" y2="' + (100 + Math.sin(a) * r2).toFixed(1) +
+          '" stroke="' + (big ? 'var(--hand-hour)' : 'var(--line)') + '" stroke-width="' + (big ? 3.5 : 1.8) + '" stroke-linecap="round"/>');
+      }
+      for (var n = 1; n <= 12; n++) {
+        var ang = (n * 30 - 90) * Math.PI / 180;
+        p.push('<text x="' + (100 + Math.cos(ang) * 64).toFixed(1) + '" y="' + (100 + Math.sin(ang) * 64).toFixed(1) +
+          '" text-anchor="middle" dominant-baseline="central" font-family="Fredoka, sans-serif" font-size="17" font-weight="600" fill="var(--ink)">' + n + '</text>');
+      }
+      return p.join('');
+    }
+    function spil() {
+      return '<circle cx="100" cy="100" r="7" fill="var(--hand-hour)"/><circle cx="100" cy="100" r="3" fill="var(--card)"/>';
+    }
+    function statischeKlok(h, m) {
+      var hd = (h % 12) * 30 + m * 0.5, md = m * 6;
+      return '<svg class="clock klein" viewBox="0 0 200 200" role="img" aria-label="Klok op ' + label(h, m) + '">' +
+        gezicht() +
+        '<line x1="100" y1="100" x2="100" y2="58" stroke="var(--hand-hour)" stroke-width="9" stroke-linecap="round" transform="rotate(' + hd + ' 100 100)"/>' +
+        '<line x1="100" y1="100" x2="100" y2="32" stroke="var(--hand-min)" stroke-width="6" stroke-linecap="round" transform="rotate(' + md + ' 100 100)"/>' +
+        spil() + '</svg>';
+    }
+    // de wijzers draaien een hele ronde extra, zodat je ze ziet bewegen
+    var hourDeg = 0, minDeg = 0;
+    function setHands(h, m) {
+      var targetH = (h % 12) * 30 + m * 0.5, targetM = m * 6;
+      hourDeg += ((targetH - hourDeg) % 360 + 360) % 360 + (reduced ? 0 : 360);
+      minDeg += ((targetM - minDeg) % 360 + 360) % 360 + (reduced ? 0 : 720);
+      var hh = document.getElementById('handHour'), mm = document.getElementById('handMin');
+      if (!hh || !mm) return;
+      hh.style.transform = 'rotate(' + hourDeg + 'deg)';
+      mm.style.transform = 'rotate(' + minDeg + 'deg)';
+    }
+
+    SPELLEN.push({
+      id: 'klok',
+      ico: '🕓',
+      naam: 'Klokkijken',
+      tekst: 'Hele uren, kwartieren, dagdelen en tijdsduur.',
+      top: 'Jij bent een echte klokkenkampioen!',
+      hoofdstukken: [
+        { ico: '🐣', titel: 'Hele en halve uren', tekst: 'Vier uur, half vijf. Zo begint het.',
+          badge: 'makkelijk', minuten: [0, 30], plan: { tijd: 10 } },
+        { ico: '🐥', titel: 'Kwartieren', tekst: 'Kwart over en kwart voor erbij.',
+          badge: 'makkelijk', minuten: [0, 15, 30, 45], plan: { tijd: 10 } },
+        { ico: '🦊', titel: 'Van vijf tot vijf', tekst: 'Tien over half, vijf voor vier.',
+          badge: 'gemiddeld', minuten: ALLE_MIN, plan: { tijd: 10 } },
+        { ico: '🌙', titel: 'Dag en nacht', tekst: 'Ochtend, voormiddag, middag, namiddag, avond, nacht.',
+          badge: 'makkelijk', minuten: [0, 30], plan: { dagdeel: 7, tijd: 3 } },
+        { ico: '📱', titel: 'Digitale klok', tekst: 'Lees de gsm, en typ zelf de tijd in.',
+          badge: 'gemiddeld', minuten: [0, 15, 30, 45], plan: { lezen: 5, digitaal: 5 } },
+        { ico: '⏳', titel: 'Tijd berekenen', tekst: 'Hoe lang duurt het van de ene klok tot de andere?',
+          badge: 'gemiddeld', minuten: [0, 30], plan: { duur: 10 } },
+        { ico: '🏆', titel: 'Het grote examen', tekst: 'Alles door elkaar. Durf je het aan?',
+          badge: 'moeilijk', minuten: ALLE_MIN, plan: { tijd: 2, lezen: 2, digitaal: 2, dagdeel: 2, duur: 2 } }
+      ],
+      zaadjes: function (soort, h) {
+        var out = [], u, m;
+        if (soort === 'tijd') {
+          // een wijzerklok toont 1 tot 12: 3 uur en 15 uur zijn dezelfde vraag
+          for (var hh = 1; hh <= 12; hh++) {
+            for (m = 0; m < h.minuten.length; m++) out.push({ h: hh, m: h.minuten[m] });
+          }
+        } else if (soort === 'lezen' || soort === 'digitaal') {
+          for (u = 0; u < 24; u++) {
+            for (m = 0; m < h.minuten.length; m++) out.push({ u: u, m: h.minuten[m] });
+          }
+        } else if (soort === 'dagdeel') {
+          DEELEN.forEach(function (deel) {
+            DUIDELIJK[deel].forEach(function (uu) { out.push({ d: deel, u: uu }); });
+          });
+        } else {
+          for (u = 8; u <= 17; u++) {
+            [0, 30].forEach(function (mm) {
+              DUREN.forEach(function (duur) {
+                if (u * 60 + mm + duur <= 21 * 60) out.push({ u: u, m: mm, duur: duur });
+              });
+            });
+          }
+        }
+        return out;
+      },
+      maak: function (soort, z, h) {
+        if (soort === 'tijd') {
+          var j = label(z.h, z.m);
+          return { soort: soort, sleutel: 'tijd|' + z.h + ':' + z.m, h: z.h, m: z.m, ans: j,
+            options: keuzes(j, afleidersTijd(z.h, z.m, h.minuten)) };
+        }
+        if (soort === 'lezen') {
+          var lh = wijzerUur(z.u), lj = label(lh, z.m);
+          return { soort: soort, sleutel: 'lezen|' + z.u + ':' + z.m, u: z.u, h: lh, m: z.m, ans: lj,
+            options: keuzes(lj, afleidersTijd(lh, z.m, h.minuten)) };
+        }
+        if (soort === 'digitaal') {
+          return { soort: soort, sleutel: 'digitaal|' + z.u + ':' + z.m, u: z.u, h: wijzerUur(z.u), m: z.m,
+            d: deelVan(z.u), ans: fmt24(z.u, z.m),
+            typen: { scheider: ':', hulp: 'Vul twee vakjes in: de uren van 0 tot 23, de minuten van 0 tot 59.',
+              velden: [{ ph: '00', aria: 'Uren', ant: z.u, pad: true }, { ph: '00', aria: 'Minuten', ant: z.m, pad: true }] } };
+        }
+        if (soort === 'dagdeel') {
+          var verboden = OVERLAP[z.d] || [];
+          var andere = shuffle(DEELEN.filter(function (d) {
+            return d !== z.d && verboden.indexOf(d) === -1;
+          })).slice(0, 3);
+          return { soort: soort, sleutel: 'dagdeel|' + z.d + z.u, d: z.d, u: z.u, h: wijzerUur(z.u), m: 0,
+            ans: z.d, tijd: dagdeelTekst(z.u), options: keuzes(z.d, andere) };
+        }
+        var eind = z.u * 60 + z.m + z.duur;
+        var jd = DUURTEKST[z.duur];
+        var fout = shuffle(DUREN.filter(function (d) { return d !== z.duur; }))
+          .slice(0, 3).map(function (d) { return DUURTEKST[d]; });
+        return { soort: 'duur', sleutel: 'duur|' + z.u + ':' + z.m + '+' + z.duur, u: z.u, m: z.m, duur: z.duur,
+          eu: Math.floor(eind / 60), em: eind % 60, ans: jd, options: keuzes(jd, fout) };
+      },
+      teken: function (v) {
+        if (v.soort === 'lezen') return '';
+        if (v.soort === 'duur') {
+          return statischeKlok(wijzerUur(v.u), v.m) + '<span class="pijl">➡️</span>' +
+            statischeKlok(wijzerUur(v.eu), v.em);
+        }
+        return '<svg class="clock" viewBox="0 0 200 200" role="img" aria-label="Analoge klok" id="clock">' +
+          gezicht() +
+          '<line id="handHour" class="hand" x1="100" y1="100" x2="100" y2="58" stroke="var(--hand-hour)" stroke-width="9" stroke-linecap="round"/>' +
+          '<line id="handMin" class="hand" x1="100" y1="100" x2="100" y2="32" stroke="var(--hand-min)" stroke-width="6" stroke-linecap="round"/>' +
+          spil() + '</svg>';
+      },
+      na: function (v) {
+        if (v.soort === 'lezen' || v.soort === 'duur') return;
+        setHands(v.h, v.m);
+        var c = document.getElementById('clock');
+        if (c) c.setAttribute('aria-label', 'Klok met de wijzers op ' + label(v.h, v.m));
+      },
+      scherm: function (v) { return v.soort === 'lezen' ? fmt24(v.u, v.m) : null; },
+      vraag: function (v, nr) {
+        var kop = 'Vraag ' + nr + ': ';
+        if (v.soort === 'tijd') return { titel: kop + 'hoe laat is het?' };
+        if (v.soort === 'lezen') return { titel: kop + 'hoe zeg je deze tijd?', sub: 'Dit is wat je op een gsm of tablet ziet.' };
+        if (v.soort === 'digitaal') {
+          return { titel: kop + 'de klok staat op ' + label(v.h, v.m) + '.',
+            sub: 'Het is ' + v.d.toLowerCase() + '. Welke digitale tijd zie je op een gsm of tablet?' };
+        }
+        if (v.soort === 'dagdeel') return { titel: kop + 'in welk deel van de dag valt ' + v.tijd + '?', sub: 'Kies het juiste dagdeel.' };
+        return { titel: kop + 'hoe lang duurt het van ' + label(wijzerUur(v.u), v.m) + ' tot ' + label(wijzerUur(v.eu), v.em) + '?' };
+      },
+      uitleg: function (v) {
+        if (v.soort === 'tijd') return 'De kleine wijzer staat bij ' + v.h + ', de grote op ' + (v.m / 5 || 12) + '.';
+        if (v.soort === 'lezen') return fmt24(v.u, v.m) + ' lees je als ' + v.ans + '.';
+        if (v.soort === 'digitaal') {
+          return v.u > 12 ? 'Na de middag tel je 12 bij het uur: ' + v.h + ' + 12 = ' + v.u + '.'
+            : v.u === 12 ? 'Om 12 uur ’s middags begin je niet opnieuw te tellen, het uur blijft 12.'
+            : v.u === 0 ? '12 uur ’s nachts is 00:00, het begin van de dag.'
+            : 'Voor de middag blijft het uur hetzelfde, je zet er alleen een nul voor.';
+        }
+        if (v.soort === 'dagdeel') return bereikTekst(v.d);
+        return 'Tel verder vanaf ' + label(wijzerUur(v.u), v.m) + ' tot je bij ' + label(wijzerUur(v.eu), v.em) + ' bent.';
+      },
+      kort: function (v) {
+        if (v.soort === 'tijd') return 'De klok stond op ' + fmt24(v.h, v.m).replace(/^0/, '');
+        if (v.soort === 'lezen') return 'Op de gsm stond ' + fmt24(v.u, v.m);
+        if (v.soort === 'digitaal') return label(v.h, v.m) + ' in de ' + v.d.toLowerCase();
+        if (v.soort === 'dagdeel') return 'In welk deel van de dag valt ' + v.tijd + '?';
+        return 'Van ' + label(wijzerUur(v.u), v.m) + ' tot ' + label(wijzerUur(v.eu), v.em);
+      },
+      test: function (check) {
+        check(label(3, 0) === '3 uur', 'heel uur');
+        check(label(3, 5) === 'vijf over 3', 'vijf over');
+        check(label(3, 15) === 'kwart over 3', 'kwart over');
+        check(label(3, 20) === 'tien voor half 4', 'tien voor half');
+        check(label(3, 30) === 'half 4', 'half');
+        check(label(3, 40) === 'tien over half 4', 'tien over half');
+        check(label(3, 45) === 'kwart voor 4', 'kwart voor');
+        check(label(3, 55) === 'vijf voor 4', 'vijf voor');
+        check(label(12, 30) === 'half 1', 'overgang van 12 naar 1');
+        check(label(11, 55) === 'vijf voor 12', 'vijf voor 12');
+        for (var th = 1; th <= 12; th++) {
+          ALLE_MIN.forEach(function (tm) {
+            var L = label(th, tm);
+            check(L.indexOf('undefined') === -1, 'benaming van ' + th + ':' + tm);
+            check(L.indexOf(' na ') === -1, 'geen "na" meer in ' + L);
+          });
+        }
+        check(deelVan(0) === 'Nacht' && deelVan(5) === 'Nacht', 'nacht is 0 tot 6');
+        check(deelVan(6) === 'Ochtend' && deelVan(8) === 'Ochtend', 'ochtend is 6 tot 9');
+        check(deelVan(9) === 'Voormiddag' && deelVan(11) === 'Voormiddag', 'voormiddag is 9 tot 12');
+        check(deelVan(12) === 'Middag' && deelVan(13) === 'Middag', 'middag is 12 tot 14');
+        check(deelVan(14) === 'Namiddag' && deelVan(17) === 'Namiddag', 'namiddag is 14 tot 18');
+        check(deelVan(18) === 'Avond' && deelVan(23) === 'Avond', 'avond is 18 tot 24');
+        var totaal = 0;
+        DEELEN.forEach(function (nm) {
+          var uren = [];
+          for (var cu = 0; cu < 24; cu++) if (deelVan(cu) === nm) uren.push(cu);
+          totaal += uren.length;
+          var standen = uren.map(wijzerUur);
+          check(standen.filter(function (x, i) { return standen.indexOf(x) === i; }).length === standen.length,
+            'geen dubbele wijzerstand binnen ' + nm);
+          DUIDELIJK[nm].forEach(function (u) { check(deelVan(u) === nm, u + ' uur hoort niet bij ' + nm); });
+        });
+        check(totaal === 24, 'de zes dagdelen dekken samen 24 uur');
+        var echt = DEELEN.filter(function (nm) {
+          return DUIDELIJK[nm].every(function (u) { return dagdeelTekst(u).indexOf(nm.toLowerCase()) === -1; });
+        });
+        check(echt.length >= 3, 'minstens drie dagdelen vragen echt denkwerk (nu ' + echt.join(', ') + ')');
+        check(fmt24(15, 30) === '15:30' && fmt24(3, 5) === '03:05', '24-uursnotatie');
+        check(wijzerUur(19) === 7 && wijzerUur(12) === 12 && wijzerUur(0) === 12, 'wijzerstand bij een uur van de dag');
+        DUREN.forEach(function (d) { check(DUURTEKST[d], 'elke duur heeft een tekst: ' + d); });
+        var proef = function (h, m, moet) {
+          var lijst = afleidersTijd(h, m, ALLE_MIN);
+          check(lijst.indexOf(moet) > -1, 'afleider "' + moet + '" ontbreekt bij ' + h + ':' + m);
+        };
+        proef(3, 45, 'kwart over 3');
+        proef(3, 15, 'kwart voor 4');
+        proef(3, 30, 'half 3');
+        proef(3, 0, '12 uur');
+      }
+    });
+  })();
+
+  /* -------------------- maaltafelmonsters -------------------- */
+  (function () {
+    // de maaltafels van het lager onderwijs lopen van 1 tot 10
+    var MAX = 10;
+    var ALLE_TAFELS = [2, 3, 4, 5, 6, 7, 8, 9, 10];
+    function omgekeerd(p) { return Number(String(p).split('').reverse().join('')); }
+    function som(v) {
+      if (v.soort === 'delen') return v.p + ' : ' + v.a;
+      if (v.soort === 'ontbreekt') return v.links ? '? × ' + v.b + ' = ' + v.p : v.a + ' × ? = ' + v.p;
+      return v.a + ' × ' + v.b;
+    }
+    function positief(k) { return k > 0; }
+    function verderWeg(juist) {
+      var uit = [];
+      for (var d = 1; d <= 14; d++) { uit.push(juist + d); uit.push(juist - d); }
+      return uit;
+    }
+    // de fouten die kinderen van 8 en 9 echt maken, niet zomaar willekeurige getallen
+    function afleidersKeer(a, b) {
+      var p = a * b, lijst = [], kern = [];
+      if (p <= 20) kern.push(a + b);   // optellen in plaats van vermenigvuldigen
+      kern.push(a * (b + 1));          // een rij te ver in de tafel
+      kern.push(a * (b - 1));          // een rij te kort
+      kern.push(omgekeerd(p));         // de twee cijfers van het product omgewisseld
+      kern.push((a + 1) * b);          // de buurtafel genomen
+      kern.push((a - 1) * b);
+      vulAan(lijst, p, kern, positief);
+      vulAan(lijst, p, verderWeg(p), positief);
+      return lijst.slice(0, 3);
+    }
+    function afleidersFactor(juist, ander) {
+      // het gezochte getal is een factor, dus de afleiders blijven kleine getallen
+      var lijst = [];
+      vulAan(lijst, juist, [juist + 1, juist - 1, ander, juist + 2], positief);
+      vulAan(lijst, juist, verderWeg(juist).filter(function (k) { return k <= MAX + 2; }), positief);
+      return lijst.slice(0, 3);
+    }
+
+    var KLEUREN = ['#FF7A45', '#7C5CFF', '#12A06B', '#FFC43D', '#FF5D8F', '#35B8E0', '#9B5DE5', '#00BBA7'];
+    function monster(seed) {
+      var kleur = KLEUREN[seed % KLEUREN.length];
+      var ogen = 1 + (seed % 3);
+      var p = [];
+      if (seed % 2 === 0) {
+        p.push('<path d="M62 56 L50 18 L88 44 Z" fill="' + kleur + '"/>');
+        p.push('<path d="M138 56 L150 18 L112 44 Z" fill="' + kleur + '"/>');
+      } else {
+        p.push('<line x1="100" y1="44" x2="100" y2="16" stroke="' + kleur + '" stroke-width="7" stroke-linecap="round"/>');
+        p.push('<circle cx="100" cy="14" r="10" fill="' + kleur + '"/>');
+      }
+      p.push('<path d="M100 26 C154 26 176 64 176 114 C176 160 144 184 100 184 C56 184 24 160 24 114 C24 64 46 26 100 26 Z" fill="' + kleur + '"/>');
+      for (var i = 0; i < ogen; i++) {
+        var cx = 100 + (i - (ogen - 1) / 2) * 44;
+        p.push('<circle cx="' + cx + '" cy="96" r="19" fill="#FFFFFF"/>');
+        p.push('<circle cx="' + cx + '" cy="99" r="8" fill="#16203A"/>');
+      }
+      p.push('<path d="M70 138 Q100 166 130 138 Z" fill="#16203A"/>');
+      p.push('<path d="M84 145 L90 138 L96 145 Z" fill="#FFFFFF"/><path d="M104 145 L110 138 L116 145 Z" fill="#FFFFFF"/>');
+      p.push('<ellipse cx="62" cy="188" rx="17" ry="10" fill="' + kleur + '"/>');
+      p.push('<ellipse cx="138" cy="188" rx="17" ry="10" fill="' + kleur + '"/>');
+      return '<svg class="monster" id="monster" viewBox="0 0 200 200" role="img" aria-label="Een monster met ' +
+        ogen + (ogen === 1 ? ' oog' : ' ogen') + '">' + p.join('') + '</svg>';
+    }
+
+    SPELLEN.push({
+      id: 'maal',
+      ico: '✖️',
+      naam: 'Maaltafelmonsters',
+      tekst: 'Vang monsters met de maaltafels, delen en de ontbrekende factor.',
+      top: 'Jij bent een echte monstervanger!',
+      hoofdstukken: [
+        { ico: '🐣', titel: 'Tafels van 2, 5 en 10', tekst: 'Verdubbelen en tellen met vijf.',
+          badge: 'makkelijk', tafels: [2, 5, 10], plan: { keer: 10 } },
+        { ico: '🐥', titel: 'Tafels van 3 en 4', tekst: 'Drie en vier erbij.',
+          badge: 'makkelijk', tafels: [3, 4], plan: { keer: 10 } },
+        { ico: '🦊', titel: 'Tafels van 6, 7, 8 en 9', tekst: 'De lastigste monsters van allemaal.',
+          badge: 'gemiddeld', tafels: [6, 7, 8, 9], plan: { keer: 10 } },
+        { ico: '🔁', titel: 'Het gat in het monster', tekst: '6 × ? = 42. Welk getal ontbreekt?',
+          badge: 'gemiddeld', tafels: ALLE_TAFELS, plan: { ontbreekt: 10 } },
+        { ico: '➗', titel: 'Delen', tekst: '42 : 6. De tafel achterstevoren.',
+          badge: 'gemiddeld', tafels: ALLE_TAFELS, plan: { delen: 10 } },
+        { ico: '👾', titel: 'Monsterjacht', tekst: 'Geen keuzes. Typ zelf het antwoord in.',
+          badge: 'gemiddeld', tafels: ALLE_TAFELS, plan: { typ: 10 } },
+        { ico: '🏆', titel: 'Het grote monsterexamen', tekst: 'Alles door elkaar. Durf je het aan?',
+          badge: 'moeilijk', tafels: ALLE_TAFELS, plan: { keer: 4, ontbreekt: 2, delen: 2, typ: 2 } }
+      ],
+      zaadjes: function (soort, h) {
+        var out = [];
+        h.tafels.forEach(function (a) {
+          for (var b = 1; b <= MAX; b++) out.push({ a: a, b: b });
+        });
+        return out;
+      },
+      maak: function (soort, z) {
+        var a = z.a, b = z.b, p = a * b, sl = soort + '|' + a + 'x' + b;
+        if (soort === 'keer') {
+          return { soort: soort, sleutel: sl, a: a, b: b, p: p, ans: String(p),
+            options: keuzes(p, afleidersKeer(a, b)) };
+        }
+        if (soort === 'typ') {
+          return { soort: soort, sleutel: sl, a: a, b: b, p: p, ans: String(p),
+            typen: { scheider: '', hulp: 'Typ een getal in het vakje.',
+              velden: [{ ph: '0', aria: 'Jouw antwoord', ant: p, max: 3 }] } };
+        }
+        if (soort === 'ontbreekt') {
+          // soms ontbreekt het linkse getal, soms het rechtse
+          var links = Math.random() < 0.5;
+          var juist = links ? a : b, ander = links ? b : a;
+          return { soort: soort, sleutel: sl, a: a, b: b, p: p, links: links, ans: String(juist),
+            options: keuzes(juist, afleidersFactor(juist, ander)) };
+        }
+        return { soort: 'delen', sleutel: sl, a: a, b: b, p: p, ans: String(b),
+          options: keuzes(b, afleidersFactor(b, a)) };
+      },
+      teken: function (v) { return monster(v.a * 7 + v.b); },
+      reactie: function (v, ok) {
+        var m = document.getElementById('monster');
+        if (!m) return;
+        m.classList.add(ok ? 'gevangen' : 'mis');
+        // het monster verdwijnt in de kooi; laat niet zomaar een leeg vak achter
+        if (ok) setTimeout(function () {
+          if (m.isConnected) m.parentNode.innerHTML = '<span class="stempel">👾 in de kooi!</span>';
+        }, reduced ? 0 : 650);
+      },
+      scherm: function (v) { return som(v); },
+      vraag: function (v, nr) {
+        var kop = 'Monster ' + nr + ': ';
+        if (v.soort === 'ontbreekt') return { titel: kop + 'welk getal ontbreekt?', sub: 'Zoek het getal dat het vraagteken vervangt.' };
+        if (v.soort === 'delen') return { titel: kop + 'hoeveel is ' + v.p + ' gedeeld door ' + v.a + '?', sub: 'Denk aan de tafel van ' + v.a + '.' };
+        if (v.soort === 'typ') return { titel: kop + 'hoeveel is ' + v.a + ' keer ' + v.b + '?', sub: 'Typ zelf het antwoord in.' };
+        return { titel: kop + 'hoeveel is ' + v.a + ' keer ' + v.b + '?' };
+      },
+      uitleg: function (v) {
+        if (v.soort === 'delen') return v.p + ' : ' + v.a + ' = ' + v.b + ', want ' + v.a + ' × ' + v.b + ' = ' + v.p + '.';
+        if (v.soort === 'ontbreekt') return v.a + ' × ' + v.b + ' = ' + v.p + '.';
+        return v.a + ' keer ' + v.b + ' is ' + v.p + '. En ' + v.b + ' × ' + v.a + ' geeft evenveel.';
+      },
+      kort: function (v) { return som(v); },
+      test: function (check) {
+        check(omgekeerd(42) === 24 && omgekeerd(40) === 4, 'cijfers omwisselen');
+        var proef = function (a, b, moet) {
+          check(afleidersKeer(a, b).indexOf(moet) > -1, 'afleider ' + moet + ' ontbreekt bij ' + a + ' x ' + b);
+        };
+        proef(6, 7, 48);   // een rij te ver
+        proef(6, 7, 36);   // een rij te kort
+        proef(6, 7, 24);   // 42 met de cijfers omgewisseld
+        proef(2, 3, 5);    // opgeteld in plaats van vermenigvuldigd
+        proef(9, 8, 81);   // de buurtafel
+        // bij grote producten is optellen geen geloofwaardige fout meer
+        check(afleidersKeer(8, 9).indexOf(17) === -1, 'bij 72 staat optellen er niet bij');
+        ALLE_TAFELS.concat([1]).forEach(function (a) {
+          for (var b = 1; b <= MAX; b++) {
+            var af = afleidersKeer(a, b), fa = afleidersFactor(b, a);
+            check(af.length === 3 && af.indexOf(a * b) === -1, 'drie bruikbare afleiders bij ' + a + ' x ' + b);
+            check(af.every(positief), 'geen nul of negatief getal als afleider bij ' + a + ' x ' + b);
+            check(fa.length === 3 && fa.indexOf(b) === -1, 'drie bruikbare factorafleiders bij ' + a + ' x ' + b);
+            check(fa.every(function (x) { return x > 0 && x <= MAX + 2; }), 'factorafleiders blijven kleine getallen');
+          }
+        });
+        check(som({ soort: 'keer', a: 6, b: 7 }) === '6 × 7', 'som van een keervraag');
+        check(som({ soort: 'delen', a: 6, b: 7, p: 42 }) === '42 : 6', 'som van een deelvraag');
+        check(som({ soort: 'ontbreekt', a: 6, b: 7, p: 42, links: true }) === '? × 7 = 42', 'gat links');
+        for (var mk = 0; mk < 24; mk++) {
+          check(monster(mk).indexOf('<svg') === 0 && monster(mk).indexOf('aria-label') > -1, 'monster ' + mk + ' is een geldige tekening');
+        }
+      }
+    });
+  })();
+
+  /* <<<SPEL>>> */
+
+  /* ==================== naam, aantal en opslag ==================== */
+  // alleen letters, spaties, koppeltekens en apostrofs, zodat de naam veilig in een bericht past
+  function schoonNaam(t) {
+    var uit = '';
+    String(t || '').slice(0, 40).split('').forEach(function (c) {
+      var isLetter = c.toLowerCase() !== c.toUpperCase();
+      if (isLetter || c === ' ' || c === "'" || c === '-') uit += c;
+    });
+    return uit.trim().slice(0, 16);
+  }
+  function naam() {
+    try { return schoonNaam(localStorage.getItem('oefenkampioen-naam')); } catch (e) { return ''; }
+  }
+  function zetNaam(t) {
+    try { localStorage.setItem('oefenkampioen-naam', schoonNaam(t)); } catch (e) { /* zonder opslag werkt het gewoon */ }
+  }
+  // de %-plaats wordt de naam met komma, of niets als er geen naam ingevuld is
+  function metNaam(sjabloon) {
+    var n = naam();
+    return sjabloon.replace('%', n ? ', ' + n : '');
+  }
+  var LOF = ['Juist%! 🎉', 'Super%! 🌟', 'Knap gedaan%! 👏', 'Helemaal goed%! ✅'];
+  var MOED = ['Bijna%!', 'Dat lukt de volgende keer%!', 'Goed geprobeerd%!', 'Kijk nog eens goed%!'];
+  function leesAantal() {
+    var a;
+    try { a = parseInt(localStorage.getItem('oefenkampioen-aantal'), 10); } catch (e) { a = NaN; }
+    return AANTALLEN.indexOf(a) > -1 ? a : AANTALLEN[0];
+  }
+  function zetAantal(a) {
+    state.aantal = a;
+    try { localStorage.setItem('oefenkampioen-aantal', String(a)); } catch (e) { /* mag mislukken */ }
+  }
+  function lees() {
+    try { return JSON.parse(localStorage.getItem('oefenkampioen-beste') || '{}'); } catch (e) { return {}; }
+  }
+  function bewaar(sleutel, score, van) {
+    try {
+      var b = lees(), oud = b[sleutel];
+      // vergelijken op verhouding, want een toets kan 10, 15 of 20 vragen tellen
+      if (!oud || !oud.van || score / van > oud.score / oud.van) {
+        b[sleutel] = { score: score, van: van };
+        localStorage.setItem('oefenkampioen-beste', JSON.stringify(b));
+      }
+    } catch (e) { /* zonder opslag werkt de app gewoon verder */ }
+  }
+
+  /* ==================== toestand ==================== */
+  var state = {
+    spel: null, hfd: 0, aantal: 10, q: 0, score: 0, results: [], fouten: [],
+    current: null, answered: false, sound: true,
+    plan: [], decks: {}
+  };
+  var ac = null;
+
+  /* ==================== geluid en confetti ==================== */
+  function tone(freq, start, dur) {
+    var o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime + start;
+    o.type = 'sine';
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.16, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(ac.destination);
+    o.start(t); o.stop(t + dur + 0.05);
+  }
+  function beep(ok) {
+    if (!state.sound) return;
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      if (ok) { tone(660, 0, 0.15); tone(990, 0.12, 0.25); } else { tone(196, 0, 0.3); }
+    } catch (e) { /* geluid is extra, nooit blokkerend */ }
+  }
+  function party() {
+    if (reduced) return;
+    var box = $('party'), soorten = ['⭐', '🎉', '✨', '🌟', '🎈'];
+    for (var i = 0; i < 15; i++) {
+      var s = document.createElement('span');
+      s.className = 'confetti';
+      s.textContent = soorten[Math.floor(Math.random() * soorten.length)];
+      s.style.left = (6 + Math.random() * 88) + '%';
+      s.style.animationDelay = (Math.random() * 0.3).toFixed(2) + 's';
+      box.appendChild(s);
+      setTimeout(function (el) { return function () { el.remove(); }; }(s), 1700);
+    }
+  }
+
+  /* ==================== de toets ==================== */
+  // het plan van een hoofdstuk staat op tien vragen; schaal het naar het gekozen aantal
+  function planVoor(h, n) {
+    var soorten = Object.keys(h.plan), uit = {}, som = 0;
+    soorten.forEach(function (soort) {
+      uit[soort] = Math.max(1, Math.round(h.plan[soort] / 10 * n));
+      som += uit[soort];
+    });
+    var grootste = soorten.slice().sort(function (a, b) { return uit[b] - uit[a]; })[0];
+    uit[grootste] += n - som;
+    return uit;
+  }
+  function bouwToets() {
+    var h = state.spel.hoofdstukken[state.hfd];
+    var verdeling = planVoor(h, state.aantal);
+    var plan = [];
+    state.decks = {};
+    Object.keys(verdeling).forEach(function (soort) {
+      state.decks[soort] = shuffle(state.spel.zaadjes(soort, h));
+      for (var i = 0; i < verdeling[soort]; i++) plan.push(soort);
+    });
+    state.plan = shuffle(plan);
+  }
+  function maakVraag(soort) {
+    var h = state.spel.hoofdstukken[state.hfd];
+    return state.spel.maak(soort, state.decks[soort].pop(), h);
+  }
+
+  /* ==================== schermen ==================== */
+  function lead() {
+    var n = naam();
+    return (n ? 'Hoi ' + n + '! ' : '') + 'Kies een spel. Elke toets telt ' +
+      state.aantal + ' vragen en ' + state.aantal + ' punten.';
+  }
+  function kaart(ico, nr, titel, tekst, beste, badge) {
+    var b = beste && beste.van ? '<span class="beste">beste ' + beste.score + '/' + beste.van + '</span>' : '';
+    return '<span class="ico">' + ico + '</span>' +
+      '<span class="tekst"><h2>' + (nr ? nr + '. ' : '') + titel + '</h2><p>' + tekst + '</p></span>' +
+      b + (badge ? '<span class="badge ' + badge + '">' + badge + '</span>' : '');
+  }
+  function toonStart() {
+    var beste = lees();
+    $('spellen').innerHTML = SPELLEN.map(function (s, i) {
+      // op de spelkaart staat het beste hoofdstukresultaat van dat spel
+      var top = null;
+      s.hoofdstukken.forEach(function (h, k) {
+        var b = beste[s.id + ':' + k];
+        if (b && b.van && (!top || b.score / b.van > top.score / top.van)) top = b;
+      });
+      return '<button class="hfd" data-i="' + i + '">' + kaart(s.ico, 0, s.naam, s.tekst, top, '') + '</button>';
+    }).join('');
+    Array.prototype.forEach.call($('spellen').children, function (b) {
+      b.onclick = function () { toonMenu(SPELLEN[Number(b.dataset.i)]); };
+    });
+    $('naam').value = naam();
+    $('aantallen').innerHTML = AANTALLEN.map(function (a) {
+      return '<button class="aantal" data-a="' + a + '" aria-pressed="' + (a === state.aantal) + '">' + a + '</button>';
+    }).join('');
+    Array.prototype.forEach.call($('aantallen').children, function (b) {
+      b.onclick = function () { zetAantal(Number(b.dataset.a)); toonStart(); };
+    });
+    $('lead').textContent = lead();
+    $('kop').innerHTML = 'Oefen<span class="tick">kampioen</span>';
+    $('startScherm').hidden = false;
+    $('menuScherm').hidden = true;
+    $('game').hidden = true;
+    $('result').hidden = true;
+  }
+  function toonMenu(spel) {
+    state.spel = spel;
+    var beste = lees();
+    $('menu').innerHTML = spel.hoofdstukken.map(function (h, i) {
+      return '<button class="hfd" data-i="' + i + '">' +
+        kaart(h.ico, i + 1, h.titel, h.tekst, beste[spel.id + ':' + i], h.badge) + '</button>';
+    }).join('');
+    Array.prototype.forEach.call($('menu').children, function (b) {
+      b.onclick = function () { startHoofdstuk(Number(b.dataset.i)); };
+    });
+    $('kop').innerHTML = spel.ico + ' ' + spel.naam;
+    $('spelTitel').textContent = spel.naam;
+    $('spelLead').textContent = 'Kies een hoofdstuk. Elke toets telt ' + state.aantal + ' vragen.';
+    $('startScherm').hidden = true;
+    $('menuScherm').hidden = false;
+    $('game').hidden = true;
+    $('result').hidden = true;
+  }
+  function startHoofdstuk(i) {
+    state.hfd = i;
+    state.q = 0;
+    state.score = 0;
+    state.results = [];
+    state.fouten = [];
+    bouwToets();
+    $('hfdTitel').textContent = state.spel.hoofdstukken[i].titel;
+    $('menuScherm').hidden = true;
+    $('result').hidden = true;
+    $('game').hidden = false;
+    volgendeVraag();
+  }
+
+  function drawDots() {
+    var html = '';
+    for (var i = 0; i < state.aantal; i++) {
+      var cls = 'dot';
+      if (state.results[i] === true) cls += ' good';
+      else if (state.results[i] === false) cls += ' bad';
+      else if (i === state.q) cls += ' now';
+      var stand = state.results[i] === true ? 'juist' : state.results[i] === false ? 'fout' : i === state.q ? 'bezig' : 'nog te doen';
+      html += '<span class="' + cls + '" title="Vraag ' + (i + 1) + ': ' + stand + '">' + (i + 1) + '</span>';
+    }
+    // tot tien vragen op een rij, daarboven twee even lange rijen
+    var kolommen = state.aantal <= 10 ? state.aantal : Math.ceil(state.aantal / 2);
+    $('dots').style.gridTemplateColumns = 'repeat(' + kolommen + ', 1fr)';
+    $('dots').innerHTML = html;
+    $('scoreBadge').textContent = state.score + ' / ' + state.aantal;
+  }
+
+  function volgendeVraag() {
+    var spel = state.spel;
+    var v = state.current = maakVraag(state.plan[state.q]);
+    state.answered = false;
+
+    $('doek').innerHTML = spel.teken(v) || '';
+    $('doekCard').hidden = !$('doek').innerHTML;
+    var sch = spel.scherm ? spel.scherm(v) : null;
+    $('scherm').textContent = sch || '';
+    $('schermCard').hidden = !sch;
+
+    var tekst = spel.vraag(v, state.q + 1);
+    $('question').textContent = tekst.titel;
+    $('subq').textContent = tekst.sub || '';
+    $('subq').hidden = !tekst.sub;
+
+    $('options').hidden = !v.options;
+    $('typen').hidden = !v.typen;
+    if (v.options) {
+      $('options').innerHTML = '';
+      v.options.forEach(function (o, i) {
+        var b = document.createElement('button');
+        b.className = 'opt';
+        b.id = 'opt' + i;
+        b.textContent = o.text;
+        b.onclick = function () { antwoord(b, o.text, o.ok); };
+        $('options').appendChild(b);
+      });
+    }
+    if (v.typen) {
+      $('veld').innerHTML = v.typen.velden.map(function (f, i) {
+        return (i ? '<span>' + v.typen.scheider + '</span>' : '') +
+          '<input id="in' + i + '" type="text" inputmode="numeric" maxlength="' + (f.max || 2) +
+          '" placeholder="' + f.ph + '" aria-label="' + f.aria + '">';
+      }).join('');
+      v.typen.velden.forEach(function (f, i) {
+        var el = $('in' + i);
+        el.onkeydown = function (e) { if (e.key === 'Enter') controleer(); };
+        el.oninput = function () {
+          if (el.value.length === (f.max || 2) && $('in' + (i + 1))) $('in' + (i + 1)).focus();
+        };
+      });
+      $('checkBtn').disabled = false;
+    }
+    if (spel.na) spel.na(v);
+
+    $('feedback').textContent = '';
+    $('feedback').className = 'feedback';
+    $('nextBtn').disabled = true;
+    $('nextBtn').textContent = v.typen ? 'Typ eerst een antwoord' : 'Kies eerst een antwoord';
+    drawDots();
+  }
+
+  function antwoord(btn, tekst, ok) {
+    if (state.answered) return;
+    state.answered = true;
+    var v = state.current, fb = $('feedback');
+
+    if (v.options) {
+      Array.prototype.forEach.call($('options').children, function (b, i) {
+        b.disabled = true;
+        if (v.options[i].ok && b !== btn) b.classList.add('reveal');
+      });
+      if (btn) btn.classList.add(ok ? 'pick-good' : 'pick-bad');
+    }
+    if (state.spel.reactie) state.spel.reactie(v, ok);
+
+    var uitleg = state.spel.uitleg(v);
+    if (ok) {
+      state.score++;
+      state.results[state.q] = true;
+      fb.className = 'feedback good';
+      fb.innerHTML = metNaam(LOF[Math.floor(Math.random() * LOF.length)]) + '<small>' + uitleg + '</small>';
+      party();
+      beep(true);
+    } else {
+      state.results[state.q] = false;
+      state.fouten.push({ vraag: state.spel.kort(v), jouw: tekst, juist: v.ans });
+      fb.className = 'feedback bad';
+      fb.innerHTML = metNaam(MOED[Math.floor(Math.random() * MOED.length)]) +
+        ' Het juiste antwoord is ' + v.ans + '.<small>' + uitleg + '</small>';
+      beep(false);
+    }
+
+    state.q++;
+    drawDots();
+    $('nextBtn').disabled = false;
+    $('nextBtn').textContent = state.q >= state.aantal ? '🏁 Bekijk je punten' : 'Volgende vraag';
+  }
+
+  function controleer() {
+    if (state.answered) return;
+    var v = state.current, waarden = [], goed = true;
+    for (var i = 0; i < v.typen.velden.length; i++) {
+      var n = parseInt($('in' + i).value, 10);
+      if (isNaN(n) || n < 0 || n > 9999) {
+        $('feedback').className = 'feedback bad';
+        $('feedback').textContent = v.typen.hulp || 'Vul elk vakje in met een getal.';
+        return;
+      }
+      waarden.push(n);
+      if (n !== v.typen.velden[i].ant) goed = false;
+    }
+    v.typen.velden.forEach(function (f, i) { $('in' + i).disabled = true; });
+    $('checkBtn').disabled = true;
+    var getypt = waarden.map(function (n, i) {
+      var f = v.typen.velden[i];
+      return f.pad ? pad2(n) : String(n);
+    }).join(v.typen.scheider);
+    antwoord(null, getypt, goed);
+  }
+
+  /* ==================== resultaat ==================== */
+  function toonResultaat() {
+    var s = state.score;
+    bewaar(state.spel.id + ':' + state.hfd, s, state.aantal);
+    var deel = s / state.aantal;
+    $('stars').textContent = deel >= 0.9 ? '⭐⭐⭐' : deel >= 0.7 ? '⭐⭐' : deel >= 0.5 ? '⭐' : '💪';
+    $('resultTitle').textContent = metNaam(deel >= 0.7 ? 'Goed gedaan%!' : 'Volgende keer beter%!');
+    $('resultScore').textContent = s + ' / ' + state.aantal;
+    $('resultMsg').textContent = deel >= 0.9 ? (state.spel.top || 'Jij bent een echte kampioen!')
+      : deel >= 0.7 ? 'Mooi werk. Nog een keer en je haalt alles juist.'
+      : deel >= 0.5 ? 'Goed bezig. Blijf oefenen, je bent er bijna.'
+      : 'Oefenen maakt sterk. Probeer eerst een makkelijker hoofdstuk.';
+    if (state.fouten.length) {
+      $('review').innerHTML = '<h3>Deze mag je nog eens bekijken</h3>' + state.fouten.map(function (f) {
+        return '<div class="rv"><b>' + f.vraag + '</b><em><span class="jouw">' + f.jouw +
+          '</span> wordt <span class="juist">' + f.juist + '</span></em></div>';
+      }).join('');
+      $('review').hidden = false;
+    } else {
+      $('review').hidden = true;
+    }
+    $('game').hidden = true;
+    $('result').hidden = false;
+  }
+
+  /* ==================== knoppen ==================== */
+  $('nextBtn').onclick = function () {
+    if (state.q >= state.aantal) toonResultaat(); else volgendeVraag();
+  };
+  $('checkBtn').onclick = controleer;
+  $('againBtn').onclick = function () { startHoofdstuk(state.hfd); };
+  $('menuBtn').onclick = function () { toonMenu(state.spel); };
+  $('homeBtn').onclick = function () { toonMenu(state.spel); };
+  $('terugBtn').onclick = toonStart;
+  $('naam').oninput = function () { zetNaam($('naam').value); $('lead').textContent = lead(); };
+  $('soundBtn').onclick = function () {
+    state.sound = !state.sound;
+    $('soundBtn').textContent = state.sound ? '🔊' : '🔇';
+  };
+
+  state.aantal = leesAantal();
+  toonStart();
+
+  /* ==================== zelfcheck: open met #test in de adresbalk ==================== */
+  if (location.hash === '#test') {
+    var fouten = 0;
+    var check = function (ok, wat) { if (!ok) { fouten++; console.error('FOUT: ' + wat); } };
+
+    check(schoonNaam('  Sam  ') === 'Sam', 'naam wordt opgekuist');
+    check(schoonNaam('<img src=x>') === 'img srcx', 'tekens die markup maken verdwijnen uit de naam');
+    check(schoonNaam('Jean-Luc') === 'Jean-Luc', 'koppeltekens blijven');
+    check(schoonNaam('abcdefghijklmnopqrstuvwxyz').length === 16, 'de naam wordt afgekapt');
+    check(metNaam('Bijna%!') === 'Bijna!' || naam() !== '', 'zonder naam blijft het bericht kloppen');
+    LOF.concat(MOED).forEach(function (t) {
+      check(t.indexOf('%') > -1, 'elk bericht heeft een plaats voor de naam: ' + t);
+      check(t.replace('%', '').indexOf('  ') === -1, 'geen dubbele spatie zonder naam: ' + t);
+    });
+    check(AANTALLEN[0] === 10 && AANTALLEN[AANTALLEN.length - 1] === 20, 'van tien tot twintig vragen');
+    check(SPELLEN.length > 0, 'er staat minstens een spel in');
+    var ids = SPELLEN.map(function (s) { return s.id; });
+    check(ids.filter(function (x, i) { return ids.indexOf(x) === i; }).length === ids.length, 'elk spel heeft een eigen id');
+
+    var toetsen = 0;
+    var bewaardAantal = state.aantal, bewaardSpel = state.spel, bewaardHfd = state.hfd;
+    SPELLEN.forEach(function (spel) {
+      state.spel = spel;
+      ['ico', 'naam', 'tekst', 'zaadjes', 'maak', 'teken', 'vraag', 'uitleg', 'kort'].forEach(function (k) {
+        check(spel[k] !== undefined, spel.id + ' heeft ' + k);
+      });
+      if (spel.test) spel.test(check);
+
+      AANTALLEN.forEach(function (aantal) {
+        state.aantal = aantal;
+        spel.hoofdstukken.forEach(function (h, i) {
+          var verdeling = planVoor(h, aantal), som = 0;
+          Object.keys(verdeling).forEach(function (k) {
+            som += verdeling[k];
+            check(verdeling[k] >= 1, spel.id + ' hoofdstuk ' + (i + 1) + ': elk vraagtype komt voor bij ' + aantal);
+            check(spel.zaadjes(k, h).length >= verdeling[k],
+              spel.id + ' hoofdstuk ' + (i + 1) + ': genoeg verschillende vragen voor ' + k + ' bij ' + aantal);
+          });
+          check(som === aantal, spel.id + ' hoofdstuk ' + (i + 1) + ' telt ' + aantal + ' vragen (nu ' + som + ')');
+
+          for (var ronde = 0; ronde < 5; ronde++) {
+            state.hfd = i;
+            bouwToets();
+            var gezien = {}, vorige = null;
+            for (var q = 0; q < state.aantal; q++) {
+              var v = maakVraag(state.plan[q]);
+              var sl = v.sleutel || JSON.stringify(v.ans) + v.soort;
+              check(!gezien[sl], spel.id + ' hoofdstuk ' + (i + 1) + ': dezelfde vraag twee keer (' + sl + ')');
+              check(sl !== vorige, spel.id + ' hoofdstuk ' + (i + 1) + ': twee keer na elkaar dezelfde vraag');
+              gezien[sl] = 1;
+              vorige = sl;
+              check(typeof v.ans === 'string' && v.ans.length > 0, spel.id + ': elk antwoord is ingevuld');
+              check(typeof spel.teken(v) === 'string', spel.id + ': elke vraag heeft een tekening');
+              check(spel.teken(v).indexOf('undefined') === -1, spel.id + ': geen undefined in de tekening');
+              var t = spel.vraag(v, q + 1);
+              check(t && t.titel && t.titel.indexOf('undefined') === -1, spel.id + ': elke vraag heeft een tekst');
+              check(spel.uitleg(v).indexOf('undefined') === -1, spel.id + ': elke uitleg is volledig');
+              check(spel.kort(v).indexOf('undefined') === -1, spel.id + ': elke korte tekst is volledig');
+
+              if (v.options) {
+                check(v.options.length === 4, spel.id + ': vier keuzes');
+                check(v.options.filter(function (o) { return o.ok; }).length === 1, spel.id + ': precies een juist antwoord');
+                var tt = v.options.map(function (o) { return o.text; });
+                check(tt.filter(function (x, k) { return tt.indexOf(x) === k; }).length === 4, spel.id + ': vier verschillende keuzes');
+                check(tt.indexOf(v.ans) > -1, spel.id + ': het juiste antwoord staat erbij');
+              } else {
+                check(!!v.typen, spel.id + ': een vraag zonder keuzes laat typen');
+                check(v.typen.velden.length >= 1, spel.id + ': minstens een invulvakje');
+                var getypt = v.typen.velden.map(function (f) {
+                  check(typeof f.ant === 'number' && f.ant >= 0, spel.id + ': elk vakje heeft een antwoord');
+                  return f.pad ? pad2(f.ant) : String(f.ant);
+                }).join(v.typen.scheider);
+                check(getypt === v.ans, spel.id + ': de vakjes samen geven het antwoord (' + getypt + ' vs ' + v.ans + ')');
+              }
+            }
+            toetsen++;
+          }
+        });
+      });
+    });
+    state.aantal = bewaardAantal;
+    state.spel = bewaardSpel;
+    state.hfd = bewaardHfd;
+
+    toonStart();
+    console.log(fouten === 0
+      ? 'Zelfcheck klaar: ' + SPELLEN.length + ' spellen, ' + toetsen + ' toetsen doorgerekend, geen fouten.'
+      : 'Zelfcheck klaar: ' + fouten + ' fouten gevonden.');
+  }
+})();
+</script>
