@@ -1,0 +1,527 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Oefenkampioen</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+  :root {
+    --bg: #EDF3FF;
+    --card: #FFFFFF;
+    --card-2: #F7F9FF;
+    --ink: #1F2A44;
+    --ink-soft: #66739B;
+    --line: #DCE3F7;
+    --accent: #FF7A45;
+    --accent-ink: #FFFFFF;
+    --hand-hour: #2B3A67;
+    --hand-min: #FF7A45;
+    --good: #12A06B;
+    --good-bg: #DFF6EC;
+    --bad: #DB4545;
+    --bad-bg: #FDE6E6;
+    --gold: #FFC43D;
+    --screen: #16203A;
+    --screen-ink: #7FE7FF;
+    --shadow: 0 6px 0 rgba(43,58,103,.14);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121A2C;
+      --card: #1D2740;
+      --card-2: #232F4D;
+      --ink: #EDF2FF;
+      --ink-soft: #9AA7CE;
+      --line: #33405F;
+      --accent: #FF9160;
+      --accent-ink: #1B2337;
+      --hand-hour: #CBD7FA;
+      --hand-min: #FF9160;
+      --good: #35D69B;
+      --good-bg: #163B31;
+      --bad: #FF7B7B;
+      --bad-bg: #40222A;
+      --gold: #FFD166;
+      --screen: #0B1220;
+      --screen-ink: #7FE7FF;
+      --shadow: 0 6px 0 rgba(0,0,0,.35);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  /* zonder deze regel verliest het hidden-attribuut van een flex-container zijn werking */
+  [hidden] { display: none !important; }
+  /* niets in dikke letters: dik leest minder makkelijk dan normaal */
+  h1, h2, h3, b, strong { font-weight: normal; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: Nunito, "Segoe UI", system-ui, sans-serif;
+    font-weight: normal;
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+  }
+  .wrap {
+    max-width: 560px;
+    margin: 0 auto;
+    padding-inline: 16px;
+    padding-block: 18px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  h1 {
+    font-family: Fredoka, Nunito, sans-serif;
+    font-weight: normal;
+    font-size: clamp(24px, 6vw, 32px);
+    margin: 0;
+    flex: 1 1 auto;
+    text-wrap: balance;
+    letter-spacing: -.01em;
+  }
+  h1 .tick { color: var(--accent); }
+  .icon-btn {
+    border: 2px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    border-radius: 999px;
+    width: 42px; height: 42px;
+    font-size: 19px;
+    cursor: pointer;
+    line-height: 1;
+    flex: none;
+  }
+  .lead { margin: 0; color: var(--ink-soft); font-size: 15px; }
+  #startScherm, #menuScherm { display: flex; flex-direction: column; gap: 14px; }
+  .naamkaart {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    background: var(--card);
+    border: 3px solid var(--line);
+    border-radius: 20px;
+    padding: 12px 16px;
+  }
+  .naamkaart label, .kaartlabel { font-family: Fredoka, sans-serif; font-size: 16px; }
+  .aantallen { display: flex; gap: 8px; flex-wrap: wrap; }
+  .aantal {
+    font-family: Fredoka, sans-serif;
+    font-size: 16px;
+    border: 2px solid var(--line);
+    background: var(--card-2);
+    color: var(--ink-soft);
+    border-radius: 999px;
+    padding: 8px 16px;
+    cursor: pointer;
+  }
+  .aantal[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--card); }
+  .naamkaart input {
+    flex: 1 1 140px;
+    min-width: 0;
+    font-family: Fredoka, sans-serif;
+    font-size: 17px;
+    color: var(--ink);
+    background: var(--card-2);
+    border: 2px solid var(--line);
+    border-radius: 14px;
+    padding: 8px 12px;
+  }
+  .naamkaart input::placeholder { color: var(--ink-soft); }
+
+  /* spellen en hoofdstukken delen dezelfde kaart */
+  .menu { display: flex; flex-direction: column; gap: 10px; }
+  .hfd {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    text-align: left;
+    background: var(--card);
+    border: 3px solid var(--line);
+    border-radius: 22px;
+    padding: 14px 16px;
+    cursor: pointer;
+    font-family: Nunito, sans-serif;
+    color: var(--ink);
+    box-shadow: var(--shadow);
+    transition: transform .1s;
+  }
+  .hfd:active { transform: translateY(4px); box-shadow: none; }
+  .hfd .ico {
+    flex: none;
+    width: 50px; height: 50px;
+    border-radius: 16px;
+    background: var(--card-2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+  }
+  .hfd .tekst { flex: 1 1 auto; min-width: 0; }
+  .hfd h2 { font-family: Fredoka, sans-serif; font-size: 18px; margin: 0; }
+  .hfd p { margin: 2px 0 0; font-size: 14px; color: var(--ink-soft); }
+  .dekking { display: block; margin-top: 3px; font-size: 13px; }
+  /* de hoofdstukken staan per leerjaar gegroepeerd; details klapt open en toe zonder javascript */
+  .jaargroep { border: 3px solid var(--line); border-radius: 22px; background: var(--card-2); }
+  .jaargroep > summary {
+    font-family: Fredoka, sans-serif;
+    font-size: 16px;
+    padding: 12px 16px;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+  .jaargroep > summary::-webkit-details-marker { display: none; }
+  .jaargroep > summary::before { content: '\25B8'; color: var(--ink-soft); }
+  .jaargroep[open] > summary::before { content: '\25BE'; }
+  .jaargroep .hoeveel { margin-left: auto; font-size: 13px; color: var(--ink-soft); }
+  .jaargroep .menu { padding: 0 10px 10px; }
+  .badge {
+    flex: none;
+    font-family: Fredoka, sans-serif;
+    font-size: 12px;
+    border-radius: 999px;
+    padding: 4px 10px;
+    white-space: nowrap;
+  }
+  .badge.makkelijk { background: var(--good-bg); color: var(--good); }
+  .badge.gemiddeld { background: var(--gold); color: #3A2B00; }
+  .badge.moeilijk  { background: var(--bad-bg); color: var(--bad); }
+  .beste {
+    flex: none;
+    font-family: Fredoka, sans-serif;
+    font-size: 13px;
+    color: var(--good);
+    white-space: nowrap;
+  }
+
+  /* spelscherm */
+  .scorebar { display: flex; align-items: center; gap: 10px; }
+  .score-badge {
+    font-family: Fredoka, sans-serif;
+    background: var(--gold);
+    color: #3A2B00;
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 17px;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .scorebar .titel {
+    flex: 1 1 auto;
+    font-family: Fredoka, sans-serif;
+    font-size: 16px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .dots { display: grid; gap: 6px; }
+  .dot {
+    min-width: 0;
+    height: 26px;
+    border-radius: 9px;
+    background: var(--line);
+    border: 2px solid transparent;
+    color: var(--ink-soft);
+    font-family: Fredoka, sans-serif;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-variant-numeric: tabular-nums;
+    transition: background .2s;
+  }
+  .dot.good { background: var(--good); color: var(--bg); }
+  .dot.bad  { background: var(--bad);  color: var(--bg); }
+  .dot.now  { background: transparent; border-color: var(--accent); color: var(--accent); }
+
+  /* het doek: elk spel tekent hier zijn eigen ding */
+  .doek {
+    position: relative;
+    background: var(--card);
+    border: 3px solid var(--line);
+    border-radius: 28px;
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    overflow: hidden;
+    min-height: 200px;
+  }
+  /* wat een spel tekent kan uit meerdere stukken bestaan: klok, pijl, klok */
+  #doek {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+  }
+  .party { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .confetti { position: absolute; top: -10px; font-size: 22px; animation: fall 1.3s ease-in forwards; }
+  @keyframes fall { to { transform: translateY(330px) rotate(340deg); opacity: 0; } }
+  .tempobalk {
+    height: 10px;
+    border-radius: 999px;
+    background: var(--line);
+    overflow: hidden;
+  }
+  .tempobalk span {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    transform-origin: left center;
+  }
+  @keyframes leeglopen { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+  .stempel {
+    font-family: Fredoka, sans-serif;
+    font-size: 22px;
+    color: var(--ink-soft);
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* klok */
+  svg.clock { width: min(280px, 72vw); height: auto; max-width: 100%; display: block; }
+  svg.klein { width: min(140px, 34vw); }
+  .pijl { font-size: 26px; flex: none; }
+  .hand { transition: transform .75s cubic-bezier(.22,1.4,.4,1); transform-origin: 100px 100px; }
+
+  /* monster */
+  svg.monster { width: min(215px, 54vw); height: auto; display: block; animation: bob 2.6s ease-in-out infinite; }
+  @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+  svg.monster.gevangen { animation: vangst .7s ease-in forwards; }
+  @keyframes vangst { to { transform: scale(.12) rotate(28deg); opacity: 0; } }
+  svg.monster.mis { animation: mis .4s; }
+  @keyframes mis { 25% { transform: translateX(-11px); } 75% { transform: translateX(11px); } }
+
+  /* het schermpje: som, digitale tijd, bedrag */
+  .scherm-card { display: flex; justify-content: center; }
+  .scherm {
+    font-family: Fredoka, sans-serif;
+    font-size: clamp(32px, 9.5vw, 48px);
+    letter-spacing: .04em;
+    background: var(--screen);
+    color: var(--screen-ink);
+    border-radius: 22px;
+    padding: 16px 28px;
+    font-variant-numeric: tabular-nums;
+    border: 4px solid var(--line);
+    text-align: center;
+  }
+
+  .question {
+    font-family: Fredoka, sans-serif;
+    font-size: clamp(19px, 5vw, 24px);
+    text-align: center;
+    margin: 0;
+  }
+  #game { display: flex; flex-direction: column; gap: 20px; }
+  .qbox { display: flex; flex-direction: column; gap: 6px; }
+  .subq {
+    font-family: Nunito, sans-serif;
+    font-size: 15px;
+    text-align: center;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .opt {
+    font-family: Fredoka, sans-serif;
+    font-size: clamp(17px, 4.6vw, 22px);
+    background: var(--card);
+    color: var(--ink);
+    border: 3px solid var(--line);
+    border-radius: 20px;
+    padding: 16px 10px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: transform .1s;
+    font-variant-numeric: tabular-nums;
+  }
+  .opt:active:not(:disabled) { transform: translateY(4px); box-shadow: none; }
+  .opt:disabled { cursor: default; }
+  .opt.pick-good { background: var(--good-bg); border-color: var(--good); color: var(--good); }
+  .opt.pick-bad  { background: var(--bad-bg);  border-color: var(--bad);  color: var(--bad); }
+  .opt.reveal    { border-color: var(--good); color: var(--good); }
+
+  /* zelf intypen */
+  .typen { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .veld {
+    display: flex; align-items: center; gap: 4px;
+    background: var(--screen);
+    border: 4px solid var(--line);
+    border-radius: 22px;
+    padding: 10px 20px;
+    font-family: Fredoka, sans-serif;
+    font-size: clamp(32px, 10vw, 46px);
+    color: var(--screen-ink);
+  }
+  .veld input {
+    width: 2.6ch;
+    text-align: center;
+    background: transparent;
+    border: none;
+    color: var(--screen-ink);
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+    padding: 0;
+  }
+  .veld input::placeholder { color: #3C5573; }
+  .veld input:disabled { opacity: .8; }
+
+  .feedback {
+    min-height: 30px;
+    text-align: center;
+    font-family: Fredoka, sans-serif;
+    font-size: 18px;
+  }
+  .feedback.good { color: var(--good); }
+  .feedback.bad  { color: var(--bad); }
+  .feedback small { display: block; font-family: Nunito, sans-serif; font-size: 14px; color: var(--ink-soft); }
+
+  .big-btn {
+    font-family: Fredoka, sans-serif;
+    font-size: 20px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    border: none;
+    border-radius: 22px;
+    padding: 18px;
+    width: 100%;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: transform .1s;
+  }
+  .big-btn:active:not(:disabled) { transform: translateY(4px); box-shadow: none; }
+  .big-btn:disabled { opacity: .4; cursor: default; box-shadow: none; }
+  .big-btn.stil { background: var(--card); color: var(--ink); border: 3px solid var(--line); }
+
+  .result {
+    background: var(--card);
+    border: 3px solid var(--line);
+    border-radius: 28px;
+    padding: 26px 18px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .result h2 { font-family: Fredoka, sans-serif; margin: 0; font-size: 26px; }
+  .result .stars { font-size: 40px; letter-spacing: 4px; }
+  .result .big-score {
+    font-family: Fredoka, sans-serif;
+    font-size: 52px;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .result p { margin: 0; color: var(--ink-soft); }
+  .review { text-align: left; display: flex; flex-direction: column; gap: 8px; }
+  .review h3 { font-family: Fredoka, sans-serif; font-size: 17px; margin: 6px 0 0; color: var(--ink); }
+  .rv {
+    background: var(--bad-bg);
+    border-radius: 16px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .rv b { font-family: Fredoka, sans-serif; font-weight: normal; font-size: 15px; color: var(--ink); }
+  .rv .jouw { color: var(--bad); text-decoration: line-through; }
+  .rv .juist { color: var(--good); }
+  .rv em { font-style: normal; font-size: 14px; color: var(--ink-soft); }
+
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+  @media (prefers-reduced-motion: reduce) {
+    .hand { transition: none; }
+    svg.monster { animation: none; }
+    .confetti { display: none; }
+  }
+  @media (max-width: 360px) { .options { grid-template-columns: 1fr; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1 id="kop">Oefen<span class="tick">kampioen</span></h1>
+    <button class="icon-btn" id="soundBtn" aria-label="Geluid aan of uit">&#128266;</button>
+  </header>
+
+  <div id="startScherm">
+    <div class="naamkaart">
+      <label for="naam">Hoe heet jij?</label>
+      <input id="naam" type="text" maxlength="16" placeholder="Typ je naam" autocomplete="given-name">
+    </div>
+    <div class="naamkaart" role="group" aria-label="Leerjaar">
+      <span class="kaartlabel">Welk leerjaar?</span>
+      <span class="aantallen" id="leerjaren"></span>
+    </div>
+    <div class="naamkaart" role="group" aria-label="Aantal vragen per toets">
+      <span class="kaartlabel">Hoeveel vragen?</span>
+      <span class="aantallen" id="aantallen"></span>
+    </div>
+    <div class="naamkaart" role="group" aria-label="Oefenen op tempo">
+      <span class="kaartlabel">Op tempo?</span>
+      <span class="aantallen" id="tempoKnop"></span>
+    </div>
+    <p class="lead" id="lead"></p>
+    <div class="menu" id="spellen"></div>
+  </div>
+
+  <div id="menuScherm" hidden>
+    <div class="scorebar">
+      <button class="icon-btn" id="terugBtn" aria-label="Terug naar de spellen">&#127968;</button>
+      <span class="titel" id="spelTitel"></span>
+    </div>
+    <p class="lead" id="spelLead"></p>
+    <div class="menu" id="menu"></div>
+  </div>
+
+  <div id="game" hidden>
+    <div class="scorebar">
+      <button class="icon-btn" id="homeBtn" aria-label="Terug naar de hoofdstukken">&#127968;</button>
+      <span class="titel" id="hfdTitel"></span>
+      <span class="score-badge" id="scoreBadge">0 / 10</span>
+    </div>
+    <div class="dots" id="dots" role="list" aria-label="Voortgang van je toets"></div>
+    <div class="tempobalk" id="tempobalk" hidden><span id="tempovulling"></span></div>
+
+    <div class="doek" id="doekCard">
+      <div id="doek"></div>
+      <div class="party" id="party"></div>
+    </div>
+
+    <div class="scherm-card" id="schermCard" hidden><span class="scherm" id="scherm"></span></div>
+
+    <div class="qbox">
+      <p class="question" id="question"></p>
+      <p class="subq" id="subq" hidden></p>
+    </div>
+
+    <div class="options" id="options"></div>
+
+    <div class="typen" id="typen" hidden>
+      <div class="veld" id="veld"></div>
+      <button class="big-btn" id="checkBtn">Controleer</button>
+    </div>
+
+    <p class="feedback" id="feedback" aria-live="polite"></p>
+    <button class="big-btn" id="nextBtn">Volgende vraag</button>
+  </div>
+
+  <div class="result" id="result" hidden>
+    <div class="stars" id="stars">&#11088;</div>
+    <h2 id="resultTitle">Goed gedaan!</h2>
+    <div class="big-score" id="resultScore">0 / 10</div>
+    <p id="resultMsg"></p>
+    <div class="review" id="review" hidden></div>
+    <button class="big-btn" id="againBtn">&#128257; Nog een toets</button>
+    <button class="big-btn stil" id="menuBtn">&#127968; Naar de hoofdstukken</button>
+  </div>
+</div>
+
+<script type="module" src="chassis.js"></script>

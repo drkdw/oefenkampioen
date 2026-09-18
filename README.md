@@ -1,10 +1,32 @@
 # Oefenkampioen
 
-Zeven oefenspellen voor het derde leerjaar, in een bestand: `oefenkampioen.html`.
-Geen build, geen dependencies. Dubbelklik het bestand of open het in een browser.
+Zeven oefenspellen voor de lagere school. Geen build, geen dependencies, geen framework.
+
+De spellen zijn ES-modules, en een browser weigert die van `file://` te laden. Dus niet
+dubbelklikken, maar via een servertje openen:
+
+```sh
+python3 -m http.server 8000
+```
+
+Daarna `http://localhost:8000` in de browser. Wie het spel gewoon wil spelen, gebruikt de
+GitHub Pages-link van deze repo.
 
 Opvolger van de losse spellen klok-oefenen en maaltafelmonsters. Die zijn hier mee ingebouwd,
 zodat de opmaak, de puntentelling, de opslag en de zelfcheck maar op een plaats staan.
+
+## Leerjaren
+
+Elk hoofdstuk hoort bij een leerjaar. Op het startscherm kies je er een met de rij
+**Welk leerjaar?**, en die keuze blijft bewaard. Het is een voorkeur, geen slot:
+
+- spellen met hoofdstukken voor dat jaar komen bovenaan, de rest zakt eronder en blijft aantikbaar
+- binnen een spel staan de hoofdstukken in uitklapbare groepen per leerjaar, met het gekozen jaar open
+- een kind dat vooruit wil, klapt het volgende jaar open; een kind dat wil herhalen, gaat een jaar terug
+
+Vandaag zitten er 47 hoofdstukken in: 3 in het eerste leerjaar, 18 in het tweede, 26 in het
+derde. Het vierde tot zesde staan nog leeg. Het plan om die te vullen staat in
+`docs/superpowers/specs/2026-09-18-leerjaren-design.md`.
 
 ## De spellen
 
@@ -33,12 +55,23 @@ worden op verhouding vergeleken, zodat 12 op 15 beter telt dan 7 op 10.
 
 ## Hoe een spel in elkaar zit
 
+De bestanden:
+
+| bestand | wat erin staat |
+| --- | --- |
+| `index.html` | de schermen en de hele opmaak |
+| `chassis.js` | schermen, punten, bolletjes, opslag, de toets, de knoppen |
+| `gereedschap.js` | `shuffle`, `keuzes`, `vulAan` en de rest die spellen delen |
+| `spellen/index.js` | de zeven spellen, in de volgorde van het startscherm |
+| `spellen/*.js` | een spel per bestand |
+| `zelfcheck.js` | de controles, alleen binnengehaald bij `#test` |
+
 Het chassis kent de schermen, de punten, de bolletjes, de opslag en de zelfcheck. Een spel is
-een object dat zichzelf bij `SPELLEN` aanmeldt en deze dingen levert:
+een module met `export default` op een object dat deze dingen levert:
 
 | veld | wat het doet |
 | --- | --- |
-| `hoofdstukken` | titel, moeilijkheid en een `plan`: hoeveel vragen van elk type |
+| `hoofdstukken` | `leerjaar`, titel, moeilijkheid en een `plan`: hoeveel vragen van elk type |
 | `zaadjes(soort, h)` | alle mogelijke vragen van dat type, elk maar een keer per toets |
 | `maak(soort, z, h)` | van een zaadje een vraag maken, met keuzes of invulvakjes |
 | `teken(v)` | de tekening op het doek: klok, munten, rooster, getallenlijn |
@@ -70,7 +103,7 @@ getallenlijn blijven leeg bij "47 + ? = 55". De zelfcheck controleert dat alle d
 
 ## Zelfcheck
 
-Open `oefenkampioen.html#test` en bekijk de console. De check rekent 705 volledige toetsen
+Open `index.html#test` en bekijk de console. De check rekent 705 volledige toetsen
 door: elk spel, elk hoofdstuk, bij 10, 15 en 20 vragen, vijf rondes per combinatie. Per vraag
 controleert hij onder meer dat er vier verschillende keuzes zijn met precies een juist
 antwoord, dat een vraag niet twee keer in dezelfde toets voorkomt, dat de invulvakjes samen
