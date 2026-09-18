@@ -29,8 +29,8 @@ zit moet de kwartieren immers nog kunnen oefenen.
 - een spel zonder iets voor het gekozen niveau staat niet op het startscherm
 - een kind dat vooruit wil, zet het leerjaar een stapje hoger
 
-Vandaag zitten er 62 hoofdstukken in: 15 in het eerste leerjaar, 21 in het tweede, 26 in het
-derde. Een kind in het derde heeft er dus 62 te oefenen, een kind in het eerste 15. Het
+Vandaag zitten er 71 hoofdstukken in: 15 in het eerste leerjaar, 30 in het tweede, 26 in het
+derde. Een kind in het derde heeft er dus 71 te oefenen, een kind in het eerste 15. Het
 vierde tot zesde leerjaar voegen nog niets toe.
 
 ## De spellen
