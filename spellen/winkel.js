@@ -122,6 +122,8 @@ export default {
       badge: 'moeilijk', bron: [5, 10, 20, 50, 100, 200], min: 2, max: 4, plan: { wissel: 10 } },
     { leerjaar: 2, ico: '❓', titel: 'Welke munt ontbreekt', tekst: 'Er is nog een muntje nodig. Welk?',
       badge: 'gemiddeld', bron: [5, 10, 20, 50, 100, 200], min: 2, max: 3, plan: { ontbreekt: 10 } },
+    { leerjaar: 2, ico: '🏆', titel: 'Het eerste winkelexamen', tekst: 'Tellen en het ontbrekende muntje door elkaar.',
+      badge: 'gemiddeld', bron: [5, 10, 20, 50, 100, 200], min: 3, max: 5, plan: { tellen: 6, ontbreekt: 4 } },
     { leerjaar: 3, ico: '⌨️', titel: 'Aan de kassa', tekst: 'Typ zelf het bedrag in: euro’s en centen.',
       badge: 'gemiddeld', bron: [5, 10, 20, 50, 100, 200], min: 3, max: 5, plan: { typ: 10 } },
     { leerjaar: 3, ico: '🏆', titel: 'Het grote winkelexamen', tekst: 'Tellen, wisselen en typen door elkaar.',
