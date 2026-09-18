@@ -122,6 +122,23 @@ import { keuzes, vulAan, positief, vulRondom, andere } from '../gereedschap.js';
           n + '</div>';
       }).join('<span style="font-size:28px;color:var(--ink-soft);align-self:center">→</span>') + '</div>';
   }
+  /* --------- leerjaar 4: cijferend rekenen tot 10 000 --------- */
+
+  // twee getallen in kolomvorm, rechts uitgelijnd zoals op papier. Geen tussenstapjes: die
+  // rekent het kind zelf uit, dit toont enkel de opstelling zoals in het schrift
+  function kolom(a, b, teken) {
+    return '<div style="font-family:\'Courier New\',monospace;font-size:26px;color:var(--ink);' +
+      'background:var(--card-2);border-radius:14px;padding:14px 22px;display:inline-block;text-align:right">' +
+      '<div>' + a + '</div><div>' + teken + ' ' + b + '</div>' +
+      '<div style="border-top:3px solid var(--ink-soft);margin-top:6px;padding-top:6px">&nbsp;</div></div>';
+  }
+  function afleidersCijfer(juist, kern) {
+    var lijst = [];
+    vulAan(lijst, juist, kern, positief);
+    vulRondom(lijst, juist, Math.max(1, Math.round(juist / 50)), positief);
+    return lijst.slice(0, 3);
+  }
+
   function getalTegel(n) {
     return '<div style="display:flex;align-items:center;justify-content:center;font-family:Fredoka,sans-serif;' +
       'font-size:56px;color:var(--ink);background:var(--card-2);border-radius:20px;width:112px;height:112px;margin:0 auto">' +
@@ -186,7 +203,19 @@ export default {
     { leerjaar: 3, ico: '⌨️', titel: 'Zelf uitrekenen', tekst: 'Geen keuzes. Typ het antwoord zelf in.',
       badge: 'moeilijk', tot: 1000, plus: true, stap: [3, 9], tientallen: true, plan: { typ: 10 } },
     { leerjaar: 3, ico: '🏆', titel: 'Het grote rekenexamen', tekst: 'Erbij, eraf en het gat door elkaar.',
-      badge: 'moeilijk', tot: 1000, plus: true, stap: [3, 9], tientallen: true, plan: { som: 5, gat: 3, typ: 2 } }
+      badge: 'moeilijk', tot: 1000, plus: true, stap: [3, 9], tientallen: true, plan: { som: 5, gat: 3, typ: 2 } },
+    { leerjaar: 4, ico: '🔟', titel: 'Getallen tot 10 000', tekst: '4725 is 4 duizendtallen en 7 honderdtallen.',
+      badge: 'gemiddeld', plan: { duizendtal: 5, honderdtal: 5 } },
+    { leerjaar: 4, ico: '➕', titel: 'Cijferend optellen', tekst: 'Twee getallen onder elkaar zetten en optellen.',
+      badge: 'gemiddeld', plan: { cijferPlus: 10 } },
+    { leerjaar: 4, ico: '➖', titel: 'Cijferend aftrekken', tekst: 'Twee getallen onder elkaar zetten en aftrekken.',
+      badge: 'gemiddeld', plan: { cijferMin: 10 } },
+    { leerjaar: 4, ico: '✖️', titel: 'Cijferend vermenigvuldigen', tekst: 'Een getal keer een cijfer, onder elkaar.',
+      badge: 'moeilijk', plan: { cijferKeer: 10 } },
+    { leerjaar: 4, ico: '➗', titel: 'Cijferend delen', tekst: 'Een getal delen door een cijfer, zonder rest.',
+      badge: 'moeilijk', plan: { cijferDelen: 10 } },
+    { leerjaar: 4, ico: '🏆', titel: 'Het derde rekenexamen', tekst: 'Duizendtallen en cijferend rekenen door elkaar.',
+      badge: 'moeilijk', plan: { duizendtal: 2, cijferPlus: 2, cijferMin: 2, cijferKeer: 2, cijferDelen: 2 } }
   ],
   zaadjes: function (soort, h) {
     var uit = [], a, b;
@@ -238,6 +267,35 @@ export default {
         for (var groep = 1; groep <= 90; groep += 10) uit.push({ even: isEven, groep: groep });
       });
       return uit;
+    }
+    if (soort === 'duizendtal' || soort === 'honderdtal') {
+      var uit5 = [];
+      for (var duizend = 1000; duizend <= 9999; duizend += 3) uit5.push({ n: duizend });
+      return uit5;
+    }
+    if (soort === 'cijferPlus') {
+      var uit6 = [];
+      for (var pa = 1000; pa <= 9800; pa += 37) uit6.push({ a: pa, b: 100 + (pa % 800) });
+      return uit6;
+    }
+    if (soort === 'cijferMin') {
+      var uit7 = [];
+      for (var ma = 1200; ma <= 9900; ma += 37) uit7.push({ a: ma, b: 100 + (ma % 900) });
+      return uit7;
+    }
+    if (soort === 'cijferKeer') {
+      var uit8 = [];
+      for (var ka = 12; ka <= 900; ka += 7) {
+        for (var kb = 2; kb <= 9; kb++) uit8.push({ a: ka, b: kb });
+      }
+      return uit8;
+    }
+    if (soort === 'cijferDelen') {
+      var uit9 = [];
+      for (var quot = 12; quot <= 900; quot += 7) {
+        for (var deler = 2; deler <= 9; deler++) uit9.push({ quot: quot, deler: deler });
+      }
+      return uit9;
     }
     if (soort === 'omgekeerd') {
       for (var oa = 1; oa <= 9; oa++) {
@@ -291,6 +349,35 @@ export default {
       var ans3 = ORDINALEN[z.plek], sl4 = 'rang|' + z.lengte + ':' + z.plek;
       return { soort: soort, sleutel: sl4, lengte: z.lengte, plek: z.plek, ans: ans3,
         options: keuzes(ans3, andere(ORDINALEN.slice(0, Math.max(z.lengte, 4)), ans3, 3)) };
+    }
+    if (soort === 'duizendtal' || soort === 'honderdtal') {
+      var duiz = Math.floor(z.n / 1000), hond = Math.floor((z.n % 1000) / 100);
+      var juist4 = soort === 'duizendtal' ? duiz : hond;
+      var kern4 = [juist4 + 1, juist4 - 1, juist4 + 2, soort === 'duizendtal' ? hond : duiz];
+      var fout10 = [];
+      vulAan(fout10, juist4, kern4, function (k) { return k >= 0 && k <= 9; });
+      vulRondom(fout10, juist4, 1, function (k) { return k >= 0 && k <= 9; });
+      return { soort: soort, sleutel: soort + '|' + z.n, n: z.n, duiz: duiz, hond: hond, ans: String(juist4),
+        options: keuzes(juist4, fout10.slice(0, 3)) };
+    }
+    if (soort === 'cijferPlus' || soort === 'cijferMin') {
+      var uitk = soort === 'cijferPlus' ? z.a + z.b : z.a - z.b;
+      var kern5 = soort === 'cijferPlus'
+        ? [z.a - z.b, uitk + 10, uitk - 10, uitk + 100]
+        : [z.a + z.b, uitk + 10, uitk - 10, uitk + 100];
+      return { soort: soort, sleutel: soort + '|' + z.a + ':' + z.b, a: z.a, b: z.b, ans: String(uitk),
+        options: keuzes(uitk, afleidersCijfer(uitk, kern5)) };
+    }
+    if (soort === 'cijferKeer') {
+      var prod = z.a * z.b, kern6 = [z.a + z.b, prod + z.a, prod - z.a, prod + z.b];
+      return { soort: soort, sleutel: 'cijferKeer|' + z.a + ':' + z.b, a: z.a, b: z.b, ans: String(prod),
+        options: keuzes(prod, afleidersCijfer(prod, kern6)) };
+    }
+    if (soort === 'cijferDelen') {
+      var deeltal = z.quot * z.deler;
+      var kern7 = [z.quot + 1, z.quot - 1, z.quot + z.deler, z.deler];
+      return { soort: soort, sleutel: 'cijferDelen|' + deeltal + ':' + z.deler, deeltal: deeltal, deler: z.deler,
+        ans: String(z.quot), options: keuzes(z.quot, afleidersCijfer(z.quot, kern7)) };
     }
     if (soort === 'tientallen' || soort === 'eenheden') {
       var tal = Math.floor(z.n / 10), eenh = z.n % 10, juist2 = soort === 'tientallen' ? tal : eenh;
@@ -364,6 +451,11 @@ export default {
     if (v.soort === 'volgend' || v.soort === 'tientallen' || v.soort === 'eenheden' || v.soort === 'dubbel' ||
         v.soort === 'helft') return getalTegel(v.n);
     if (v.soort === 'rang') return rijTekening(v.lengte, v.plek);
+    if (v.soort === 'duizendtal' || v.soort === 'honderdtal') return getalTegel(v.n);
+    if (v.soort === 'cijferPlus') return kolom(v.a, v.b, '+');
+    if (v.soort === 'cijferMin') return kolom(v.a, v.b, '−');
+    if (v.soort === 'cijferKeer') return kolom(v.a, v.b, '×');
+    if (v.soort === 'cijferDelen') return kolom(v.deeltal, v.deler, ':');
     if (v.soort === 'paar' || v.soort === 'omgekeerd') return '';
     return lijn(v.a, v.b, v.plus, v.soort !== 'gat');
   },
@@ -373,7 +465,9 @@ export default {
       return v.vraagTotaal ? '? = ' + v.a + ' + ' + v.b : v.uit + ' = ' + v.a + ' + ?';
     }
     if (v.soort === 'volgend' || v.soort === 'rang' || v.soort === 'tientallen' ||
-        v.soort === 'eenheden' || v.soort === 'dubbel' || v.soort === 'helft' || v.soort === 'paar') return null;
+        v.soort === 'eenheden' || v.soort === 'dubbel' || v.soort === 'helft' || v.soort === 'paar' ||
+        v.soort === 'duizendtal' || v.soort === 'honderdtal' || v.soort === 'cijferPlus' ||
+        v.soort === 'cijferMin' || v.soort === 'cijferKeer' || v.soort === 'cijferDelen') return null;
     var teken = v.plus ? ' + ' : ' − ';
     if (v.soort === 'gat') return v.a + teken + '? = ' + v.uit;
     return v.a + teken + v.b;
@@ -392,6 +486,12 @@ export default {
     if (v.soort === 'helft') return { titel: kop + 'wat is de helft van ' + v.n + '?', sub: 'Verdeel in twee gelijke stukken.' };
     if (v.soort === 'paar') return { titel: kop + 'welk van deze vier getallen is ' + (v.even ? 'even' : 'oneven') + '?', sub: 'Even kan je door twee delen, zonder rest.' };
     if (v.soort === 'omgekeerd') return { titel: kop + 'welk getal ontbreekt?', sub: 'Het is-gelijk-teken werkt ook van rechts naar links.' };
+    if (v.soort === 'duizendtal') return { titel: kop + 'hoeveel duizendtallen zitten er in ' + v.n + '?', sub: v.n + ' = ? duizendtallen, ' + v.hond + ' honderdtallen, ...' };
+    if (v.soort === 'honderdtal') return { titel: kop + 'hoeveel honderdtallen zitten er in ' + v.n + '?', sub: v.n + ' = ' + v.duiz + ' duizendtallen, ? honderdtallen, ...' };
+    if (v.soort === 'cijferPlus') return { titel: kop + 'hoeveel is ' + v.a + ' plus ' + v.b + '?', sub: 'Zet ze onder elkaar.' };
+    if (v.soort === 'cijferMin') return { titel: kop + 'hoeveel is ' + v.a + ' min ' + v.b + '?', sub: 'Zet ze onder elkaar.' };
+    if (v.soort === 'cijferKeer') return { titel: kop + 'hoeveel is ' + v.a + ' keer ' + v.b + '?', sub: 'Vermenigvuldig cijfer per cijfer.' };
+    if (v.soort === 'cijferDelen') return { titel: kop + 'hoeveel is ' + v.deeltal + ' gedeeld door ' + v.deler + '?', sub: 'Zonder rest.' };
     if (v.soort === 'gat') return { titel: kop + 'welk getal ontbreekt?', sub: 'Hoe groot is de sprong?' };
     if (v.soort === 'typ') return { titel: kop + 'hoeveel is ' + v.a + (v.plus ? ' plus ' : ' min ') + v.b + '?', sub: 'Typ alleen het getal.' };
     return { titel: kop + 'hoeveel is ' + v.a + (v.plus ? ' plus ' : ' min ') + v.b + '?' };
@@ -402,6 +502,11 @@ export default {
       return v.richting === 'na' ? 'Na ' + v.n + ' komt ' + (v.n + 1) + '.' : 'Voor ' + v.n + ' komt ' + (v.n - 1) + '.';
     }
     if (v.soort === 'rang') return 'Het dier met het randje staat op de ' + v.ans + ' plaats.';
+    if (v.soort === 'duizendtal' || v.soort === 'honderdtal') return v.n + ' bestaat uit ' + v.duiz + ' duizendtallen, ' + v.hond + ' honderdtallen en de rest.';
+    if (v.soort === 'cijferPlus') return v.a + ' + ' + v.b + ' = ' + (v.a + v.b) + '.';
+    if (v.soort === 'cijferMin') return v.a + ' − ' + v.b + ' = ' + (v.a - v.b) + '.';
+    if (v.soort === 'cijferKeer') return v.a + ' × ' + v.b + ' = ' + (v.a * v.b) + '.';
+    if (v.soort === 'cijferDelen') return v.deeltal + ' : ' + v.deler + ' = ' + v.ans + ', want ' + v.ans + ' × ' + v.deler + ' = ' + v.deeltal + '.';
     if (v.soort === 'tientallen') return v.n + ' bestaat uit ' + v.tal + ' tientallen en ' + v.eenh + ' eenheden.';
     if (v.soort === 'eenheden') return v.n + ' bestaat uit ' + v.tal + ' tientallen en ' + v.eenh + ' eenheden.';
     if (v.soort === 'dubbel') return 'Het dubbele van ' + v.n + ' is ' + (v.n * 2) + ': ' + v.n + ' + ' + v.n + '.';
@@ -425,6 +530,12 @@ export default {
     if (v.soort === 'splits') return v.deel1 + ' + ? = ' + v.totaal;
     if (v.soort === 'volgend') return 'Wat komt ' + v.richting + ' ' + v.n + '?';
     if (v.soort === 'rang') return 'Welke plaats heeft het gemarkeerde dier?';
+    if (v.soort === 'duizendtal') return 'Duizendtallen in ' + v.n;
+    if (v.soort === 'honderdtal') return 'Honderdtallen in ' + v.n;
+    if (v.soort === 'cijferPlus') return v.a + ' + ' + v.b;
+    if (v.soort === 'cijferMin') return v.a + ' − ' + v.b;
+    if (v.soort === 'cijferKeer') return v.a + ' × ' + v.b;
+    if (v.soort === 'cijferDelen') return v.deeltal + ' : ' + v.deler;
     if (v.soort === 'tientallen') return 'Tientallen in ' + v.n;
     if (v.soort === 'eenheden') return 'Eenheden in ' + v.n;
     if (v.soort === 'dubbel') return 'Het dubbele van ' + v.n;
