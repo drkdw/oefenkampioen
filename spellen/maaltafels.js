@@ -2,7 +2,9 @@ import { keuzes, vulAan, positief, reduced } from '../gereedschap.js';
 
   // de maaltafels van het lager onderwijs lopen van 1 tot 10
   var MAX = 10;
-  var ALLE_TAFELS = [2, 3, 4, 5, 6, 7, 8, 9, 10];
+  var ALLE_TAFELS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  // de tafels van het tweede leerjaar; de rest komt in het derde
+  var KLEINE_TAFELS = [1, 2, 3, 4, 5, 10];
   function omgekeerd(p) { return Number(String(p).split('').reverse().join('')); }
   function som(v) {
     if (v.soort === 'delen') return v.p + ' : ' + v.a;
@@ -72,6 +74,12 @@ export default {
       badge: 'makkelijk', tafels: [2, 5, 10], plan: { keer: 10 } },
     { leerjaar: 2, ico: '🐥', titel: 'Tafels van 3 en 4', tekst: 'Drie en vier erbij.',
       badge: 'makkelijk', tafels: [3, 4], plan: { keer: 10 } },
+    { leerjaar: 2, ico: '🐰', titel: 'Het gat in de kleine tafels', tekst: '4 × ? = 20. Welk getal ontbreekt?',
+      badge: 'gemiddeld', tafels: KLEINE_TAFELS, plan: { ontbreekt: 10 } },
+    { leerjaar: 2, ico: '🍪', titel: 'Delen door 2, 3, 4, 5 en 10', tekst: '20 : 4. De kleine tafels achterstevoren.',
+      badge: 'gemiddeld', tafels: KLEINE_TAFELS, plan: { delen: 10 } },
+    { leerjaar: 2, ico: '🥇', titel: 'Het kleine monsterexamen', tekst: 'De kleine tafels door elkaar.',
+      badge: 'gemiddeld', tafels: KLEINE_TAFELS, plan: { keer: 5, ontbreekt: 3, delen: 2 } },
     { leerjaar: 3, ico: '🦊', titel: 'Tafels van 6, 7, 8 en 9', tekst: 'De lastigste monsters van allemaal.',
       badge: 'gemiddeld', tafels: [6, 7, 8, 9], plan: { keer: 10 } },
     { leerjaar: 3, ico: '🔁', titel: 'Het gat in het monster', tekst: '6 × ? = 42. Welk getal ontbreekt?',
