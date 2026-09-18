@@ -325,16 +325,27 @@ werken, in plaats van er een tweede mechanisme naast te zetten. Maaltafels blijf
 tafel: het officiële leerplan houdt het eerste leerjaar bij optellen en aftrekken tot 20, de
 tafels starten pas in het tweede.
 
-### Leerjaar 2
+### Leerjaar 2 — gebouwd (stap 2), op één punt na
 
 | doel | spel |
 | --- | --- |
-| getalbegrip tot 100 | rekenen |
-| verdubbelen en halveren | rekenen |
-| even en oneven | rekenen |
-| het gelijkheidsteken in beide richtingen | rekenen |
+| **gebouwd:** getalbegrip tot 100, tientallen en eenheden | rekenen |
+| **gebouwd:** verdubbelen en halveren | rekenen |
+| **gebouwd:** even en oneven | rekenen |
+| **gebouwd:** het gelijkheidsteken in beide richtingen | rekenen |
 | **gebouwd:** tafels 1, 2, 3, 4, 5, 10 met de ontbrekende factor en delen | maaltafels |
-| liter | maten |
+| **liter, nog niet gebouwd** | maten |
+
+Vijf spellen hadden na deze doelen drie of meer hoofdstukken op leerjaar 2 staan zonder een
+eigen examen: Klokkijken, Het winkeltje, Meten en wegen, Bruggen bouwen en Spiegelen. Elk kreeg
+er een, mixend wat er al stond; Maaltafels had dat examen al uit stap 1.
+
+**Liter blijft open.** De bestaande `DINGEN`-lijst in `maten.js` leent zich niet goed voor een
+leerjaar-2 "hoeveel liter, ruwweg" vraag: de inhoudsvoorwerpen zijn milliliters (een lepel
+siroop, een glas melk) of duizenden liters (een zwembad), niets in het bereik van 1 tot 10 liter
+waar een kind van zeven een gevoel bij kan vormen. Dat vraagt een eigen, kleine set voorwerpen,
+niet een uitbreiding van de bestaande. Op te nemen bij een volgende stap, niet stilzwijgend
+weggelaten.
 
 ### Leerjaar 3
 
@@ -407,7 +418,7 @@ Samen ongeveer vijftig nieuwe hoofdstukken bovenop de zevenenveertig die er staa
 | 0a | `leerjaar` op de 47 bestaande hoofdstukken, de keuzerij op het startscherm, cumulatief filteren, sortering van de spelkaarten. Nog in het ene bestand. | **gebouwd** |
 | 0b | opsplitsen in modules, jasjes in het chassis | **gebouwd** |
 | 1 | leerjaar 1 volledig | **gebouwd**: 15 hoofdstukken, 930 toetsen, nul fouten |
-| 2 | leerjaar 2 volledig, met een eigen examen zodra een spel er drie of meer hoofdstukken heeft | nog te doen |
+| 2 | leerjaar 2, op de liter na (zie sectie 9) | **gebouwd**: 30 hoofdstukken, 1065 toetsen, nul fouten |
 | 3 | leerjaar 3 afwerken | nog te doen |
 | 4 | leerjaar 4 | nog te doen |
 | 5 | leerjaar 5 | nog te doen |
@@ -432,6 +443,11 @@ ving of had moeten vangen: een vergeten `andere`-import, een `scherm()` die lett
 omdat een bewerkingsscript halverwege faalde voor het kon schrijven. Reken voor stap 2 tot 6 op
 een halve tot hele dag per leerjaar, met dezelfde soort correcties onderweg als vaste kost, niet
 als uitzondering.
+
+Stap 2 kostte minder correctiewerk: één echte fout (het is-gelijk-teken achterstevoren had geen
+vangnet voor kleine getallen zoals 1 + 1, waar te weinig foute keuzes overbleven na het
+weghalen van dubbels), gevangen door precies de "vier keuzes"-controle die al bestond. Geen
+curriculumcorrecties deze keer, wel één bewuste omissie: de liter (zie sectie 9).
 
 ## 11. Buiten scope
 
