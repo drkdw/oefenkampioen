@@ -189,6 +189,10 @@ De marge is klein, dus het vangnet in `maakVraag` doet echt werk en moet correct
 
 ## 6. Doelen als data
 
+**Uitgesteld, zie sectie 10.** `doelen.js` is niet gebouwd; stap 1 gebruikte de doelenlijsten in
+sectie 9 zelf als checklist. Dit blijft staan als het ontwerp voor wanneer een geautomatiseerde
+dekkingscheck de moeite wordt.
+
 `doelen.js` bevat de leerplandoelen per leerjaar, als korte handvatten:
 
 ```js
@@ -211,14 +215,19 @@ ontbrekende dekking apart van de fouten, zodat de teller op nul kan blijven.
 
 ## 7. Zelfcheck
 
-Blijft op `#test`, en groeit van 705 naar ongeveer 2500 toetsen. Vijf controles komen erbij:
+Blijft op `#test`. Bij stap 1 gebouwd, op vier van de vijf oorspronkelijk geplande controles na
+`doelen` (uitgesteld, zie sectie 6):
 
 1. `leerjaar` is een geheel getal van 1 tot 6
-2. elk doel dat een hoofdstuk noemt, bestaat in `DOELEN`
-3. elke soort heeft minstens één jasje, en jasjes zijn onderling verschillend
-4. een jasje verandert het antwoord van een zaadje niet: voor elk zaadje wordt elke jasje
+2. elke soort heeft minstens één jasje, en jasjes zijn onderling verschillend
+3. een jasje verandert het antwoord van een zaadje niet: voor elk zaadje wordt elke jasje
    gemaakt en `v.ans` vergeleken
-5. de voorraad zaadjes is nooit nul
+4. de voorraad zaadjes is nooit nul
+
+Daarbovenop, gevonden tijdens het bouwen van leerjaar 1, niet in het oorspronkelijke ontwerp: ook
+`scherm(v)` wordt op `undefined` gecontroleerd. Die stond niet in de lijst van acht verplichte
+velden en werd nergens getest, tot een vergeten geval de tekst "undefined undefined = ?
+undefined" toonde. Zie sectie 12 voor de rest van wat er onderweg misging.
 
 Controle 4 is het mechanische slot op de regel uit sectie 5. Daarmee kan die fout niet stil
 terugkomen.
@@ -295,19 +304,26 @@ Dat leerjaar 1 zo dun is, is precies waarom het als eerste wordt aangevuld.
 
 Nieuwe hoofdstukken per leerjaar, met het spel waar ze in komen.
 
-### Leerjaar 1
+### Leerjaar 1 — gebouwd (stap 1)
 
 | doel | spel |
 | --- | --- |
-| getalbegrip tot 20, doortellen en terugtellen | rekenen |
-| splitsen tot 10 | rekenen |
-| erbij en eraf tot 10 | rekenen |
-| erbij en eraf tot 20 zonder brug | rekenen |
-| rangtelwoorden | rekenen |
-| munten en biljetten herkennen | winkel (bestaat deels) |
-| vergelijken zonder eenheden: langer, korter, zwaarder, lichter | maten |
-| vlakke vormen herkennen | spiegelen |
-| links, rechts, boven, onder | spiegelen |
+| **gebouwd:** splitsen tot 10, met een tienraam | rekenen |
+| **gebouwd:** erbij en eraf tot 10, en tot 20 zonder brug | rekenen |
+| **gebouwd:** erbij en eraf tot 20, met de brug over het tiental | rekenen |
+| **gebouwd:** doortellen, terugtellen en rangtelwoorden | rekenen |
+| **gebouwd:** een munt of biljet herkennen | winkel |
+| **gebouwd:** vergelijken zonder eenheden: langer, korter, zwaarder, lichter, meer, minder | maten |
+| **gebouwd:** vlakke vormen herkennen | spiegelen |
+| **gebouwd:** links, rechts, boven, onder | spiegelen |
+| **gebouwd:** voorbereidend sprongen tellen van 2, 5 en 10, nog geen tafel | maaltafels |
+
+De brug tot 20 bleek bij nader nazicht vaste leerstof van het eerste leerjaar in Vlaanderen, niet
+een opwarmertje voor het tweede zoals eerst aangenomen: dat is verwerkt door de bestaande
+brugmachine (`sprong`/`lijn`, al gebruikt voor Tot 100 en Tot 1000) ook voor `h.tot = 20` te laten
+werken, in plaats van er een tweede mechanisme naast te zetten. Maaltafels blijft zonder enige
+tafel: het officiële leerplan houdt het eerste leerjaar bij optellen en aftrekken tot 20, de
+tafels starten pas in het tweede.
 
 ### Leerjaar 2
 
@@ -386,28 +402,36 @@ Samen ongeveer vijftig nieuwe hoofdstukken bovenop de zevenenveertig die er staa
 
 ## 10. Bouwvolgorde en acceptatie per stap
 
-| stap | wat | acceptatiecriterium |
+| stap | wat | status |
 | --- | --- | --- |
-| 0a | `leerjaar` op de 47 bestaande hoofdstukken, de keuzerij op het startscherm, cumulatief filteren, sortering van de spelkaarten. Nog in het ene bestand. | de zelfcheck rekent exact 705 toetsen door met nul fouten, en logt de verdeling 3 / 18 / 26 |
-| 0b | opsplitsen in modules, jasjes in het chassis, `doelen` op elk hoofdstuk, `doelen.js` met alle zes leerjaren | nul fouten, en de zelfcheck meldt de ontbrekende dekking per leerjaar |
-| 1 | leerjaar 1 volledig, met een eigen examen per spel dat er drie of meer hoofdstukken heeft | nul fouten, en geen ontbrekende doelen meer voor leerjaar 1 |
-| 2 | leerjaar 2 volledig | nul fouten, geen ontbrekende doelen voor leerjaar 2 |
-| 3 | leerjaar 3 afwerken | nul fouten, geen ontbrekende doelen voor leerjaar 3 |
-| 4 | leerjaar 4 | nul fouten, geen ontbrekende doelen voor leerjaar 4 |
-| 5 | leerjaar 5 | nul fouten, geen ontbrekende doelen voor leerjaar 5 |
-| 6 | leerjaar 6 | nul fouten, geen ontbrekende doelen voor leerjaar 6 |
+| 0a | `leerjaar` op de 47 bestaande hoofdstukken, de keuzerij op het startscherm, cumulatief filteren, sortering van de spelkaarten. Nog in het ene bestand. | **gebouwd** |
+| 0b | opsplitsen in modules, jasjes in het chassis | **gebouwd** |
+| 1 | leerjaar 1 volledig | **gebouwd**: 15 hoofdstukken, 930 toetsen, nul fouten |
+| 2 | leerjaar 2 volledig, met een eigen examen zodra een spel er drie of meer hoofdstukken heeft | nog te doen |
+| 3 | leerjaar 3 afwerken | nog te doen |
+| 4 | leerjaar 4 | nog te doen |
+| 5 | leerjaar 5 | nog te doen |
+| 6 | leerjaar 6 | nog te doen |
+
+`doelen.js` en het `doelen`-veld per hoofdstuk, oorspronkelijk bij 0b gepland, zijn niet gebouwd.
+De vervanging: de doelenlijsten uit sectie 9 van dit document zelf zijn de checklist geweest voor
+stap 1, hoofdstuk per hoofdstuk afgevinkt. Dat werkt zolang één persoon bouwt en leest; een
+geautomatiseerde dekkingscheck wordt pas de moeite waard als er meerdere mensen tegelijk aan
+leerjaren werken, of als het uit het oog verliezen van een doel al eens gebeurd is. Tot dan is
+het bewust weggelaten, niet vergeten.
 
 Stap 0a en 0b zijn de enige stappen die bestaande code aanraken, en ze veranderen bewust geen
-enkel hoofdstuk van inhoud. Dat de zelfcheck daarna nog exact 705 toetsen doorrekent, en niet 704
-of 706, is het bewijs dat er geen hoofdstuk verschoven, verdwenen of bijgekomen is.
+enkel hoofdstuk van inhoud.
 
-0a gaat voor 0b omdat 0a het enige zichtbare deel is: je kan er meteen in klikken en zien of de
-indeling klopt, voordat er onzichtbaar werk in gaat.
+Elke stap krijgt zijn eigen commits en wordt afzonderlijk getest.
 
-Elke stap krijgt zijn eigen implementatieplan, wordt afzonderlijk getest en afzonderlijk gecommit.
-
-Inschatting: stap 0a, 0b en 1 samen ongeveer een dag. Stap 2 tot 6 elk een halve tot hele dag,
-afhankelijk van het tekenwerk. Oppervlakte, volume en diagrammen zijn het meeste werk.
+Wat stap 1 werkelijk kostte: twee curriculumcorrecties onderweg (de brug tot 20 is vaste leerstof
+van het eerste leerjaar, geen tafels in het eerste leerjaar) en drie echte fouten die de zelfcheck
+ving of had moeten vangen: een vergeten `andere`-import, een `scherm()` die letterlijk
+"undefined" toonde (zie sectie 7, de check die dat nu vangt), en een eerdere fix die verloren ging
+omdat een bewerkingsscript halverwege faalde voor het kon schrijven. Reken voor stap 2 tot 6 op
+een halve tot hele dag per leerjaar, met dezelfde soort correcties onderweg als vaste kost, niet
+als uitzondering.
 
 ## 11. Buiten scope
 
@@ -428,3 +452,5 @@ afhankelijk van het tekenwerk. Oppervlakte, volume en diagrammen zijn het meeste
 | een jasje blijkt toch moeilijker dan het doel | een kind krijgt een vraag boven zijn niveau | controle 4 van de zelfcheck vergelijkt het antwoord over alle jasjes |
 | te weinig zaadjes in de kleinste hoofdstukken | herhaling wordt zichtbaar | rondes met opnieuw geschudde jasjes; de voorraad per hoofdstuk staat in het plan van elke stap |
 | de zelfcheck wordt te traag om nog te draaien | de controle wordt overgeslagen | bij 705 toetsen is hij vrijwel instant; blijkt 2500 te traag, dan krijgt hij een filter per leerjaar (`#test=3`) |
+| tijdens lokaal testen blijft de browser een oud bestand cachen | een fix lijkt niet aan te slaan, tijdverlies bij het uitsluiten van echte bugs | de dev-server op poort 8766 stuurt `Cache-Control: no-store`; gebruik die in plaats van 8765 |
+| een bewerkingsscript faalt halverwege, na een eerdere geslaagde stap in dat script | die eerdere stap gaat mee verloren, want er wordt pas op het einde geschreven | elke wijziging in één stap per schrijfactie, of controleer met `git diff` voor het volgende script start |

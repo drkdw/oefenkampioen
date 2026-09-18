@@ -24,12 +24,13 @@ Een leerjaar is cumulatief. Kies je het derde, dan zie je alles tot en met het d
 uren van het eerste, de kwartieren van het tweede en de tijdsduur van het derde. Wie in het derde
 zit moet de kwartieren immers nog kunnen oefenen.
 
-- binnen een spel is het één vlakke lijst, je hoeft het leerjaar niet nog eens te kiezen
-- spellen met hoofdstukken voor dat niveau komen bovenaan, de rest zakt eronder en blijft aantikbaar
+- binnen een spel is het één vlakke lijst, met een kopje tussen de leerjaren als de lijst er meer
+  dan één bevat; je hoeft het leerjaar niet nog eens te kiezen
+- een spel zonder iets voor het gekozen niveau staat niet op het startscherm
 - een kind dat vooruit wil, zet het leerjaar een stapje hoger
 
-Vandaag zitten er 47 hoofdstukken in: 3 nieuw in het eerste leerjaar, 18 in het tweede, 26 in het
-derde. Een kind in het derde heeft er dus 47 te oefenen, een kind in het eerste maar 3. Het
+Vandaag zitten er 62 hoofdstukken in: 15 in het eerste leerjaar, 21 in het tweede, 26 in het
+derde. Een kind in het derde heeft er dus 62 te oefenen, een kind in het eerste 15. Het
 vierde tot zesde leerjaar voegen nog niets toe. Het plan om die te vullen staat in
 `docs/superpowers/specs/2026-09-18-leerjaren-design.md`.
 
