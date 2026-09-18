@@ -78,17 +78,25 @@ Het leerjaar staat op het hoofdstuk, niet op het spel: een spel loopt over meerd
 
 ### Op het scherm
 
-- De spelkeuze blijft zoals ze is: tien kaarten. Op elke kaart komt één regel bij die zegt welke
-  leerjaren dat spel dekt, bijvoorbeeld *leerjaar 1 tot 4*, afgeleid uit de hoofdstukken.
+- Op het startscherm komt een rij **Welk leerjaar?** met de knoppen 1 tot 6, dezelfde
+  knoppenrij als "Hoeveel vragen?". Het is een voorkeur, geen slot: alle zes blijven altijd
+  bereikbaar. De keuze wordt bewaard onder `oefenkampioen-leerjaar`, standaard 3 zolang de
+  andere jaren nog leeg zijn.
+- De spelkaarten met hoofdstukken voor het gekozen jaar komen bovenaan; de rest zakt eronder,
+  blijft aantikbaar, en krijgt de regel *nog niets voor het 1ste leerjaar, wel leerjaar 2 tot 3*.
+- Op elke kaart komt één regel bij die zegt welke leerjaren dat spel dekt, bijvoorbeeld
+  *leerjaar 1 tot 4*, afgeleid uit de hoofdstukken.
 - Binnen een spel worden de hoofdstukken gegroepeerd in een `<details>` per leerjaar, met
   `<summary>` "1ste leerjaar" tot "6de leerjaar". Native HTML: open en toe zonder JavaScript,
   werkt met het toetsenbord en met een schermlezer, en er is geen toestand die stuk kan gaan.
 - Leerjaren zonder hoofdstukken voor dat spel worden niet getoond.
-- Het laatst geopende leerjaar wordt bewaard onder `oefenkampioen-leerjaar` en staat de volgende
-  keer meteen open. Zo wordt er een niveau onthouden zonder dat er ooit een keuzescherm bij komt.
-  Is er niets bewaard, dan staat het eerste leerjaar met hoofdstukken open.
+- De groep van het gekozen leerjaar staat al open. Heeft dit spel niets voor dat jaar, dan staat
+  de eerste groep open, zodat een kind nooit op een dichtgeklapte lijst uitkomt.
+- Elke groep toont in de samenvatting hoeveel hoofdstukken erin zitten.
+- Binnen een groep worden de hoofdstukken opnieuw genummerd vanaf 1. De opslagsleutel blijft de
+  index in `hoofdstukken`, dus bestaande beste scores blijven geldig.
 - De opslag gaat, zoals alle opslag in dit project, door een `try`/`catch`: zonder localStorage
-  werkt het spel gewoon verder, dan staat altijd het eerste leerjaar open.
+  werkt het spel gewoon verder, dan staat het derde leerjaar gekozen.
 
 ### Het grote examen
 
@@ -247,7 +255,7 @@ Dit is de volledige tagging voor stap 0. Geen enkel hoofdstuk verandert van inho
 | | Klopt de spiegeling? | 3 |
 | | Het grote spiegelexamen | 3 |
 
-Leerjaar 1 heeft na stap 0 dus drie hoofdstukken, leerjaar 2 zestien, leerjaar 3 achtentwintig.
+Leerjaar 1 heeft na stap 0a dus drie hoofdstukken, leerjaar 2 achttien, leerjaar 3 zesentwintig.
 Dat leerjaar 1 zo dun is, is precies waarom het als eerste wordt aangevuld.
 
 ## 9. Inhoud per leerjaar
@@ -340,7 +348,8 @@ Samen ongeveer vijftig nieuwe hoofdstukken bovenop de zevenenveertig die er staa
 
 | stap | wat | acceptatiecriterium |
 | --- | --- | --- |
-| 0 | opsplitsen in modules, `leerjaar` en `doelen` op de 47 bestaande hoofdstukken, groepering in `<details>`, jasjes in het chassis, `doelen.js` met alle zes leerjaren | de zelfcheck rekent exact 705 toetsen door met nul fouten, en meldt de ontbrekende dekking voor leerjaar 1 tot 6 |
+| 0a | `leerjaar` op de 47 bestaande hoofdstukken, de keuzerij op het startscherm, groepering in `<details>`, sortering van de spelkaarten. Nog in het ene bestand. | de zelfcheck rekent exact 705 toetsen door met nul fouten, en logt de verdeling 3 / 18 / 26 |
+| 0b | opsplitsen in modules, jasjes in het chassis, `doelen` op elk hoofdstuk, `doelen.js` met alle zes leerjaren | nul fouten, en de zelfcheck meldt de ontbrekende dekking per leerjaar |
 | 1 | leerjaar 1 volledig | nul fouten, en geen ontbrekende doelen meer voor leerjaar 1 |
 | 2 | leerjaar 2 volledig | nul fouten, geen ontbrekende doelen voor leerjaar 2 |
 | 3 | leerjaar 3 afwerken | nul fouten, geen ontbrekende doelen voor leerjaar 3 |
@@ -348,13 +357,16 @@ Samen ongeveer vijftig nieuwe hoofdstukken bovenop de zevenenveertig die er staa
 | 5 | leerjaar 5 | nul fouten, geen ontbrekende doelen voor leerjaar 5 |
 | 6 | leerjaar 6 | nul fouten, geen ontbrekende doelen voor leerjaar 6 |
 
-Stap 0 is de enige stap die bestaande code aanraakt, en is bewust een pure verhuizing. Dat de
-zelfcheck daarna nog exact 705 toetsen doorrekent, en niet 704 of 706, is het bewijs dat er geen
-hoofdstuk verschoven, verdwenen of bijgekomen is.
+Stap 0a en 0b zijn de enige stappen die bestaande code aanraken, en ze veranderen bewust geen
+enkel hoofdstuk van inhoud. Dat de zelfcheck daarna nog exact 705 toetsen doorrekent, en niet 704
+of 706, is het bewijs dat er geen hoofdstuk verschoven, verdwenen of bijgekomen is.
+
+0a gaat voor 0b omdat 0a het enige zichtbare deel is: je kan er meteen in klikken en zien of de
+indeling klopt, voordat er onzichtbaar werk in gaat.
 
 Elke stap krijgt zijn eigen implementatieplan, wordt afzonderlijk getest en afzonderlijk gecommit.
 
-Inschatting: stap 0 en 1 samen ongeveer een dag. Stap 2 tot 6 elk een halve tot hele dag,
+Inschatting: stap 0a, 0b en 1 samen ongeveer een dag. Stap 2 tot 6 elk een halve tot hele dag,
 afhankelijk van het tekenwerk. Oppervlakte, volume en diagrammen zijn het meeste werk.
 
 ## 11. Buiten scope
@@ -372,7 +384,7 @@ afhankelijk van het tekenwerk. Oppervlakte, volume en diagrammen zijn het meeste
 | risico | omvang | wat we eraan doen |
 | --- | --- | --- |
 | de dubbelklik verdwijnt door ES-modules | een ouder kan het bestand niet meer lokaal openen | publiceren via GitHub Pages, dan is het een link die overal werkt |
-| stap 0 verschuift stil iets in een bestaand spel | het derde leerjaar gaat achteruit | de zelfcheck moet op exact 705 toetsen en nul fouten blijven |
+| stap 0a of 0b verschuift stil iets in een bestaand spel | het derde leerjaar gaat achteruit | de zelfcheck moet op exact 705 toetsen en nul fouten blijven |
 | een jasje blijkt toch moeilijker dan het doel | een kind krijgt een vraag boven zijn niveau | controle 4 van de zelfcheck vergelijkt het antwoord over alle jasjes |
 | te weinig zaadjes in de kleinste hoofdstukken | herhaling wordt zichtbaar | rondes met opnieuw geschudde jasjes; de voorraad per hoofdstuk staat in het plan van elke stap |
 | de zelfcheck wordt te traag om nog te draaien | de controle wordt overgeslagen | bij 705 toetsen is hij vrijwel instant; blijkt 2500 te traag, dan krijgt hij een filter per leerjaar (`#test=3`) |

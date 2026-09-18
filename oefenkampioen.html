@@ -160,6 +160,24 @@
   .hfd .tekst { flex: 1 1 auto; min-width: 0; }
   .hfd h2 { font-family: Fredoka, sans-serif; font-size: 18px; margin: 0; }
   .hfd p { margin: 2px 0 0; font-size: 14px; color: var(--ink-soft); }
+  .dekking { display: block; margin-top: 3px; font-size: 13px; }
+  /* de hoofdstukken staan per leerjaar gegroepeerd; details klapt open en toe zonder javascript */
+  .jaargroep { border: 3px solid var(--line); border-radius: 22px; background: var(--card-2); }
+  .jaargroep > summary {
+    font-family: Fredoka, sans-serif;
+    font-size: 16px;
+    padding: 12px 16px;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+  .jaargroep > summary::-webkit-details-marker { display: none; }
+  .jaargroep > summary::before { content: '\25B8'; color: var(--ink-soft); }
+  .jaargroep[open] > summary::before { content: '\25BE'; }
+  .jaargroep .hoeveel { margin-left: auto; font-size: 13px; color: var(--ink-soft); }
+  .jaargroep .menu { padding: 0 10px 10px; }
   .badge {
     flex: none;
     font-family: Fredoka, sans-serif;
@@ -438,6 +456,10 @@
       <label for="naam">Hoe heet jij?</label>
       <input id="naam" type="text" maxlength="16" placeholder="Typ je naam" autocomplete="given-name">
     </div>
+    <div class="naamkaart" role="group" aria-label="Leerjaar">
+      <span class="kaartlabel">Welk leerjaar?</span>
+      <span class="aantallen" id="leerjaren"></span>
+    </div>
     <div class="naamkaart" role="group" aria-label="Aantal vragen per toets">
       <span class="kaartlabel">Hoeveel vragen?</span>
       <span class="aantallen" id="aantallen"></span>
@@ -677,19 +699,19 @@
       tekst: 'Hele uren, kwartieren, dagdelen en tijdsduur.',
       top: 'Jij bent een echte klokkenkampioen!',
       hoofdstukken: [
-        { ico: '🐣', titel: 'Hele en halve uren', tekst: 'Vier uur, half vijf. Zo begint het.',
+        { leerjaar: 1, ico: '🐣', titel: 'Hele en halve uren', tekst: 'Vier uur, half vijf. Zo begint het.',
           badge: 'makkelijk', minuten: [0, 30], plan: { tijd: 10 } },
-        { ico: '🐥', titel: 'Kwartieren', tekst: 'Kwart over en kwart voor erbij.',
+        { leerjaar: 2, ico: '🐥', titel: 'Kwartieren', tekst: 'Kwart over en kwart voor erbij.',
           badge: 'makkelijk', minuten: [0, 15, 30, 45], plan: { tijd: 10 } },
-        { ico: '🦊', titel: 'Van vijf tot vijf', tekst: 'Tien over half, vijf voor vier.',
+        { leerjaar: 2, ico: '🦊', titel: 'Van vijf tot vijf', tekst: 'Tien over half, vijf voor vier.',
           badge: 'gemiddeld', minuten: ALLE_MIN, plan: { tijd: 10 } },
-        { ico: '🌙', titel: 'Dag en nacht', tekst: 'Ochtend, voormiddag, middag, namiddag, avond, nacht.',
+        { leerjaar: 2, ico: '🌙', titel: 'Dag en nacht', tekst: 'Ochtend, voormiddag, middag, namiddag, avond, nacht.',
           badge: 'makkelijk', minuten: [0, 30], plan: { dagdeel: 7, tijd: 3 } },
-        { ico: '📱', titel: 'Digitale klok', tekst: 'Lees de gsm, en typ zelf de tijd in.',
+        { leerjaar: 3, ico: '📱', titel: 'Digitale klok', tekst: 'Lees de gsm, en typ zelf de tijd in.',
           badge: 'gemiddeld', minuten: [0, 15, 30, 45], plan: { lezen: 5, digitaal: 5 } },
-        { ico: '⏳', titel: 'Tijd berekenen', tekst: 'Hoe lang duurt het van de ene klok tot de andere?',
+        { leerjaar: 3, ico: '⏳', titel: 'Tijd berekenen', tekst: 'Hoe lang duurt het van de ene klok tot de andere?',
           badge: 'gemiddeld', minuten: [0, 30], plan: { duur: 10 } },
-        { ico: '🏆', titel: 'Het grote examen', tekst: 'Alles door elkaar. Durf je het aan?',
+        { leerjaar: 3, ico: '🏆', titel: 'Het grote examen', tekst: 'Alles door elkaar. Durf je het aan?',
           badge: 'moeilijk', minuten: ALLE_MIN, plan: { tijd: 2, lezen: 2, digitaal: 2, dagdeel: 2, duur: 2 } }
       ],
       zaadjes: function (soort, h) {
@@ -920,19 +942,19 @@
       tekst: 'Vang monsters met de maaltafels, delen en de ontbrekende factor.',
       top: 'Jij bent een echte monstervanger!',
       hoofdstukken: [
-        { ico: '🐣', titel: 'Tafels van 2, 5 en 10', tekst: 'Verdubbelen en tellen met vijf.',
+        { leerjaar: 2, ico: '🐣', titel: 'Tafels van 2, 5 en 10', tekst: 'Verdubbelen en tellen met vijf.',
           badge: 'makkelijk', tafels: [2, 5, 10], plan: { keer: 10 } },
-        { ico: '🐥', titel: 'Tafels van 3 en 4', tekst: 'Drie en vier erbij.',
+        { leerjaar: 2, ico: '🐥', titel: 'Tafels van 3 en 4', tekst: 'Drie en vier erbij.',
           badge: 'makkelijk', tafels: [3, 4], plan: { keer: 10 } },
-        { ico: '🦊', titel: 'Tafels van 6, 7, 8 en 9', tekst: 'De lastigste monsters van allemaal.',
+        { leerjaar: 3, ico: '🦊', titel: 'Tafels van 6, 7, 8 en 9', tekst: 'De lastigste monsters van allemaal.',
           badge: 'gemiddeld', tafels: [6, 7, 8, 9], plan: { keer: 10 } },
-        { ico: '🔁', titel: 'Het gat in het monster', tekst: '6 × ? = 42. Welk getal ontbreekt?',
+        { leerjaar: 3, ico: '🔁', titel: 'Het gat in het monster', tekst: '6 × ? = 42. Welk getal ontbreekt?',
           badge: 'gemiddeld', tafels: ALLE_TAFELS, plan: { ontbreekt: 10 } },
-        { ico: '➗', titel: 'Delen', tekst: '42 : 6. De tafel achterstevoren.',
+        { leerjaar: 3, ico: '➗', titel: 'Delen', tekst: '42 : 6. De tafel achterstevoren.',
           badge: 'gemiddeld', tafels: ALLE_TAFELS, plan: { delen: 10 } },
-        { ico: '👾', titel: 'Monsterjacht', tekst: 'Geen keuzes. Typ zelf het antwoord in.',
+        { leerjaar: 3, ico: '👾', titel: 'Monsterjacht', tekst: 'Geen keuzes. Typ zelf het antwoord in.',
           badge: 'gemiddeld', tafels: ALLE_TAFELS, plan: { typ: 10 } },
-        { ico: '🏆', titel: 'Het grote monsterexamen', tekst: 'Alles door elkaar. Durf je het aan?',
+        { leerjaar: 3, ico: '🏆', titel: 'Het grote monsterexamen', tekst: 'Alles door elkaar. Durf je het aan?',
           badge: 'moeilijk', tafels: ALLE_TAFELS, plan: { keer: 4, ontbreekt: 2, delen: 2, typ: 2 } }
       ],
       zaadjes: function (soort, h) {
@@ -1131,19 +1153,19 @@
       tekst: 'Munten tellen, betalen en wisselgeld teruggeven.',
       top: 'Jij mag achter de kassa staan!',
       hoofdstukken: [
-        { ico: '🪙', titel: 'Centen tellen', tekst: 'Van 1 cent tot 50 cent.',
+        { leerjaar: 1, ico: '🪙', titel: 'Centen tellen', tekst: 'Van 1 cent tot 50 cent.',
           badge: 'makkelijk', bron: [1, 2, 5, 10, 20, 50], min: 2, max: 4, plan: { tellen: 10 } },
-        { ico: '💶', titel: 'Euro’s en biljetten', tekst: 'Munten van 1 en 2 euro, briefjes van 5 en 10.',
+        { leerjaar: 2, ico: '💶', titel: 'Euro’s en biljetten', tekst: 'Munten van 1 en 2 euro, briefjes van 5 en 10.',
           badge: 'makkelijk', bron: [100, 200, 500, 1000], min: 2, max: 3, plan: { tellen: 10 } },
-        { ico: '👛', titel: 'Alles door elkaar', tekst: 'Centen, euro’s en briefjes samen.',
+        { leerjaar: 2, ico: '👛', titel: 'Alles door elkaar', tekst: 'Centen, euro’s en briefjes samen.',
           badge: 'gemiddeld', bron: [5, 10, 20, 50, 100, 200], min: 3, max: 5, plan: { tellen: 10 } },
-        { ico: '🧾', titel: 'Wisselgeld', tekst: 'Je betaalt met een briefje. Hoeveel krijg je terug?',
+        { leerjaar: 3, ico: '🧾', titel: 'Wisselgeld', tekst: 'Je betaalt met een briefje. Hoeveel krijg je terug?',
           badge: 'moeilijk', bron: [5, 10, 20, 50, 100, 200], min: 2, max: 4, plan: { wissel: 10 } },
-        { ico: '❓', titel: 'Welke munt ontbreekt', tekst: 'Er is nog een muntje nodig. Welk?',
+        { leerjaar: 2, ico: '❓', titel: 'Welke munt ontbreekt', tekst: 'Er is nog een muntje nodig. Welk?',
           badge: 'gemiddeld', bron: [5, 10, 20, 50, 100, 200], min: 2, max: 3, plan: { ontbreekt: 10 } },
-        { ico: '⌨️', titel: 'Aan de kassa', tekst: 'Typ zelf het bedrag in: euro’s en centen.',
+        { leerjaar: 3, ico: '⌨️', titel: 'Aan de kassa', tekst: 'Typ zelf het bedrag in: euro’s en centen.',
           badge: 'gemiddeld', bron: [5, 10, 20, 50, 100, 200], min: 3, max: 5, plan: { typ: 10 } },
-        { ico: '🏆', titel: 'Het grote winkelexamen', tekst: 'Tellen, wisselen en typen door elkaar.',
+        { leerjaar: 3, ico: '🏆', titel: 'Het grote winkelexamen', tekst: 'Tellen, wisselen en typen door elkaar.',
           badge: 'moeilijk', bron: [5, 10, 20, 50, 100, 200], min: 3, max: 5, plan: { tellen: 4, wissel: 2, ontbreekt: 2, typ: 2 } }
       ],
       zaadjes: function (soort, h) {
@@ -1365,19 +1387,19 @@
       tekst: 'Meter en centimeter, kilo en gram, liter en deciliter.',
       top: 'Jij meet alles tot op de millimeter!',
       hoofdstukken: [
-        { ico: '📏', titel: 'Lezen op de liniaal', tekst: 'Hoeveel centimeter is dat?',
+        { leerjaar: 2, ico: '📏', titel: 'Lezen op de liniaal', tekst: 'Hoeveel centimeter is dat?',
           badge: 'makkelijk', stelsel: 'lengte', plan: { liniaal: 10 } },
-        { ico: '📐', titel: 'Meter en centimeter', tekst: 'Van m naar cm en terug.',
+        { leerjaar: 2, ico: '📐', titel: 'Meter en centimeter', tekst: 'Van m naar cm en terug.',
           badge: 'gemiddeld', stelsel: 'lengte', paren: [['m', 'cm'], ['cm', 'mm'], ['m', 'dm'], ['dm', 'cm']], plan: { om: 10 } },
-        { ico: '⚖️', titel: 'Kilo en gram', tekst: 'Van kg naar g en terug.',
+        { leerjaar: 3, ico: '⚖️', titel: 'Kilo en gram', tekst: 'Van kg naar g en terug.',
           badge: 'gemiddeld', stelsel: 'gewicht', paren: [['kg', 'g']], plan: { om: 10 } },
-        { ico: '🥤', titel: 'Liter en deciliter', tekst: 'Van l naar dl, cl en ml.',
+        { leerjaar: 3, ico: '🥤', titel: 'Liter en deciliter', tekst: 'Van l naar dl, cl en ml.',
           badge: 'gemiddeld', stelsel: 'inhoud', paren: [['l', 'dl'], ['l', 'cl'], ['l', 'ml'], ['dl', 'cl']], plan: { om: 10 } },
-        { ico: '🤔', titel: 'Welke maat past?', tekst: 'Weegt een appel 150 g of 150 kg?',
+        { leerjaar: 2, ico: '🤔', titel: 'Welke maat past?', tekst: 'Weegt een appel 150 g of 150 kg?',
           badge: 'makkelijk', plan: { past: 10 } },
-        { ico: '⌨️', titel: 'Zelf omrekenen', tekst: 'Geen keuzes. Typ het getal zelf in.',
+        { leerjaar: 3, ico: '⌨️', titel: 'Zelf omrekenen', tekst: 'Geen keuzes. Typ het getal zelf in.',
           badge: 'moeilijk', stelsel: 'lengte', paren: [['m', 'cm'], ['cm', 'mm'], ['kg', 'g'], ['l', 'ml']], plan: { typ: 10 } },
-        { ico: '🏆', titel: 'Het grote meetexamen', tekst: 'Alles door elkaar.',
+        { leerjaar: 3, ico: '🏆', titel: 'Het grote meetexamen', tekst: 'Alles door elkaar.',
           badge: 'moeilijk', stelsel: 'lengte', paren: [['m', 'cm'], ['cm', 'mm'], ['kg', 'g'], ['l', 'dl']], plan: { om: 4, past: 3, liniaal: 2, typ: 1 } }
       ],
       zaadjes: function (soort, h) {
@@ -1569,19 +1591,19 @@
       tekst: 'Dagen, maanden, seizoenen en tellen met de kalender.',
       top: 'Jij kent de kalender uit je hoofd!',
       hoofdstukken: [
-        { ico: '\uD83D\uDCC6', titel: 'De dagen van de week', tekst: 'Welke dag komt na woensdag?',
+        { leerjaar: 1, ico: '\uD83D\uDCC6', titel: 'De dagen van de week', tekst: 'Welke dag komt na woensdag?',
           badge: 'makkelijk', plan: { dag: 10 } },
-        { ico: '\uD83D\uDDD3\uFE0F', titel: 'De maanden van het jaar', tekst: 'Welke maand is de vijfde?',
+        { leerjaar: 2, ico: '\uD83D\uDDD3\uFE0F', titel: 'De maanden van het jaar', tekst: 'Welke maand is de vijfde?',
           badge: 'makkelijk', plan: { maand: 10 } },
-        { ico: '\uD83C\uDF37', titel: 'De vier seizoenen', tekst: 'In welk seizoen valt oktober?',
+        { leerjaar: 2, ico: '\uD83C\uDF37', titel: 'De vier seizoenen', tekst: 'In welk seizoen valt oktober?',
           badge: 'makkelijk', plan: { seizoen: 10 } },
-        { ico: '\uD83D\uDD22', titel: 'Hoeveel dagen?', tekst: 'Hoeveel dagen heeft november?',
+        { leerjaar: 3, ico: '\uD83D\uDD22', titel: 'Hoeveel dagen?', tekst: 'Hoeveel dagen heeft november?',
           badge: 'gemiddeld', plan: { lengte: 10 } },
-        { ico: '\u23E9', titel: 'Verder tellen', tekst: 'Het is dinsdag. Welke dag is het over tien dagen?',
+        { leerjaar: 3, ico: '\u23E9', titel: 'Verder tellen', tekst: 'Het is dinsdag. Welke dag is het over tien dagen?',
           badge: 'moeilijk', plan: { verder: 10 } },
-        { ico: '\u2328\uFE0F', titel: 'Zelf de datum typen', tekst: 'Welke dag van de maand is het?',
+        { leerjaar: 3, ico: '\u2328\uFE0F', titel: 'Zelf de datum typen', tekst: 'Welke dag van de maand is het?',
           badge: 'gemiddeld', plan: { typ: 10 } },
-        { ico: '\uD83C\uDFC6', titel: 'Het grote kalenderexamen', tekst: 'Alles door elkaar.',
+        { leerjaar: 3, ico: '\uD83C\uDFC6', titel: 'Het grote kalenderexamen', tekst: 'Alles door elkaar.',
           badge: 'moeilijk', plan: { dag: 2, maand: 2, seizoen: 2, lengte: 2, verder: 2 } }
       ],
       zaadjes: function (soort) {
@@ -1838,19 +1860,19 @@
       tekst: 'Optellen en aftrekken tot 1000, over het tiental heen.',
       top: 'Jij springt over elk tiental!',
       hoofdstukken: [
-        { ico: '\uD83E\uDDF1', titel: 'Tot 100 erbij', tekst: '47 + 8. Eerst naar 50, dan verder.',
+        { leerjaar: 2, ico: '\uD83E\uDDF1', titel: 'Tot 100 erbij', tekst: '47 + 8. Eerst naar 50, dan verder.',
           badge: 'makkelijk', tot: 100, plus: true, stap: [3, 9], plan: { som: 10 } },
-        { ico: '\uD83E\uDDF1', titel: 'Tot 100 eraf', tekst: '52 \u2212 7. Eerst naar 50, dan verder.',
+        { leerjaar: 2, ico: '\uD83E\uDDF1', titel: 'Tot 100 eraf', tekst: '52 \u2212 7. Eerst naar 50, dan verder.',
           badge: 'makkelijk', tot: 100, plus: false, stap: [3, 9], plan: { som: 10 } },
-        { ico: '\uD83C\uDF09', titel: 'Tot 1000 erbij', tekst: '346 + 8, en 346 + 40.',
+        { leerjaar: 3, ico: '\uD83C\uDF09', titel: 'Tot 1000 erbij', tekst: '346 + 8, en 346 + 40.',
           badge: 'gemiddeld', tot: 1000, plus: true, stap: [3, 9], tientallen: true, plan: { som: 10 } },
-        { ico: '\uD83C\uDF09', titel: 'Tot 1000 eraf', tekst: '412 \u2212 7, en 412 \u2212 30.',
+        { leerjaar: 3, ico: '\uD83C\uDF09', titel: 'Tot 1000 eraf', tekst: '412 \u2212 7, en 412 \u2212 30.',
           badge: 'gemiddeld', tot: 1000, plus: false, stap: [3, 9], tientallen: true, plan: { som: 10 } },
-        { ico: '\uD83D\uDD0D', titel: 'Wat ontbreekt er?', tekst: '47 + ? = 55.',
+        { leerjaar: 3, ico: '\uD83D\uDD0D', titel: 'Wat ontbreekt er?', tekst: '47 + ? = 55.',
           badge: 'moeilijk', tot: 100, plus: true, stap: [3, 9], plan: { gat: 10 } },
-        { ico: '\u2328\uFE0F', titel: 'Zelf uitrekenen', tekst: 'Geen keuzes. Typ het antwoord zelf in.',
+        { leerjaar: 3, ico: '\u2328\uFE0F', titel: 'Zelf uitrekenen', tekst: 'Geen keuzes. Typ het antwoord zelf in.',
           badge: 'moeilijk', tot: 1000, plus: true, stap: [3, 9], tientallen: true, plan: { typ: 10 } },
-        { ico: '\uD83C\uDFC6', titel: 'Het grote rekenexamen', tekst: 'Erbij, eraf en het gat door elkaar.',
+        { leerjaar: 3, ico: '\uD83C\uDFC6', titel: 'Het grote rekenexamen', tekst: 'Erbij, eraf en het gat door elkaar.',
           badge: 'moeilijk', tot: 1000, plus: true, stap: [3, 9], tientallen: true, plan: { som: 5, gat: 3, typ: 2 } }
       ],
       zaadjes: function (soort, h) {
@@ -2043,15 +2065,15 @@
       tekst: 'Spiegelen, symmetrie en de helft die ontbreekt.',
       top: 'Jij ziet elke spiegeling meteen!',
       hoofdstukken: [
-        { ico: '\uD83E\uDE9E', titel: 'Spiegelen naar rechts', tekst: 'Welke helft hoort er aan de andere kant?',
+        { leerjaar: 2, ico: '\uD83E\uDE9E', titel: 'Spiegelen naar rechts', tekst: 'Welke helft hoort er aan de andere kant?',
           badge: 'gemiddeld', as: 'verticaal', plan: { helft: 10 } },
-        { ico: '\u2195\uFE0F', titel: 'Spiegelen naar onder', tekst: 'Dezelfde vraag, maar de as ligt plat.',
+        { leerjaar: 2, ico: '\u2195\uFE0F', titel: 'Spiegelen naar onder', tekst: 'Dezelfde vraag, maar de as ligt plat.',
           badge: 'gemiddeld', as: 'horizontaal', plan: { helft: 10 } },
-        { ico: '\u2705', titel: 'Klopt de spiegeling?', tekst: 'Is dit echt gespiegeld, of gedraaid?',
+        { leerjaar: 3, ico: '\u2705', titel: 'Klopt de spiegeling?', tekst: 'Is dit echt gespiegeld, of gedraaid?',
           badge: 'moeilijk', as: 'verticaal', plan: { klopt: 10 } },
-        { ico: '\uD83D\uDD22', titel: 'Hoeveel vakjes?', tekst: 'Hoeveel vakjes kleur je in de hele figuur?',
+        { leerjaar: 2, ico: '\uD83D\uDD22', titel: 'Hoeveel vakjes?', tekst: 'Hoeveel vakjes kleur je in de hele figuur?',
           badge: 'makkelijk', as: 'verticaal', plan: { tellen: 10 } },
-        { ico: '\uD83C\uDFC6', titel: 'Het grote spiegelexamen', tekst: 'Alles door elkaar.',
+        { leerjaar: 3, ico: '\uD83C\uDFC6', titel: 'Het grote spiegelexamen', tekst: 'Alles door elkaar.',
           badge: 'moeilijk', as: 'verticaal', plan: { helft: 5, klopt: 3, tellen: 2 } }
       ],
       zaadjes: function (soort, h) {
@@ -2217,6 +2239,30 @@
   }
   var LOF = ['Juist%! 🎉', 'Super%! 🌟', 'Knap gedaan%! 👏', 'Helemaal goed%! ✅'];
   var MOED = ['Bijna%!', 'Dat lukt de volgende keer%!', 'Goed geprobeerd%!', 'Kijk nog eens goed%!'];
+  var LEERJAREN = [1, 2, 3, 4, 5, 6];
+  function leesLeerjaar() {
+    var n;
+    try { n = parseInt(localStorage.getItem('oefenkampioen-leerjaar'), 10); } catch (e) { n = NaN; }
+    // zolang de andere leerjaren nog leeg zijn begint het spel bij het derde: daar staat alles
+    return LEERJAREN.indexOf(n) > -1 ? n : 3;
+  }
+  function zetLeerjaar(lj) {
+    state.leerjaar = lj;
+    try { localStorage.setItem('oefenkampioen-leerjaar', String(lj)); } catch (e) { /* mag mislukken */ }
+  }
+  function jaarNaam(lj) { return (lj === 1 ? '1ste' : lj + 'de') + ' leerjaar'; }
+  function jarenVan(spel) {
+    var uit = [];
+    spel.hoofdstukken.forEach(function (h) { if (uit.indexOf(h.leerjaar) === -1) uit.push(h.leerjaar); });
+    return uit.sort(function (a, b) { return a - b; });
+  }
+  // op de spelkaart: welke leerjaren dit spel dekt, en of het gekozen jaar erbij zit
+  function dekkingTekst(spel) {
+    var j = jarenVan(spel);
+    var bereik = j.length === 1 ? 'leerjaar ' + j[0] : 'leerjaar ' + j[0] + ' tot ' + j[j.length - 1];
+    return j.indexOf(state.leerjaar) > -1 ? bereik
+      : 'nog niets voor het ' + jaarNaam(state.leerjaar) + ', wel ' + bereik;
+  }
   function leesAantal() {
     var a;
     try { a = parseInt(localStorage.getItem('oefenkampioen-aantal'), 10); } catch (e) { a = NaN; }
@@ -2269,7 +2315,7 @@
 
   /* ==================== toestand ==================== */
   var state = {
-    spel: null, hfd: 0, aantal: 10, q: 0, score: 0, results: [], fouten: [],
+    spel: null, hfd: 0, leerjaar: 3, aantal: 10, q: 0, score: 0, results: [], fouten: [],
     current: null, answered: false, sound: true, tempo: false, klok: null,
     plan: [], decks: {}
   };
@@ -2350,19 +2396,34 @@
   }
   function toonStart() {
     var beste = lees();
-    $('spellen').innerHTML = SPELLEN.map(function (s, i) {
+    // spellen met iets voor het gekozen leerjaar komen eerst; de rest blijft staan, eronder
+    var rijen = SPELLEN.map(function (s, i) { return { s: s, i: i }; });
+    rijen.sort(function (a, b) {
+      var ja = jarenVan(a.s).indexOf(state.leerjaar) > -1 ? 0 : 1;
+      var jb = jarenVan(b.s).indexOf(state.leerjaar) > -1 ? 0 : 1;
+      return ja - jb || a.i - b.i;
+    });
+    $('spellen').innerHTML = rijen.map(function (r) {
       // op de spelkaart staat het beste hoofdstukresultaat van dat spel
       var top = null;
-      s.hoofdstukken.forEach(function (h, k) {
-        var b = beste[s.id + ':' + k];
+      r.s.hoofdstukken.forEach(function (h, k) {
+        var b = beste[r.s.id + ':' + k];
         if (b && b.van && (!top || b.score / b.van > top.score / top.van)) top = b;
       });
-      return '<button class="hfd" data-i="' + i + '">' + kaart(s.ico, 0, s.naam, s.tekst, top, '') + '</button>';
+      var tekst = r.s.tekst + '<span class="dekking">' + dekkingTekst(r.s) + '</span>';
+      return '<button class="hfd" data-i="' + r.i + '">' + kaart(r.s.ico, 0, r.s.naam, tekst, top, '') + '</button>';
     }).join('');
     Array.prototype.forEach.call($('spellen').children, function (b) {
       b.onclick = function () { toonMenu(SPELLEN[Number(b.dataset.i)]); };
     });
     $('naam').value = naam();
+    $('leerjaren').innerHTML = LEERJAREN.map(function (lj) {
+      return '<button class="aantal" data-lj="' + lj + '" aria-pressed="' + (lj === state.leerjaar) +
+        '" aria-label="' + jaarNaam(lj) + '">' + lj + '</button>';
+    }).join('');
+    Array.prototype.forEach.call($('leerjaren').children, function (b) {
+      b.onclick = function () { zetLeerjaar(Number(b.dataset.lj)); toonStart(); };
+    });
     $('aantallen').innerHTML = AANTALLEN.map(function (a) {
       return '<button class="aantal" data-a="' + a + '" aria-pressed="' + (a === state.aantal) + '">' + a + '</button>';
     }).join('');
@@ -2387,11 +2448,21 @@
     stopKlok();
     state.spel = spel;
     var beste = lees();
-    $('menu').innerHTML = spel.hoofdstukken.map(function (h, i) {
-      return '<button class="hfd" data-i="' + i + '">' +
-        kaart(h.ico, i + 1, h.titel, h.tekst, beste[spel.id + ':' + i], h.badge) + '</button>';
+    // heeft dit spel niets voor het gekozen jaar, dan staat de eerste groep open
+    var jaren = jarenVan(spel);
+    var openJaar = jaren.indexOf(state.leerjaar) > -1 ? state.leerjaar : jaren[0];
+    $('menu').innerHTML = jaren.map(function (lj) {
+      var lijst = spel.hoofdstukken.map(function (h, i) { return { h: h, i: i }; })
+        .filter(function (r) { return r.h.leerjaar === lj; });
+      return '<details class="jaargroep"' + (lj === openJaar ? ' open' : '') + '>' +
+        '<summary>' + jaarNaam(lj) + '<span class="hoeveel">' + lijst.length +
+        (lijst.length === 1 ? ' hoofdstuk' : ' hoofdstukken') + '</span></summary>' +
+        '<div class="menu">' + lijst.map(function (r, k) {
+          return '<button class="hfd" data-i="' + r.i + '">' +
+            kaart(r.h.ico, k + 1, r.h.titel, r.h.tekst, beste[spel.id + ':' + r.i], r.h.badge) + '</button>';
+        }).join('') + '</div></details>';
     }).join('');
-    Array.prototype.forEach.call($('menu').children, function (b) {
+    Array.prototype.forEach.call($('menu').querySelectorAll('.hfd'), function (b) {
       b.onclick = function () { startHoofdstuk(Number(b.dataset.i)); };
     });
     $('kop').innerHTML = spel.ico + ' ' + spel.naam;
@@ -2588,6 +2659,7 @@
     $('soundBtn').textContent = state.sound ? '🔊' : '🔇';
   };
 
+  state.leerjaar = leesLeerjaar();
   state.aantal = leesAantal();
   state.tempo = leesTempo();
   toonStart();
@@ -2626,7 +2698,10 @@
       check(TEMPO[spel.id], spel.id + ': heeft een eigen tempotijd, niet de standaard');
       spel.hoofdstukken.forEach(function (h, i) {
         check(h.ico.length <= 4, spel.id + ' hoofdstuk ' + (i + 1) + ': het icoon is geen echt teken (' + h.ico + ')');
+        check(LEERJAREN.indexOf(h.leerjaar) > -1,
+          spel.id + ' hoofdstuk ' + (i + 1) + ': leerjaar is een getal van 1 tot 6 (nu ' + h.leerjaar + ')');
       });
+      check(jarenVan(spel).length >= 1, spel.id + ': dekt minstens een leerjaar');
       if (spel.test) spel.test(check);
 
       AANTALLEN.forEach(function (aantal) {
@@ -2687,6 +2762,13 @@
     state.hfd = bewaardHfd;
 
     toonStart();
+    var perJaar = {};
+    SPELLEN.forEach(function (s2) {
+      s2.hoofdstukken.forEach(function (h) { perJaar[h.leerjaar] = (perJaar[h.leerjaar] || 0) + 1; });
+    });
+    console.log('Hoofdstukken per leerjaar: ' + LEERJAREN.map(function (lj) {
+      return lj + ': ' + (perJaar[lj] || 0);
+    }).join(',  '));
     console.log(fouten === 0
       ? 'Zelfcheck klaar: ' + SPELLEN.length + ' spellen, ' + toetsen + ' toetsen doorgerekend, geen fouten.'
       : 'Zelfcheck klaar: ' + fouten + ' fouten gevonden.');
