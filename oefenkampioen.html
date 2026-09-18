@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Oefenkampioen</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
 <style>
   :root {
     --bg: #EDF3FF;
@@ -50,12 +50,14 @@
   * { box-sizing: border-box; }
   /* zonder deze regel verliest het hidden-attribuut van een flex-container zijn werking */
   [hidden] { display: none !important; }
+  /* niets in dikke letters: dik leest minder makkelijk dan normaal */
+  h1, h2, h3, b, strong { font-weight: normal; }
   body {
     margin: 0;
     background: var(--bg);
     color: var(--ink);
     font-family: Nunito, "Segoe UI", system-ui, sans-serif;
-    font-weight: 700;
+    font-weight: normal;
     font-size: 16px;
     -webkit-text-size-adjust: 100%;
   }
@@ -72,7 +74,7 @@
   header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   h1 {
     font-family: Fredoka, Nunito, sans-serif;
-    font-weight: 700;
+    font-weight: normal;
     font-size: clamp(24px, 6vw, 32px);
     margin: 0;
     flex: 1 1 auto;
@@ -411,7 +413,7 @@
     flex-direction: column;
     gap: 3px;
   }
-  .rv b { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 15px; color: var(--ink); }
+  .rv b { font-family: Fredoka, sans-serif; font-weight: normal; font-size: 15px; color: var(--ink); }
   .rv .jouw { color: var(--bad); text-decoration: line-through; }
   .rv .juist { color: var(--good); }
   .rv em { font-style: normal; font-size: 14px; color: var(--ink-soft); }
@@ -1536,7 +1538,7 @@
         var nu = i === dag;
         cellen.push('<div style="width:26px;height:24px;display:flex;align-items:center;justify-content:center;' +
           'border-radius:8px;font-size:13px;' +
-          (nu ? 'background:var(--accent);color:#fff;font-weight:700' : 'color:var(--ink-soft)') + '">' + i + '</div>');
+          (nu ? 'background:var(--accent);color:#fff' : 'color:var(--ink-soft)') + '">' + i + '</div>');
       }
       return '<div style="font-family:Fredoka,sans-serif;text-align:center">' +
         '<div style="font-size:18px;margin-bottom:6px">' + hoofdletter(MAANDEN[maand]) + '</div>' +
@@ -1810,7 +1812,7 @@
         }
       });
       p.push('<circle cx="' + x(a) + '" cy="60" r="5" fill="var(--hand-hour)"/>');
-      p.push('<text x="' + x(a) + '" y="50" text-anchor="middle" font-family="Fredoka, sans-serif" font-size="13" font-weight="700" fill="var(--ink)">' + a + '</text>');
+      p.push('<text x="' + x(a) + '" y="50" text-anchor="middle" font-family="Fredoka, sans-serif" font-size="13" fill="var(--ink)">' + a + '</text>');
       return '<svg viewBox="0 0 ' + breed + ' ' + hoogte + '" width="100%" style="max-width:330px" role="img" aria-label="Een getallenlijn met een sprong vanaf ' + a + '">' +
         p.join('') + '</svg>';
     }
