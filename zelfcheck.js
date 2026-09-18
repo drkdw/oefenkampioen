@@ -95,6 +95,9 @@ SPELLEN.forEach(function (spel) {
           check(typeof v.ans === 'string' && v.ans.length > 0, spel.id + ': elk antwoord is ingevuld');
           check(typeof spel.teken(v) === 'string', spel.id + ': elke vraag heeft een tekening');
           check(spel.teken(v).indexOf('undefined') === -1, spel.id + ': geen undefined in de tekening');
+          // scherm() mag null zijn, maar toont het iets, dan mag daar geen undefined in staan
+          var doek = spel.scherm(v);
+          check(doek === null || String(doek).indexOf('undefined') === -1, spel.id + ': geen undefined in het schermpje');
           var t = spel.vraag(v, q + 1);
           check(t && t.titel && t.titel.indexOf('undefined') === -1, spel.id + ': elke vraag heeft een tekst');
           check(spel.uitleg(v).indexOf('undefined') === -1, spel.id + ': elke uitleg is volledig');
