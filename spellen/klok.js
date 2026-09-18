@@ -132,6 +132,8 @@ export default {
       badge: 'gemiddeld', minuten: ALLE_MIN, plan: { tijd: 10 } },
     { leerjaar: 2, ico: '🌙', titel: 'Dag en nacht', tekst: 'Ochtend, voormiddag, middag, namiddag, avond, nacht.',
       badge: 'makkelijk', minuten: [0, 30], plan: { dagdeel: 7, tijd: 3 } },
+    { leerjaar: 2, ico: '🏆', titel: 'Het eerste klokexamen', tekst: 'Kwartieren, vijf-tot-vijf en dagdelen door elkaar.',
+      badge: 'gemiddeld', minuten: ALLE_MIN, plan: { tijd: 7, dagdeel: 3 } },
     { leerjaar: 3, ico: '📱', titel: 'Digitale klok', tekst: 'Lees de gsm, en typ zelf de tijd in.',
       badge: 'gemiddeld', minuten: [0, 15, 30, 45], plan: { lezen: 5, digitaal: 5 } },
     { leerjaar: 3, ico: '⏳', titel: 'Tijd berekenen', tekst: 'Hoe lang duurt het van de ene klok tot de andere?',
