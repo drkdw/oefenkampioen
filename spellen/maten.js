@@ -1,4 +1,4 @@
-import { shuffle, keuzes, vulAan, positief, vulRondom, hoofdletter } from '../gereedschap.js';
+import { shuffle, keuzes, vulAan, positief, vulRondom, hoofdletter, andere } from '../gereedschap.js';
 
   // alles rekent in de kleinste eenheid: mm, g en ml. Zo blijft het hele getallen.
   var STELSELS = {
@@ -63,6 +63,14 @@ import { shuffle, keuzes, vulAan, positief, vulRondom, hoofdletter } from '../ge
     return '<svg viewBox="0 0 ' + breed + ' ' + hoog + '" width="100%" style="max-width:320px" role="img" aria-label="Een liniaal die ' +
       cm + ' centimeter aanduidt">' + p.join('') + '</svg>';
   }
+  // richting 0 is groter/langer/zwaarder, richting 1 is kleiner/korter/lichter
+  var VERGELIJK = { lengte: ['langer', 'korter'], gewicht: ['zwaarder', 'lichter'], inhoud: ['meer erin', 'minder erin'] };
+  function vergelijkPoel(basis, richting) {
+    return DINGEN.filter(function (x) {
+      return x.stelsel === basis.stelsel && x !== basis &&
+        (richting === 0 ? x.maat > basis.maat : x.maat < basis.maat);
+    });
+  }
   /* een weegschaal of maatbeker in het groot */
   function ding(d) {
     return '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;font-family:Fredoka,sans-serif">' +
@@ -96,6 +104,8 @@ export default {
   tekst: 'Meter en centimeter, kilo en gram, liter en deciliter.',
   top: 'Jij meet alles tot op de millimeter!',
   hoofdstukken: [
+    { leerjaar: 1, ico: '⚖️', titel: 'Vergelijken zonder meten', tekst: 'Wat is langer dan een potlood? Zonder centimeters te tellen.',
+      badge: 'makkelijk', plan: { vergelijk: 10 } },
     { leerjaar: 2, ico: '📏', titel: 'Lezen op de liniaal', tekst: 'Hoeveel centimeter is dat?',
       badge: 'makkelijk', stelsel: 'lengte', plan: { liniaal: 10 } },
     { leerjaar: 2, ico: '📐', titel: 'Meter en centimeter', tekst: 'Van m naar cm en terug.',
@@ -113,6 +123,18 @@ export default {
   ],
   zaadjes: function (soort, h) {
     var uit = [];
+    if (soort === 'vergelijk') {
+      var uit2 = [];
+      DINGEN.forEach(function (basis) {
+        [0, 1].forEach(function (richting) {
+          // een zinvolle vraag heeft minstens een juist antwoord en minstens drie foute
+          var poel = vergelijkPoel(basis, richting);
+          var rest = DINGEN.filter(function (x) { return x.stelsel === basis.stelsel && x !== basis; }).length - poel.length;
+          if (poel.length >= 1 && rest >= 3) uit2.push({ basis: basis, richting: richting });
+        });
+      });
+      return uit2;
+    }
     if (soort === 'liniaal') {
       // hele centimeters tot 20, dat is wat er op een schoolliniaal past
       for (var cm = 1; cm <= 20; cm++) uit.push({ mm: cm * 10 });
@@ -139,6 +161,14 @@ export default {
     return uit;
   },
   maak: function (soort, z) {
+    if (soort === 'vergelijk') {
+      var poel2 = vergelijkPoel(z.basis, z.richting), goed = poel2[Math.floor(Math.random() * poel2.length)];
+      var buiten = DINGEN.filter(function (x) {
+        return x.stelsel === z.basis.stelsel && x !== z.basis && poel2.indexOf(x) === -1;
+      }).map(function (x) { return x.naam; });
+      return { soort: soort, sleutel: 'vergelijk|' + z.basis.naam + z.richting, basis: z.basis, richting: z.richting,
+        ans: goed.naam, options: keuzes(goed.naam, andere(buiten, null, 3)) };
+    }
     if (soort === 'liniaal') {
       var cm = z.mm / 10;
       var fout = [];
@@ -179,6 +209,7 @@ export default {
       })) };
   },
   teken: function (v) {
+    if (v.soort === 'vergelijk') return ding(v.basis);
     if (v.soort === 'liniaal') return liniaal(v.mm);
     if (v.soort === 'past') return ding(v.ding);
     return trap(v.stelsel);
@@ -186,16 +217,22 @@ export default {
   scherm: function (v) {
     if (v.soort === 'liniaal') return null;
     if (v.soort === 'past') return null;
+    if (v.soort === 'vergelijk') return null;
     return v.n + ' ' + v.van + ' = ? ' + v.naar;
   },
   vraag: function (v, nr) {
     var kop = 'Vraag ' + nr + ': ';
+    if (v.soort === 'vergelijk') {
+      return { titel: kop + 'wat is ' + VERGELIJK[v.basis.stelsel][v.richting] + ' dan ' + v.basis.naam + '?',
+        sub: 'Denk aan hoe groot het echt is, je moet niets meten.' };
+    }
     if (v.soort === 'liniaal') return { titel: kop + 'hoe lang is de streep?', sub: 'Lees af op de liniaal.' };
     if (v.soort === 'past') return { titel: kop + 'hoeveel weegt of meet ' + v.ding.naam + '?', sub: 'Kies het getal met de juiste maat erbij.' };
     if (v.soort === 'typ') return { titel: kop + 'hoeveel ' + v.naar + ' is ' + v.n + ' ' + v.van + '?', sub: 'Typ alleen het getal.' };
     return { titel: kop + 'hoeveel ' + v.naar + ' is ' + v.n + ' ' + v.van + '?' };
   },
   uitleg: function (v) {
+    if (v.soort === 'vergelijk') return hoofdletter(v.ans) + ' is ' + VERGELIJK[v.basis.stelsel][v.richting] + ' dan ' + v.basis.naam + '.';
     if (v.soort === 'liniaal') return 'De streep loopt tot ' + v.cm + ', dus ' + v.cm + ' cm. Dat is ' + v.mm + ' mm.';
     if (v.soort === 'past') return hoofdletter(v.ding.naam) + ' is ongeveer ' + v.getal + ' ' + v.eh + '.';
     var van = eenheid(v.stelsel, v.van), naar = eenheid(v.stelsel, v.naar);
@@ -205,6 +242,7 @@ export default {
       : 'Naar een grotere maat maak je het getal ' + stap + ' keer kleiner: ' + v.n + ' : ' + stap + ' = ' + v.uit + '.';
   },
   kort: function (v) {
+    if (v.soort === 'vergelijk') return 'Wat is ' + VERGELIJK[v.basis.stelsel][v.richting] + ' dan ' + v.basis.naam + '?';
     if (v.soort === 'liniaal') return 'De streep op de liniaal';
     if (v.soort === 'past') return 'Hoeveel is ' + v.ding.naam + '?';
     return v.n + ' ' + v.van + ' in ' + v.naar;
