@@ -206,7 +206,7 @@ Dit is de volledige tagging voor stap 0. Geen enkel hoofdstuk verandert van inho
 | | Digitale klok | 3 |
 | | Tijd berekenen | 3 |
 | | Het grote examen | 3 |
-| Maaltafelmonsters | Tafels van 2, 5 en 10 | 2 |
+| Maaltafels | Tafels van 2, 5 en 10 | 2 |
 | | Tafels van 3 en 4 | 2 |
 | | Tafels van 6, 7, 8 en 9 | 3 |
 | | Het gat in het monster | 3 |
