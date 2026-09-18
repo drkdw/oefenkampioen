@@ -50,10 +50,10 @@ function hoofdstukkenVoor(spel) {
   return spel.hoofdstukken.map(function (h, i) { return { h: h, i: i }; })
     .filter(function (r) { return r.h.leerjaar <= state.leerjaar; });
 }
+// alleen aangeroepen voor spellen die al gefilterd zijn op iets hebben voor dit leerjaar
 function dekkingTekst(spel) {
   var n = hoofdstukkenVoor(spel).length;
-  return n ? n + (n === 1 ? ' hoofdstuk' : ' hoofdstukken')
-    : 'nog niets voor het ' + jaarNaam(state.leerjaar);
+  return n + (n === 1 ? ' hoofdstuk' : ' hoofdstukken');
 }
 function leesAantal() {
   var a;
@@ -220,13 +220,10 @@ function kaart(ico, nr, titel, tekst, beste, badge) {
 }
 function toonStart() {
   var beste = lees();
-  // spellen met iets voor het gekozen leerjaar komen eerst; de rest blijft staan, eronder
-  var rijen = SPELLEN.map(function (s, i) { return { s: s, i: i }; });
-  rijen.sort(function (a, b) {
-    var ja = hoofdstukkenVoor(a.s).length ? 0 : 1;
-    var jb = hoofdstukkenVoor(b.s).length ? 0 : 1;
-    return ja - jb || a.i - b.i;
-  });
+  // een spel zonder iets voor het gekozen leerjaar staat hier niet: een kind moet niet eerst
+  // een spel openklikken om te ontdekken dat het daar leeg is
+  var rijen = SPELLEN.map(function (s, i) { return { s: s, i: i }; })
+    .filter(function (r) { return hoofdstukkenVoor(r.s).length > 0; });
   $('spellen').innerHTML = rijen.map(function (r) {
     // op de spelkaart staat het beste hoofdstukresultaat van dat spel
     var top = null;
@@ -272,12 +269,21 @@ function toonMenu(spel) {
   stopKlok();
   state.spel = spel;
   var beste = lees();
-  // een vlakke lijst: het leerjaar is al gekozen op het startscherm, dus niet nog een keer hier
+  // een vlakke lijst: het leerjaar is al gekozen op het startscherm, dus niet nog een keer hier.
+  // maar staan er hoofdstukken van meerdere leerjaren in, dan komt er een kopje tussen: bij tien
+  // hoofdstukken op een rij verliest een kind van acht anders het overzicht welke bij elkaar horen
   var lijst = hoofdstukkenVoor(spel);
-  $('menu').innerHTML = lijst.map(function (r, k) {
-    return '<button class="hfd" data-i="' + r.i + '">' +
-      kaart(r.h.ico, k + 1, r.h.titel, r.h.tekst, beste[spel.id + ':' + r.i], r.h.badge) + '</button>';
-  }).join('');
+  var html = '', huidigJaar = null, nr = 0;
+  lijst.forEach(function (r) {
+    if (r.h.leerjaar !== huidigJaar) {
+      huidigJaar = r.h.leerjaar;
+      if (jarenVan(spel).length > 1) html += '<p class="jaarkop">' + jaarNaam(huidigJaar) + '</p>';
+    }
+    nr++;
+    html += '<button class="hfd" data-i="' + r.i + '">' +
+      kaart(r.h.ico, nr, r.h.titel, r.h.tekst, beste[spel.id + ':' + r.i], r.h.badge) + '</button>';
+  });
+  $('menu').innerHTML = html;
   Array.prototype.forEach.call($('menu').querySelectorAll('.hfd'), function (b) {
     b.onclick = function () { startHoofdstuk(Number(b.dataset.i)); };
   });
