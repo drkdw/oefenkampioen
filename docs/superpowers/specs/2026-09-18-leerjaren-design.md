@@ -94,20 +94,21 @@ Het leerjaar staat op het hoofdstuk, niet op het spel: een spel loopt over meerd
   knoppenrij als "Hoeveel vragen?". Het is een voorkeur, geen slot: alle zes blijven altijd
   bereikbaar. De keuze wordt bewaard onder `oefenkampioen-leerjaar`, standaard 3 zolang de
   andere jaren nog leeg zijn.
-- De spelkaarten met hoofdstukken voor het gekozen jaar komen bovenaan; de rest zakt eronder,
-  blijft aantikbaar, en krijgt de regel *nog niets voor het 1ste leerjaar, wel leerjaar 2 tot 3*.
-- Op elke kaart komt één regel bij die zegt welke leerjaren dat spel dekt, bijvoorbeeld
-  *leerjaar 1 tot 4*, afgeleid uit de hoofdstukken.
-- Binnen een spel worden de hoofdstukken gegroepeerd in een `<details>` per leerjaar, met
-  `<summary>` "1ste leerjaar" tot "6de leerjaar". Native HTML: open en toe zonder JavaScript,
-  werkt met het toetsenbord en met een schermlezer, en er is geen toestand die stuk kan gaan.
-- Leerjaren zonder hoofdstukken voor dat spel worden niet getoond.
+- **Een spel zonder hoofdstukken voor het gekozen jaar staat niet op het startscherm.** Eerst
+  wel tonen en dan pas, na een klik, laten weten dat het leeg is, kost een kind een handeling
+  voor niets. Wat overblijft komt in de vaste spelvolgorde te staan, niet gesorteerd op dekking.
+- Op elke kaart die overblijft komt één regel bij die zegt hoeveel hoofdstukken er voor dit
+  leerjaar klaarstaan, bijvoorbeeld *7 hoofdstukken*.
 - Binnen een spel staat één vlakke lijst met alle hoofdstukken tot en met het gekozen leerjaar.
   **Geen tweede leerjaarkeuze in het spel**: het niveau is al gekozen op het startscherm.
-- De hoofdstukken worden genummerd vanaf 1. De opslagsleutel blijft de index in `hoofdstukken`,
-  dus bestaande beste scores blijven geldig.
-- Heeft een spel niets voor het gekozen jaar, dan staat er één regel in de plaats: kies bovenaan
-  een ander leerjaar, of een ander spel.
+- Loopt die lijst over meer dan één leerjaar, dan komt er een kopje tussen elke overgang: een
+  gewone `<p>` met "1ste leerjaar" tot "6de leerjaar", zonder klikgedrag. Bij precies één
+  leerjaar in de lijst blijft het kopje weg, want dan zegt het niets dat de spelkaart niet al
+  zegt. Zonder dat kopje leest een lijst van tien hoofdstukken als één willekeurige stapel in
+  plaats van twee duidelijke stappen; met tien tot twintig hoofdstukken in de hoogste leerjaren
+  is dat geen kosmetisch detail maar de grens tussen leesbaar en rommelig.
+- De hoofdstukken worden genummerd vanaf 1, doorlopend over de kopjes heen. De opslagsleutel
+  blijft de index in `hoofdstukken`, dus bestaande beste scores blijven geldig.
 - De opslag gaat, zoals alle opslag in dit project, door een `try`/`catch`: zonder localStorage
   werkt het spel gewoon verder, dan staat het derde leerjaar gekozen.
 
@@ -121,6 +122,15 @@ Vanaf stap 1 krijgt elk leerjaar zijn eigen examen in een spel, zodra dat leerja
 meer hoofdstukken heeft. Het is een gewoon hoofdstuk met een eigen `plan` over de vraagtypes van
 dat niveau, dus het vraagt geen nieuwe machinerie. Onder de drie hoofdstukken is een examen
 zinloos, want dan is het hetzelfde als het hoofdstuk zelf.
+
+### Naamgeving: een vaardigheid die groeit blijft herkenbaar
+
+Sommige vaardigheden komen in twee leerjaren terug in een grotere versie, zoals de tafels: klein
+in leerjaar 2, alle tafels in leerjaar 3. Beide hoofdstukken krijgen dan **hetzelfde icoon en een
+titel van dezelfde vorm** (*Het gat in de kleine tafels* / *Het gat in alle tafels*, niet *Het gat
+in de kleine tafels* / *Het gat in het monster*). Zonder die regel leest een flinke lijst als
+toevallige, losse namen in plaats van twee stappen van dezelfde vaardigheid, en dat is precies
+wat er misging bij de eerste versie van de nieuwe maaltafelhoofdstukken in dit ontwerp.
 
 ## 5. Jasjes: dezelfde vraag, andere voorstelling
 
@@ -235,11 +245,11 @@ Dit is de volledige tagging voor stap 0. Geen enkel hoofdstuk verandert van inho
 | Maaltafels | Tafels van 2, 5 en 10 | 2 |
 | | Tafels van 3 en 4 | 2 |
 | | Het gat in de kleine tafels | 2 |
-| | Delen door 2, 3, 4, 5 en 10 | 2 |
+| | Delen door de kleine tafels | 2 |
 | | Het kleine monsterexamen | 2 |
 | | Tafels van 6, 7, 8 en 9 | 3 |
-| | Het gat in het monster | 3 |
-| | Delen | 3 |
+| | Het gat in alle tafels | 3 |
+| | Delen door alle tafels | 3 |
 | | Monsterjacht | 3 |
 | | Het grote monsterexamen | 3 |
 | Het winkeltje | Centen tellen | 1 |
