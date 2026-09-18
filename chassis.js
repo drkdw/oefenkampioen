@@ -105,7 +105,7 @@ function bewaar(sleutel, score, van) {
 var state = {
   spel: null, hfd: 0, leerjaar: 3, aantal: 10, q: 0, score: 0, results: [], fouten: [],
   current: null, answered: false, sound: true, tempo: false, klok: null,
-  plan: [], decks: {}
+  plan: [], decks: {}, jassen: {}, vorigJasje: null, vorigeSleutel: null
 };
 var ac = null;
 
@@ -153,20 +153,52 @@ function planVoor(h, n) {
   uit[grootste] += n - som;
   return uit;
 }
+// het jasje is de voorstelling van een vraag, niet de vraag zelf: een jasje mag het antwoord
+// nooit veranderen. Levert een spel geen jasjes, dan is er maar een.
+function jasjesVoor(soort, h) {
+  var j = state.spel.jasjes ? state.spel.jasjes(soort, h) : null;
+  return j && j.length ? j.slice() : ['standaard'];
+}
 function bouwToets() {
   var h = state.spel.hoofdstukken[state.hfd];
   var verdeling = planVoor(h, state.aantal);
   var plan = [];
   state.decks = {};
+  state.jassen = {};
+  state.vorigJasje = null;
+  state.vorigeSleutel = null;
   Object.keys(verdeling).forEach(function (soort) {
     state.decks[soort] = shuffle(state.spel.zaadjes(soort, h));
+    state.jassen[soort] = shuffle(jasjesVoor(soort, h));
     for (var i = 0; i < verdeling[soort]; i++) plan.push(soort);
   });
   state.plan = shuffle(plan);
 }
 function maakVraag(soort) {
   var h = state.spel.hoofdstukken[state.hfd];
-  return state.spel.maak(soort, state.decks[soort].pop(), h);
+  // is de voorraad op, dan begint een volgende ronde: opnieuw geschud, en in andere jasjes. Zo
+  // liggen twee verschijningen van hetzelfde zaadje zo ver mogelijk uit elkaar.
+  if (!state.decks[soort].length) state.decks[soort] = shuffle(state.spel.zaadjes(soort, h));
+  if (!state.jassen[soort].length) state.jassen[soort] = shuffle(jasjesVoor(soort, h));
+  var jasje = state.jassen[soort].pop();
+  // twee keer na elkaar hetzelfde jasje maakt een toets eentonig
+  if (jasje === state.vorigJasje && state.jassen[soort].length) {
+    var ruilJ = state.jassen[soort].pop();
+    state.jassen[soort].push(jasje);
+    jasje = ruilJ;
+  }
+  var z = state.decks[soort].pop();
+  var v = state.spel.maak(soort, z, h, jasje);
+  // op een rondegrens kan hetzelfde zaadje meteen terugkomen; dat voelt als een fout in het spel
+  if (v.sleutel === state.vorigeSleutel && state.decks[soort].length) {
+    var ruilZ = state.decks[soort].pop();
+    state.decks[soort].push(z);
+    v = state.spel.maak(soort, ruilZ, h, jasje);
+  }
+  state.vorigJasje = jasje;
+  state.vorigeSleutel = v.sleutel;
+  if (!v.jasje) v.jasje = jasje;
+  return v;
 }
 
 /* ==================== schermen ==================== */
@@ -455,4 +487,4 @@ toonStart();
 // de zelfcheck is er voor de ontwikkelaar, dus hij komt pas binnen bij #test
 if (location.hash === '#test') import('./zelfcheck.js');
 
-export { SPELLEN, AANTALLEN, LEERJAREN, TEMPO, LOF, MOED, state, schoonNaam, naam, metNaam, leesTempo, secondenVoor, jarenVan, planVoor, bouwToets, maakVraag, toonStart };
+export { SPELLEN, AANTALLEN, jasjesVoor, LEERJAREN, TEMPO, LOF, MOED, state, schoonNaam, naam, metNaam, leesTempo, secondenVoor, jarenVan, planVoor, bouwToets, maakVraag, toonStart };
