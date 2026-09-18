@@ -7,6 +7,16 @@ Ontwerp, 18 september 2026.
 Oefenkampioen dekt vandaag het derde leerjaar. Dit ontwerp brengt het naar het volledige
 lager onderwijs, leerjaar 1 tot en met 6, volgens de doelen van het Vlaamse leerplan wiskunde.
 
+**Bron en haar grens.** De overheid legt de minimumdoelen wiskunde vast op
+[onderwijsdoelen.be](https://onderwijsdoelen.be), geldig vanaf 1 september 2025. Die doelen zijn
+alleen vastgelegd op twee ijkpunten voor het lager onderwijs: einde vierde leerjaar en einde
+zesde leerjaar. Er is geen officiële bron die zegt wat er precies in leerjaar 1, 2, 3 of 5 moet
+staan; dat is de sequenering die schoolmethodes zelf kiezen. Waar deze spec een doel aan een
+specifiek leerjaar hangt, is dat dus de gangbare volgorde in Vlaamse methodes, niet een letterlijk
+overheidsdoel voor dat jaar, behalve waar een doelcode zoals `2.2.17` expliciet genoemd wordt.
+Twijfel je aan een leerjaar, controleer dan op onderwijsdoelen.be of het doel bij het vierde of
+zesde leerjaar hoort, en leid daaruit af of onze plaatsing te vroeg of te laat is.
+
 Het is niet gemaakt voor één bepaald kind. Een ouder of leerkracht moet in één blik kunnen zien
 wat er voor een leerjaar in zit, en een kind moet zonder hulp bij zijn eigen niveau komen.
 
@@ -224,6 +234,9 @@ Dit is de volledige tagging voor stap 0. Geen enkel hoofdstuk verandert van inho
 | | Het grote examen | 3 |
 | Maaltafels | Tafels van 2, 5 en 10 | 2 |
 | | Tafels van 3 en 4 | 2 |
+| | Het gat in de kleine tafels | 2 |
+| | Delen door 2, 3, 4, 5 en 10 | 2 |
+| | Het kleine monsterexamen | 2 |
 | | Tafels van 6, 7, 8 en 9 | 3 |
 | | Het gat in het monster | 3 |
 | | Delen | 3 |
@@ -263,7 +276,9 @@ Dit is de volledige tagging voor stap 0. Geen enkel hoofdstuk verandert van inho
 | | Klopt de spiegeling? | 3 |
 | | Het grote spiegelexamen | 3 |
 
-Leerjaar 1 heeft na stap 0a dus drie hoofdstukken, leerjaar 2 achttien, leerjaar 3 zesentwintig.
+Leerjaar 1 heeft na stap 0a drie hoofdstukken, leerjaar 2 eenentwintig, leerjaar 3 zesentwintig.
+(Maaltafels liep hierop al vooruit: de drie hoofdstukken voor de kleine tafels in leerjaar 2 zijn
+al gebouwd, zie sectie 9.)
 Dat leerjaar 1 zo dun is, is precies waarom het als eerste wordt aangevuld.
 
 ## 9. Inhoud per leerjaar
@@ -292,17 +307,24 @@ Nieuwe hoofdstukken per leerjaar, met het spel waar ze in komen.
 | verdubbelen en halveren | rekenen |
 | even en oneven | rekenen |
 | het gelijkheidsteken in beide richtingen | rekenen |
-| tafels van 2 en 5 los van elkaar | maaltafels |
-| delen als omgekeerde van keer | maaltafels |
+| **gebouwd:** tafels 1, 2, 3, 4, 5, 10 met de ontbrekende factor en delen | maaltafels |
 | liter | maten |
 
 ### Leerjaar 3
 
 | doel | spel |
 | --- | --- |
+| **gebouwd:** tafels 6, 7, 8, 9 met de ontbrekende factor en delen; alle tafels 1 tot 10 door elkaar | maaltafels |
 | breuken als deel van een geheel: 1/2, 1/3, 1/4 | breuken |
 | breuken vergelijken met een tekening | breuken |
 | omtrek van vierkant en rechthoek | meetkunde |
+
+Doel `2.2.17` (minimumdoelen, ijkpunt einde vierde leerjaar): *de leerlingen kennen paraat de
+vermenigvuldigings- en deeltafels van 1, 2, ..., 10.* Geen tafels van 11 of 12: die staan bij
+sommige methodes als extra, maar horen niet bij het minimumdoel, en Oefenkampioen bouwt ze dus
+niet. Met de tafels klaar tegen het einde van leerjaar 3 haalt het spel dit doel een jaar
+vroeger dan het ijkpunt vraagt, wat toegelaten is: een minimumdoel is een "ten laatste", geen
+"ten vroegste".
 
 ### Leerjaar 4
 
