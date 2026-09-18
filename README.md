@@ -17,15 +17,20 @@ zodat de opmaak, de puntentelling, de opslag en de zelfcheck maar op een plaats 
 
 ## Leerjaren
 
-Elk hoofdstuk hoort bij een leerjaar. Op het startscherm kies je er een met de rij
-**Welk leerjaar?**, en die keuze blijft bewaard. Het is een voorkeur, geen slot:
+Elk hoofdstuk hoort bij het leerjaar waarin het wordt aangebracht. Op het startscherm kies je
+met de rij **Welk leerjaar?** je niveau, en die keuze blijft bewaard.
 
-- spellen met hoofdstukken voor dat jaar komen bovenaan, de rest zakt eronder en blijft aantikbaar
-- binnen een spel staan de hoofdstukken in uitklapbare groepen per leerjaar, met het gekozen jaar open
-- een kind dat vooruit wil, klapt het volgende jaar open; een kind dat wil herhalen, gaat een jaar terug
+Een leerjaar is cumulatief. Kies je het derde, dan zie je alles tot en met het derde: de hele
+uren van het eerste, de kwartieren van het tweede en de tijdsduur van het derde. Wie in het derde
+zit moet de kwartieren immers nog kunnen oefenen.
 
-Vandaag zitten er 47 hoofdstukken in: 3 in het eerste leerjaar, 18 in het tweede, 26 in het
-derde. Het vierde tot zesde staan nog leeg.
+- binnen een spel is het één vlakke lijst, je hoeft het leerjaar niet nog eens te kiezen
+- spellen met hoofdstukken voor dat niveau komen bovenaan, de rest zakt eronder en blijft aantikbaar
+- een kind dat vooruit wil, zet het leerjaar een stapje hoger
+
+Vandaag zitten er 47 hoofdstukken in: 3 nieuw in het eerste leerjaar, 18 in het tweede, 26 in het
+derde. Een kind in het derde heeft er dus 47 te oefenen, een kind in het eerste maar 3. Het
+vierde tot zesde leerjaar voegen nog niets toe.
 
 ## De spellen
 

@@ -44,12 +44,16 @@ function jarenVan(spel) {
   spel.hoofdstukken.forEach(function (h) { if (uit.indexOf(h.leerjaar) === -1) uit.push(h.leerjaar); });
   return uit.sort(function (a, b) { return a - b; });
 }
-// op de spelkaart: welke leerjaren dit spel dekt, en of het gekozen jaar erbij zit
+// een leerjaar is cumulatief: wie in het derde zit moet de kwartieren van het tweede nog kunnen
+// oefenen, dus alles tot en met het gekozen jaar hoort erbij
+function hoofdstukkenVoor(spel) {
+  return spel.hoofdstukken.map(function (h, i) { return { h: h, i: i }; })
+    .filter(function (r) { return r.h.leerjaar <= state.leerjaar; });
+}
 function dekkingTekst(spel) {
-  var j = jarenVan(spel);
-  var bereik = j.length === 1 ? 'leerjaar ' + j[0] : 'leerjaar ' + j[0] + ' tot ' + j[j.length - 1];
-  return j.indexOf(state.leerjaar) > -1 ? bereik
-    : 'nog niets voor het ' + jaarNaam(state.leerjaar) + ', wel ' + bereik;
+  var n = hoofdstukkenVoor(spel).length;
+  return n ? n + (n === 1 ? ' hoofdstuk' : ' hoofdstukken')
+    : 'nog niets voor het ' + jaarNaam(state.leerjaar);
 }
 function leesAantal() {
   var a;
@@ -219,8 +223,8 @@ function toonStart() {
   // spellen met iets voor het gekozen leerjaar komen eerst; de rest blijft staan, eronder
   var rijen = SPELLEN.map(function (s, i) { return { s: s, i: i }; });
   rijen.sort(function (a, b) {
-    var ja = jarenVan(a.s).indexOf(state.leerjaar) > -1 ? 0 : 1;
-    var jb = jarenVan(b.s).indexOf(state.leerjaar) > -1 ? 0 : 1;
+    var ja = hoofdstukkenVoor(a.s).length ? 0 : 1;
+    var jb = hoofdstukkenVoor(b.s).length ? 0 : 1;
     return ja - jb || a.i - b.i;
   });
   $('spellen').innerHTML = rijen.map(function (r) {
@@ -268,26 +272,21 @@ function toonMenu(spel) {
   stopKlok();
   state.spel = spel;
   var beste = lees();
-  // heeft dit spel niets voor het gekozen jaar, dan staat de eerste groep open
-  var jaren = jarenVan(spel);
-  var openJaar = jaren.indexOf(state.leerjaar) > -1 ? state.leerjaar : jaren[0];
-  $('menu').innerHTML = jaren.map(function (lj) {
-    var lijst = spel.hoofdstukken.map(function (h, i) { return { h: h, i: i }; })
-      .filter(function (r) { return r.h.leerjaar === lj; });
-    return '<details class="jaargroep"' + (lj === openJaar ? ' open' : '') + '>' +
-      '<summary>' + jaarNaam(lj) + '<span class="hoeveel">' + lijst.length +
-      (lijst.length === 1 ? ' hoofdstuk' : ' hoofdstukken') + '</span></summary>' +
-      '<div class="menu">' + lijst.map(function (r, k) {
-        return '<button class="hfd" data-i="' + r.i + '">' +
-          kaart(r.h.ico, k + 1, r.h.titel, r.h.tekst, beste[spel.id + ':' + r.i], r.h.badge) + '</button>';
-      }).join('') + '</div></details>';
+  // een vlakke lijst: het leerjaar is al gekozen op het startscherm, dus niet nog een keer hier
+  var lijst = hoofdstukkenVoor(spel);
+  $('menu').innerHTML = lijst.map(function (r, k) {
+    return '<button class="hfd" data-i="' + r.i + '">' +
+      kaart(r.h.ico, k + 1, r.h.titel, r.h.tekst, beste[spel.id + ':' + r.i], r.h.badge) + '</button>';
   }).join('');
   Array.prototype.forEach.call($('menu').querySelectorAll('.hfd'), function (b) {
     b.onclick = function () { startHoofdstuk(Number(b.dataset.i)); };
   });
   $('kop').innerHTML = spel.ico + ' ' + spel.naam;
   $('spelTitel').textContent = spel.naam;
-  $('spelLead').textContent = 'Kies een hoofdstuk. Elke toets telt ' + state.aantal + ' vragen.';
+  $('spelLead').textContent = lijst.length
+    ? 'Kies een hoofdstuk. Elke toets telt ' + state.aantal + ' vragen.'
+    : 'Hier staat nog niets voor het ' + jaarNaam(state.leerjaar) +
+      '. Kies bovenaan een ander leerjaar, of een ander spel.';
   $('startScherm').hidden = true;
   $('menuScherm').hidden = false;
   $('game').hidden = true;
