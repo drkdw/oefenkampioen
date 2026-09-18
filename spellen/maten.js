@@ -71,6 +71,26 @@ import { shuffle, keuzes, vulAan, positief, vulRondom, hoofdletter, andere } fro
         (richting === 0 ? x.maat > basis.maat : x.maat < basis.maat);
     });
   }
+  // een maatbeker, gevuld tot een van tien liter-strepen: dezelfde manier van aflezen als de
+  // liniaal, maar dan voor inhoud, en zonder de omrekening naar deciliter die leerjaar 3 doet
+  function maatbeker(liter) {
+    var MAX = 10, breed = 90, hoog = 150, vulHoogte = (hoog - 20) * (liter / MAX);
+    var p = ['<rect x="10" y="10" width="' + (breed - 20) + '" height="' + (hoog - 20) +
+      '" rx="6" fill="none" stroke="var(--line)" stroke-width="3"/>',
+      '<rect x="10" y="' + (hoog - 10 - vulHoogte) + '" width="' + (breed - 20) + '" height="' + vulHoogte +
+      '" fill="var(--accent)"/>'];
+    for (var i = 1; i <= MAX; i++) {
+      var y = hoog - 10 - (hoog - 20) * (i / MAX);
+      p.push('<line x1="' + (breed - 20) + '" y1="' + y + '" x2="' + breed + '" y2="' + y +
+        '" stroke="var(--ink-soft)" stroke-width="2"/>');
+      if (i % 2 === 0) {
+        p.push('<text x="' + (breed + 6) + '" y="' + y + '" dominant-baseline="central" ' +
+          'font-family="Fredoka, sans-serif" font-size="11" fill="var(--ink-soft)">' + i + '</text>');
+      }
+    }
+    return '<svg viewBox="0 0 ' + (breed + 24) + ' ' + hoog + '" width="' + (breed + 24) + '" height="' + hoog +
+      '" role="img" aria-label="Een maatbeker gevuld tot ' + liter + ' liter">' + p.join('') + '</svg>';
+  }
   /* een weegschaal of maatbeker in het groot */
   function ding(d) {
     return '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;font-family:Fredoka,sans-serif">' +
@@ -110,6 +130,8 @@ export default {
       badge: 'makkelijk', stelsel: 'lengte', plan: { liniaal: 10 } },
     { leerjaar: 2, ico: '📐', titel: 'Meter en centimeter', tekst: 'Van m naar cm en terug.',
       badge: 'gemiddeld', stelsel: 'lengte', paren: [['m', 'cm'], ['cm', 'mm'], ['m', 'dm'], ['dm', 'cm']], plan: { om: 10 } },
+    { leerjaar: 2, ico: '🧃', titel: 'Liter aflezen', tekst: 'Hoeveel liter staat er in de beker?',
+      badge: 'makkelijk', plan: { liter: 10 } },
     { leerjaar: 3, ico: '⚖️', titel: 'Kilo en gram', tekst: 'Van kg naar g en terug.',
       badge: 'gemiddeld', stelsel: 'gewicht', paren: [['kg', 'g']], plan: { om: 10 } },
     { leerjaar: 3, ico: '🥤', titel: 'Liter en deciliter', tekst: 'Van l naar dl, cl en ml.',
@@ -125,6 +147,11 @@ export default {
   ],
   zaadjes: function (soort, h) {
     var uit = [];
+    if (soort === 'liter') {
+      var uit3 = [];
+      for (var l = 1; l <= 10; l++) uit3.push({ liter: l });
+      return uit3;
+    }
     if (soort === 'vergelijk') {
       var uit2 = [];
       DINGEN.forEach(function (basis) {
@@ -163,6 +190,13 @@ export default {
     return uit;
   },
   maak: function (soort, z) {
+    if (soort === 'liter') {
+      var fout5 = [];
+      vulAan(fout5, z.liter, [z.liter + 1, z.liter - 1, z.liter + 2, z.liter - 2], positief);
+      vulRondom(fout5, z.liter, 1, function (k) { return k >= 1 && k <= 10; });
+      return { soort: soort, sleutel: 'liter|' + z.liter, liter: z.liter, ans: String(z.liter),
+        options: keuzes(z.liter, fout5.slice(0, 3)) };
+    }
     if (soort === 'vergelijk') {
       var poel2 = vergelijkPoel(z.basis, z.richting), goed = poel2[Math.floor(Math.random() * poel2.length)];
       var buiten = DINGEN.filter(function (x) {
@@ -211,6 +245,7 @@ export default {
       })) };
   },
   teken: function (v) {
+    if (v.soort === 'liter') return maatbeker(v.liter);
     if (v.soort === 'vergelijk') return ding(v.basis);
     if (v.soort === 'liniaal') return liniaal(v.mm);
     if (v.soort === 'past') return ding(v.ding);
@@ -220,10 +255,12 @@ export default {
     if (v.soort === 'liniaal') return null;
     if (v.soort === 'past') return null;
     if (v.soort === 'vergelijk') return null;
+    if (v.soort === 'liter') return null;
     return v.n + ' ' + v.van + ' = ? ' + v.naar;
   },
   vraag: function (v, nr) {
     var kop = 'Vraag ' + nr + ': ';
+    if (v.soort === 'liter') return { titel: kop + 'hoeveel liter staat er in de beker?', sub: 'Lees de streep af.' };
     if (v.soort === 'vergelijk') {
       return { titel: kop + 'wat is ' + VERGELIJK[v.basis.stelsel][v.richting] + ' dan ' + v.basis.naam + '?',
         sub: 'Denk aan hoe groot het echt is, je moet niets meten.' };
@@ -234,6 +271,7 @@ export default {
     return { titel: kop + 'hoeveel ' + v.naar + ' is ' + v.n + ' ' + v.van + '?' };
   },
   uitleg: function (v) {
+    if (v.soort === 'liter') return 'De beker is gevuld tot ' + v.liter + ' liter.';
     if (v.soort === 'vergelijk') return hoofdletter(v.ans) + ' is ' + VERGELIJK[v.basis.stelsel][v.richting] + ' dan ' + v.basis.naam + '.';
     if (v.soort === 'liniaal') return 'De streep loopt tot ' + v.cm + ', dus ' + v.cm + ' cm. Dat is ' + v.mm + ' mm.';
     if (v.soort === 'past') return hoofdletter(v.ding.naam) + ' is ongeveer ' + v.getal + ' ' + v.eh + '.';
@@ -244,6 +282,7 @@ export default {
       : 'Naar een grotere maat maak je het getal ' + stap + ' keer kleiner: ' + v.n + ' : ' + stap + ' = ' + v.uit + '.';
   },
   kort: function (v) {
+    if (v.soort === 'liter') return 'Hoeveel liter is dit?';
     if (v.soort === 'vergelijk') return 'Wat is ' + VERGELIJK[v.basis.stelsel][v.richting] + ' dan ' + v.basis.naam + '?';
     if (v.soort === 'liniaal') return 'De streep op de liniaal';
     if (v.soort === 'past') return 'Hoeveel is ' + v.ding.naam + '?';
