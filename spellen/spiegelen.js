@@ -122,6 +122,8 @@ export default {
       badge: 'moeilijk', as: 'verticaal', plan: { klopt: 10 } },
     { leerjaar: 2, ico: '\uD83D\uDD22', titel: 'Hoeveel vakjes?', tekst: 'Hoeveel vakjes kleur je in de hele figuur?',
       badge: 'makkelijk', as: 'verticaal', plan: { tellen: 10 } },
+    { leerjaar: 2, ico: '\uD83C\uDFC6', titel: 'Het eerste spiegelexamen', tekst: 'Spiegelen en tellen door elkaar.',
+      badge: 'gemiddeld', as: 'verticaal', plan: { helft: 6, tellen: 4 } },
     { leerjaar: 3, ico: '\uD83C\uDFC6', titel: 'Het grote spiegelexamen', tekst: 'Alles door elkaar.',
       badge: 'moeilijk', as: 'verticaal', plan: { helft: 5, klopt: 3, tellen: 2 } }
   ],
