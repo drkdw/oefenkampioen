@@ -116,6 +116,8 @@ export default {
       badge: 'gemiddeld', stelsel: 'inhoud', paren: [['l', 'dl'], ['l', 'cl'], ['l', 'ml'], ['dl', 'cl']], plan: { om: 10 } },
     { leerjaar: 2, ico: '🤔', titel: 'Welke maat past?', tekst: 'Weegt een appel 150 g of 150 kg?',
       badge: 'makkelijk', plan: { past: 10 } },
+    { leerjaar: 2, ico: '🏆', titel: 'Het eerste meetexamen', tekst: 'De liniaal, meter en centimeter, en welke maat past.',
+      badge: 'gemiddeld', stelsel: 'lengte', paren: [['m', 'cm'], ['cm', 'mm']], plan: { liniaal: 4, om: 3, past: 3 } },
     { leerjaar: 3, ico: '⌨️', titel: 'Zelf omrekenen', tekst: 'Geen keuzes. Typ het getal zelf in.',
       badge: 'moeilijk', stelsel: 'lengte', paren: [['m', 'cm'], ['cm', 'mm'], ['kg', 'g'], ['l', 'ml']], plan: { typ: 10 } },
     { leerjaar: 3, ico: '🏆', titel: 'Het grote meetexamen', tekst: 'Alles door elkaar.',
