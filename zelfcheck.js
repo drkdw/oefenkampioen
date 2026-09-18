@@ -158,8 +158,11 @@ var perJaar = {};
 SPELLEN.forEach(function (s2) {
   s2.hoofdstukken.forEach(function (h) { perJaar[h.leerjaar] = (perJaar[h.leerjaar] || 0) + 1; });
 });
-console.log('Hoofdstukken per leerjaar: ' + LEERJAREN.map(function (lj) {
-  return lj + ': ' + (perJaar[lj] || 0);
+// nieuw in dat jaar, en tussen haakjes wat een kind van dat niveau in totaal te oefenen heeft
+var opgeteld = 0;
+console.log('Hoofdstukken per leerjaar (nieuw, cumulatief): ' + LEERJAREN.map(function (lj) {
+  opgeteld += perJaar[lj] || 0;
+  return lj + ': ' + (perJaar[lj] || 0) + ' (' + opgeteld + ')';
 }).join(',  '));
 console.log(fouten === 0
   ? 'Zelfcheck klaar: ' + SPELLEN.length + ' spellen, ' + toetsen + ' toetsen doorgerekend, geen fouten.'
