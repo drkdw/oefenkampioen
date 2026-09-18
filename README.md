@@ -11,7 +11,7 @@ zodat de opmaak, de puntentelling, de opslag en de zelfcheck maar op een plaats 
 | spel | wat |
 | --- | --- |
 | Klokkijken | hele uren, kwartieren, dagdelen, digitale klok, tijdsduur |
-| Maaltafelmonsters | maaltafels, delen, de ontbrekende factor |
+| Maaltafels | maaltafels, delen, de ontbrekende factor |
 | Het winkeltje | munten tellen, wisselgeld, welke munt ontbreekt |
 | Meten en wegen | liniaal lezen, m/cm/mm, kg/g, l/dl/cl, welke maat past |
 | De kalender | dagen, maanden, seizoenen, hoeveel dagen, verder tellen |
