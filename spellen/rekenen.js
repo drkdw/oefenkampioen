@@ -113,6 +113,15 @@ import { keuzes, vulAan, positief, vulRondom, andere } from '../gereedschap.js';
     return lijst.slice(0, 3);
   }
 
+  // twee getallen op een rij, voor tientallen/eenheden en verdubbelen/halveren
+  function getalDuo(a, b) {
+    return '<div style="display:flex;gap:14px;justify-content:center;align-items:center">' +
+      [a, b].map(function (n) {
+        return '<div style="display:flex;align-items:center;justify-content:center;font-family:Fredoka,sans-serif;' +
+          'font-size:48px;color:var(--ink);background:var(--card-2);border-radius:18px;width:96px;height:96px">' +
+          n + '</div>';
+      }).join('<span style="font-size:28px;color:var(--ink-soft);align-self:center">→</span>') + '</div>';
+  }
   function getalTegel(n) {
     return '<div style="display:flex;align-items:center;justify-content:center;font-family:Fredoka,sans-serif;' +
       'font-size:56px;color:var(--ink);background:var(--card-2);border-radius:20px;width:112px;height:112px;margin:0 auto">' +
@@ -154,10 +163,20 @@ export default {
       badge: 'gemiddeld', tot: 20, plus: false, stap: [2, 9], plan: { som: 10 } },
     { leerjaar: 1, ico: '🏆', titel: 'Het eerste rekenexamen', tekst: 'Splitsen, tellen, erbij en eraf, en de brug tot 20.',
       badge: 'gemiddeld', tot: 20, plus: true, stap: [2, 9], plan: { splits: 2, vlot: 2, som: 2, volgend: 2, rang: 2 } },
+    { leerjaar: 2, ico: '💯', titel: 'Getallen tot 100', tekst: '47 is 4 tientallen en 7 eenheden.',
+      badge: 'makkelijk', plan: { tientallen: 5, eenheden: 5 } },
+    { leerjaar: 2, ico: '👯', titel: 'Verdubbelen en halveren', tekst: 'Het dubbele van 6, of de helft van 16.',
+      badge: 'makkelijk', plan: { dubbel: 5, helft: 5 } },
+    { leerjaar: 2, ico: '🎲', titel: 'Even of oneven?', tekst: 'Welk van deze vier getallen is even?',
+      badge: 'makkelijk', plan: { paar: 10 } },
+    { leerjaar: 2, ico: '🔄', titel: 'Het is-gelijk-teken achterstevoren', tekst: '10 = 8 + ?. Het teken werkt ook omgekeerd.',
+      badge: 'gemiddeld', plan: { omgekeerd: 10 } },
     { leerjaar: 2, ico: '🧱', titel: 'Tot 100 erbij', tekst: '47 + 8. Eerst naar 50, dan verder.',
       badge: 'makkelijk', tot: 100, plus: true, stap: [3, 9], plan: { som: 10 } },
     { leerjaar: 2, ico: '🧱', titel: 'Tot 100 eraf', tekst: '52 − 7. Eerst naar 50, dan verder.',
       badge: 'makkelijk', tot: 100, plus: false, stap: [3, 9], plan: { som: 10 } },
+    { leerjaar: 2, ico: '🏆', titel: 'Het tweede rekenexamen', tekst: 'Tientallen, verdubbelen, even of oneven, en de brug tot 100.',
+      badge: 'gemiddeld', tot: 100, plus: true, stap: [3, 9], plan: { tientallen: 2, dubbel: 2, paar: 2, omgekeerd: 2, som: 2 } },
     { leerjaar: 3, ico: '🌉', titel: 'Tot 1000 erbij', tekst: '346 + 8, en 346 + 40.',
       badge: 'gemiddeld', tot: 1000, plus: true, stap: [3, 9], tientallen: true, plan: { som: 10 } },
     { leerjaar: 3, ico: '🌉', titel: 'Tot 1000 eraf', tekst: '412 − 7, en 412 − 30.',
@@ -199,6 +218,33 @@ export default {
     if (soort === 'rang') {
       for (var lengte = 3; lengte <= DIERTJES.length; lengte++) {
         for (var plek = 0; plek < lengte; plek++) uit.push({ lengte: lengte, plek: plek });
+      }
+      return uit;
+    }
+    if (soort === 'tientallen' || soort === 'eenheden') {
+      for (var honderd = 10; honderd <= 99; honderd++) uit.push({ n: honderd });
+      return uit;
+    }
+    if (soort === 'dubbel') {
+      for (var d = 1; d <= 50; d++) uit.push({ n: d });
+      return uit;
+    }
+    if (soort === 'helft') {
+      for (var hd = 1; hd <= 50; hd++) uit.push({ n: hd * 2 });
+      return uit;
+    }
+    if (soort === 'paar') {
+      [true, false].forEach(function (isEven) {
+        for (var groep = 1; groep <= 90; groep += 10) uit.push({ even: isEven, groep: groep });
+      });
+      return uit;
+    }
+    if (soort === 'omgekeerd') {
+      for (var oa = 1; oa <= 9; oa++) {
+        for (var ob = 1; ob <= 9; ob++) {
+          uit.push({ a: oa, b: ob, vraagTotaal: true });
+          uit.push({ a: oa, b: ob, vraagTotaal: false });
+        }
       }
       return uit;
     }
@@ -246,6 +292,50 @@ export default {
       return { soort: soort, sleutel: sl4, lengte: z.lengte, plek: z.plek, ans: ans3,
         options: keuzes(ans3, andere(ORDINALEN.slice(0, Math.max(z.lengte, 4)), ans3, 3)) };
     }
+    if (soort === 'tientallen' || soort === 'eenheden') {
+      var tal = Math.floor(z.n / 10), eenh = z.n % 10, juist2 = soort === 'tientallen' ? tal : eenh;
+      var kern2 = [juist2 + 1, juist2 - 1, juist2 + 2, soort === 'tientallen' ? eenh : tal];
+      var fout6 = [];
+      vulAan(fout6, juist2, kern2, function (k) { return k >= 0 && k <= 9; });
+      vulRondom(fout6, juist2, 1, function (k) { return k >= 0 && k <= 9; });
+      return { soort: soort, sleutel: soort + '|' + z.n, n: z.n, tal: tal, eenh: eenh, ans: String(juist2),
+        options: keuzes(juist2, fout6.slice(0, 3)) };
+    }
+    if (soort === 'dubbel' || soort === 'helft') {
+      var juist3 = soort === 'dubbel' ? z.n * 2 : z.n / 2;
+      var kern3 = [z.n, juist3 + 1, juist3 - 1, juist3 + 2, juist3 - 2];
+      var fout7 = [];
+      vulAan(fout7, juist3, kern3, positief);
+      vulRondom(fout7, juist3, 1, positief);
+      return { soort: soort, sleutel: soort + '|' + z.n, n: z.n, ans: String(juist3),
+        options: keuzes(juist3, fout7.slice(0, 3)) };
+    }
+    if (soort === 'paar') {
+      var poel = [];
+      for (var i = z.groep; i < z.groep + 10; i++) poel.push(i);
+      var juistePoel = poel.filter(function (x) { return (x % 2 === 0) === z.even; });
+      var foutePoel = poel.filter(function (x) { return (x % 2 === 0) !== z.even; });
+      var goedGetal = juistePoel[Math.floor(Math.random() * juistePoel.length)];
+      var foutGetal = [];
+      vulAan(foutGetal, goedGetal, foutePoel, positief);
+      return { soort: soort, sleutel: 'paar|' + z.even + z.groep, even: z.even, ans: String(goedGetal),
+        options: keuzes(goedGetal, foutGetal.slice(0, 3)) };
+    }
+    if (soort === 'omgekeerd') {
+      var totaal3 = z.a + z.b;
+      if (z.vraagTotaal) {
+        var fout8 = [];
+        vulAan(fout8, totaal3, [totaal3 + 1, totaal3 - 1, z.a, z.b], positief);
+        vulRondom(fout8, totaal3, 1, positief);
+        return { soort: soort, sleutel: 'omgekeerd|totaal:' + z.a + '+' + z.b, a: z.a, b: z.b,
+          vraagTotaal: true, uit: totaal3, ans: String(totaal3), options: keuzes(totaal3, fout8.slice(0, 3)) };
+      }
+      var fout9 = [];
+      vulAan(fout9, z.b, [z.b + 1, z.b - 1, z.a, totaal3], positief);
+      vulRondom(fout9, z.b, 1, positief);
+      return { soort: soort, sleutel: 'omgekeerd|deel:' + z.a + '+' + z.b, a: z.a, b: z.b,
+        vraagTotaal: false, uit: totaal3, ans: String(z.b), options: keuzes(z.b, fout9.slice(0, 3)) };
+    }
     var uitkomst = z.plus ? z.a + z.b : z.a - z.b;
     var sl = soort + '|' + z.a + (z.plus ? '+' : '-') + z.b;
     if (soort === 'vlot') {
@@ -271,13 +361,19 @@ export default {
   teken: function (v) {
     if (v.soort === 'splits') return tienFrame(v.totaal, v.deel1);
     if (v.soort === 'vlot') return lijnRecht(v.a, v.b, v.plus, v.a >= 10 ? 19 : 10);
-    if (v.soort === 'volgend') return getalTegel(v.n);
+    if (v.soort === 'volgend' || v.soort === 'tientallen' || v.soort === 'eenheden' || v.soort === 'dubbel' ||
+        v.soort === 'helft') return getalTegel(v.n);
     if (v.soort === 'rang') return rijTekening(v.lengte, v.plek);
+    if (v.soort === 'paar' || v.soort === 'omgekeerd') return '';
     return lijn(v.a, v.b, v.plus, v.soort !== 'gat');
   },
   scherm: function (v) {
     if (v.soort === 'splits') return v.deel1 + ' + ? = ' + v.totaal;
-    if (v.soort === 'volgend' || v.soort === 'rang') return null;
+    if (v.soort === 'omgekeerd') {
+      return v.vraagTotaal ? '? = ' + v.a + ' + ' + v.b : v.uit + ' = ' + v.a + ' + ?';
+    }
+    if (v.soort === 'volgend' || v.soort === 'rang' || v.soort === 'tientallen' ||
+        v.soort === 'eenheden' || v.soort === 'dubbel' || v.soort === 'helft' || v.soort === 'paar') return null;
     var teken = v.plus ? ' + ' : ' − ';
     if (v.soort === 'gat') return v.a + teken + '? = ' + v.uit;
     return v.a + teken + v.b;
@@ -290,6 +386,12 @@ export default {
         sub: v.richting === 'na' ? 'Eén getal verder tellen.' : 'Eén getal terug tellen.' };
     }
     if (v.soort === 'rang') return { titel: kop + 'op welke plaats staat het dier met het randje?', sub: 'Tel van links naar rechts.' };
+    if (v.soort === 'tientallen') return { titel: kop + 'hoeveel tientallen zitten er in ' + v.n + '?', sub: v.n + ' = ? tientallen en ' + v.eenh + ' eenheden.' };
+    if (v.soort === 'eenheden') return { titel: kop + 'hoeveel eenheden zitten er in ' + v.n + '?', sub: v.n + ' = ' + v.tal + ' tientallen en ? eenheden.' };
+    if (v.soort === 'dubbel') return { titel: kop + 'wat is het dubbele van ' + v.n + '?', sub: v.n + ' + ' + v.n + ' = ?' };
+    if (v.soort === 'helft') return { titel: kop + 'wat is de helft van ' + v.n + '?', sub: 'Verdeel in twee gelijke stukken.' };
+    if (v.soort === 'paar') return { titel: kop + 'welk van deze vier getallen is ' + (v.even ? 'even' : 'oneven') + '?', sub: 'Even kan je door twee delen, zonder rest.' };
+    if (v.soort === 'omgekeerd') return { titel: kop + 'welk getal ontbreekt?', sub: 'Het is-gelijk-teken werkt ook van rechts naar links.' };
     if (v.soort === 'gat') return { titel: kop + 'welk getal ontbreekt?', sub: 'Hoe groot is de sprong?' };
     if (v.soort === 'typ') return { titel: kop + 'hoeveel is ' + v.a + (v.plus ? ' plus ' : ' min ') + v.b + '?', sub: 'Typ alleen het getal.' };
     return { titel: kop + 'hoeveel is ' + v.a + (v.plus ? ' plus ' : ' min ') + v.b + '?' };
@@ -300,6 +402,16 @@ export default {
       return v.richting === 'na' ? 'Na ' + v.n + ' komt ' + (v.n + 1) + '.' : 'Voor ' + v.n + ' komt ' + (v.n - 1) + '.';
     }
     if (v.soort === 'rang') return 'Het dier met het randje staat op de ' + v.ans + ' plaats.';
+    if (v.soort === 'tientallen') return v.n + ' bestaat uit ' + v.tal + ' tientallen en ' + v.eenh + ' eenheden.';
+    if (v.soort === 'eenheden') return v.n + ' bestaat uit ' + v.tal + ' tientallen en ' + v.eenh + ' eenheden.';
+    if (v.soort === 'dubbel') return 'Het dubbele van ' + v.n + ' is ' + (v.n * 2) + ': ' + v.n + ' + ' + v.n + '.';
+    if (v.soort === 'helft') return 'De helft van ' + v.n + ' is ' + (v.n / 2) + ': verdeeld in twee gelijke stukken.';
+    if (v.soort === 'paar') return v.ans + ' is ' + (v.even ? 'even' : 'oneven') + ': je kan het' + (v.even ? '' : ' niet') + ' door twee delen zonder rest.';
+    if (v.soort === 'omgekeerd') {
+      return v.vraagTotaal
+        ? v.a + ' + ' + v.b + ' is ' + v.uit + ', dus ? = ' + v.uit + '.'
+        : v.uit + ' = ' + v.a + ' + ' + v.b + ', dus ? = ' + v.b + '.';
+    }
     if (v.soort === 'vlot') {
       var teken2 = v.plus ? '+' : '−';
       return v.a + ' ' + teken2 + ' ' + v.b + ' = ' + v.ans + '. Geen brug nodig, het blijft binnen hetzelfde tiental.';
@@ -313,6 +425,12 @@ export default {
     if (v.soort === 'splits') return v.deel1 + ' + ? = ' + v.totaal;
     if (v.soort === 'volgend') return 'Wat komt ' + v.richting + ' ' + v.n + '?';
     if (v.soort === 'rang') return 'Welke plaats heeft het gemarkeerde dier?';
+    if (v.soort === 'tientallen') return 'Tientallen in ' + v.n;
+    if (v.soort === 'eenheden') return 'Eenheden in ' + v.n;
+    if (v.soort === 'dubbel') return 'Het dubbele van ' + v.n;
+    if (v.soort === 'helft') return 'De helft van ' + v.n;
+    if (v.soort === 'paar') return 'Welk getal is ' + (v.even ? 'even' : 'oneven') + '?';
+    if (v.soort === 'omgekeerd') return v.vraagTotaal ? '? = ' + v.a + ' + ' + v.b : v.uit + ' = ' + v.a + ' + ?';
     var teken = v.plus ? ' + ' : ' − ';
     return v.soort === 'gat' ? v.a + teken + '? = ' + v.uit : v.a + teken + v.b;
   },
