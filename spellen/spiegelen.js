@@ -1,4 +1,4 @@
-import { shuffle, keuzes, vulAan, positief } from '../gereedschap.js';
+import { shuffle, keuzes, vulAan, positief, andere } from '../gereedschap.js';
 
   var N = 6;            // het rooster is zes bij zes
   var CEL = 26;
@@ -46,6 +46,35 @@ import { shuffle, keuzes, vulAan, positief } from '../gereedschap.js';
   ];
   var KLEUREN = ['#FF7A45', '#7C5CFF', '#12A06B', '#FF5D8F', '#35B8E0', '#9B5DE5'];
 
+  /* --------- leerjaar 1: vormen en richtingen, los van het spiegelraster --------- */
+
+  var VORMNAMEN = ['cirkel', 'vierkant', 'driehoek', 'rechthoek'];
+  function vormTekening(naam, kleur) {
+    var svg = {
+      cirkel: '<circle cx="60" cy="60" r="48" fill="' + kleur + '"/>',
+      vierkant: '<rect x="16" y="16" width="88" height="88" rx="8" fill="' + kleur + '"/>',
+      rechthoek: '<rect x="4" y="30" width="112" height="60" rx="8" fill="' + kleur + '"/>',
+      driehoek: '<polygon points="60,8 112,106 8,106" fill="' + kleur + '"/>'
+    }[naam];
+    return '<svg viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="een ' + naam + '">' + svg + '</svg>';
+  }
+
+  var POSITIES = ['links', 'rechts', 'boven', 'onder'];
+  var DIERTJES2 = [{ ico: '⚽', naam: 'bal' }, { ico: '🐈', naam: 'kat' }, { ico: '🌟', naam: 'ster' },
+    { ico: '🚗', naam: 'auto' }, { ico: '🎈', naam: 'ballon' }, { ico: '🐟', naam: 'vis' }];
+  // een huisje in het midden, het diertje op een van de vier zijden ernaast
+  function positieTekening(ico, positie) {
+    var cel = { boven: 1, links: 3, rechts: 5, onder: 7 }[positie];
+    var p = '';
+    for (var i = 0; i < 9; i++) {
+      var inhoud = i === 4 ? '🏠' : (i === cel ? ico : '');
+      p += '<div style="display:flex;align-items:center;justify-content:center;font-size:28px;' +
+        'background:var(--card-2);border-radius:8px">' + inhoud + '</div>';
+    }
+    return '<div style="display:grid;grid-template-columns:repeat(3,44px);grid-template-rows:repeat(3,44px);gap:4px" ' +
+      'role="img" aria-label="Een huisje met een diertje ' + positie + ' ervan">' + p + '</div>';
+  }
+
   /* een rooster tekenen, met of zonder spiegelas */
   function rooster(vakjes, kleur, as, breed) {
     var maat = breed || N * CEL;
@@ -81,6 +110,10 @@ export default {
   tekst: 'Spiegelen, symmetrie en de helft die ontbreekt.',
   top: 'Jij ziet elke spiegeling meteen!',
   hoofdstukken: [
+    { leerjaar: 1, ico: '\uD83D\uDD37', titel: 'Vormen herkennen', tekst: 'Cirkel, vierkant, driehoek of rechthoek?',
+      badge: 'makkelijk', plan: { vorm: 10 } },
+    { leerjaar: 1, ico: '\uD83E\uDDED', titel: 'Links, rechts, boven, onder', tekst: 'Waar staat het diertje naast het huisje?',
+      badge: 'makkelijk', plan: { positie: 10 } },
     { leerjaar: 2, ico: '\uD83E\uDE9E', titel: 'Spiegelen naar rechts', tekst: 'Welke helft hoort er aan de andere kant?',
       badge: 'gemiddeld', as: 'verticaal', plan: { helft: 10 } },
     { leerjaar: 2, ico: '\u2195\uFE0F', titel: 'Spiegelen naar onder', tekst: 'Dezelfde vraag, maar de as ligt plat.',
@@ -94,6 +127,14 @@ export default {
   ],
   zaadjes: function (soort, h) {
     var uit = [];
+    if (soort === 'vorm') {
+      VORMNAMEN.forEach(function (naam) { KLEUREN.forEach(function (kleur) { uit.push({ naam: naam, kleur: kleur }); }); });
+      return uit;
+    }
+    if (soort === 'positie') {
+      DIERTJES2.forEach(function (d) { POSITIES.forEach(function (p) { uit.push({ dier: d, positie: p }); }); });
+      return uit;
+    }
     VORMEN.forEach(function (vorm, i) {
       if (soort === 'klopt') {
         // hier is de echte en de valse spiegeling elk een eigen vraag
@@ -106,6 +147,14 @@ export default {
     return uit;
   },
   maak: function (soort, z, h) {
+    if (soort === 'vorm') {
+      return { soort: soort, sleutel: 'vorm|' + z.naam + z.kleur, naam: z.naam, kleur: z.kleur, ans: z.naam,
+        options: keuzes(z.naam, andere(VORMNAMEN, z.naam, 3)) };
+    }
+    if (soort === 'positie') {
+      return { soort: soort, sleutel: 'positie|' + z.dier.naam + z.positie, dier: z.dier, positie: z.positie,
+        ans: z.positie, options: keuzes(z.positie, andere(POSITIES, z.positie, 3)) };
+    }
     var vorm = VORMEN[z.i], as = h.as;
     var kleur = KLEUREN[z.i % KLEUREN.length];
     var juist = as === 'horizontaal' ? spiegelV(vorm) : spiegelH(vorm);
@@ -156,6 +205,8 @@ export default {
       ans: goed.text, options: keuzelijst.map(function (k) { return { text: k.text, ok: k.ok }; }) };
   },
   teken: function (v) {
+    if (v.soort === 'vorm') return vormTekening(v.naam, v.kleur);
+    if (v.soort === 'positie') return positieTekening(v.dier.ico, v.positie);
     if (v.soort === 'tellen') return rooster(v.vorm, v.kleur, v.as, 156);
     if (v.soort === 'klopt') {
       return rooster(v.vorm, v.kleur, null, 130) + '<span class="pijl">\u27A1\uFE0F</span>' +
@@ -174,6 +225,10 @@ export default {
   scherm: function () { return null; },
   vraag: function (v, nr) {
     var kop = 'Vraag ' + nr + ': ';
+    if (v.soort === 'vorm') return { titel: kop + 'welke vorm zie je?', sub: 'Kies de juiste naam.' };
+    if (v.soort === 'positie') {
+      return { titel: kop + 'waar staat de ' + v.dier.naam + '?', sub: 'Kijk naast het huisje.' };
+    }
     if (v.soort === 'tellen') {
       return { titel: kop + 'hoeveel vakjes kleur je in de hele figuur?',
         sub: 'De helft staat er. De andere helft is de spiegeling.' };
@@ -186,6 +241,8 @@ export default {
       sub: 'Kies de letter van het juiste rooster.' };
   },
   uitleg: function (v) {
+    if (v.soort === 'vorm') return 'Dit is een ' + v.ans + '.';
+    if (v.soort === 'positie') return 'De ' + v.dier.naam + ' staat ' + v.positie + ' van het huisje.';
     if (v.soort === 'tellen') {
       return 'De helft heeft ' + v.half + ' vakjes, en de spiegeling nog eens ' + v.half + ': samen ' + (v.half * 2) + '.';
     }
@@ -198,6 +255,8 @@ export default {
     return 'Rooster ' + goed.text + ' is ' + goed.waarom + ': elk vakje staat even ver van de stippellijn.';
   },
   kort: function (v) {
+    if (v.soort === 'vorm') return 'Welke vorm is dit?';
+    if (v.soort === 'positie') return 'Waar staat de ' + v.dier.naam + '?';
     if (v.soort === 'tellen') return 'Een halve vorm met ' + v.half + ' vakjes';
     if (v.soort === 'klopt') return 'Gespiegeld of niet?';
     return 'De spiegeling over de ' + v.as + 'e as';
