@@ -161,23 +161,6 @@
   .hfd h2 { font-family: Fredoka, sans-serif; font-size: 18px; margin: 0; }
   .hfd p { margin: 2px 0 0; font-size: 14px; color: var(--ink-soft); }
   .dekking { display: block; margin-top: 3px; font-size: 13px; }
-  /* de hoofdstukken staan per leerjaar gegroepeerd; details klapt open en toe zonder javascript */
-  .jaargroep { border: 3px solid var(--line); border-radius: 22px; background: var(--card-2); }
-  .jaargroep > summary {
-    font-family: Fredoka, sans-serif;
-    font-size: 16px;
-    padding: 12px 16px;
-    cursor: pointer;
-    list-style: none;
-    display: flex;
-    align-items: center;
-    gap: 9px;
-  }
-  .jaargroep > summary::-webkit-details-marker { display: none; }
-  .jaargroep > summary::before { content: '\25B8'; color: var(--ink-soft); }
-  .jaargroep[open] > summary::before { content: '\25BE'; }
-  .jaargroep .hoeveel { margin-left: auto; font-size: 13px; color: var(--ink-soft); }
-  .jaargroep .menu { padding: 0 10px 10px; }
   .badge {
     flex: none;
     font-family: Fredoka, sans-serif;

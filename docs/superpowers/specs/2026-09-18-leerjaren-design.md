@@ -71,8 +71,10 @@ aangebracht.
 { leerjaar: 3, doelen: ['tijdsduur'], ico: '⏳', titel: 'Tijd berekenen', tekst: '...', plan: {...} }
 ```
 
-Geen bereik zoals `leerjaar: [2, 3]`. Omdat niets afgesloten is, mag een kind van zeven gewoon
-een hoofdstuk van het derde openen; één getal volstaat en houdt de groepering eenduidig.
+Geen bereik zoals `leerjaar: [2, 3]`. Eén getal volstaat, want het leerjaar is **cumulatief**:
+kies je het derde, dan zie je alles met `leerjaar <= 3`. Wie in het derde zit moet de kwartieren
+van het tweede nog kunnen oefenen, en de hele uren van het eerste ook. Een leerjaar is dus een
+niveau, geen vakje.
 
 Het leerjaar staat op het hoofdstuk, niet op het spel: een spel loopt over meerdere leerjaren.
 
@@ -90,19 +92,25 @@ Het leerjaar staat op het hoofdstuk, niet op het spel: een spel loopt over meerd
   `<summary>` "1ste leerjaar" tot "6de leerjaar". Native HTML: open en toe zonder JavaScript,
   werkt met het toetsenbord en met een schermlezer, en er is geen toestand die stuk kan gaan.
 - Leerjaren zonder hoofdstukken voor dat spel worden niet getoond.
-- De groep van het gekozen leerjaar staat al open. Heeft dit spel niets voor dat jaar, dan staat
-  de eerste groep open, zodat een kind nooit op een dichtgeklapte lijst uitkomt.
-- Elke groep toont in de samenvatting hoeveel hoofdstukken erin zitten.
-- Binnen een groep worden de hoofdstukken opnieuw genummerd vanaf 1. De opslagsleutel blijft de
-  index in `hoofdstukken`, dus bestaande beste scores blijven geldig.
+- Binnen een spel staat één vlakke lijst met alle hoofdstukken tot en met het gekozen leerjaar.
+  **Geen tweede leerjaarkeuze in het spel**: het niveau is al gekozen op het startscherm.
+- De hoofdstukken worden genummerd vanaf 1. De opslagsleutel blijft de index in `hoofdstukken`,
+  dus bestaande beste scores blijven geldig.
+- Heeft een spel niets voor het gekozen jaar, dan staat er één regel in de plaats: kies bovenaan
+  een ander leerjaar, of een ander spel.
 - De opslag gaat, zoals alle opslag in dit project, door een `try`/`catch`: zonder localStorage
   werkt het spel gewoon verder, dan staat het derde leerjaar gekozen.
 
 ### Het grote examen
 
-Elk spel houdt één groot examen, geplaatst in het hoogste leerjaar van dat spel, en het mengt
-alle hoofdstukken van het spel. Dat is wat er vandaag staat en het verandert niet. Een examen per
-leerjaar zou tot zestig examenhoofdstukken leiden, en dat is meer lijst dan waarde.
+Het grote examen van een spel mengt de vraagtypes van dat spel en staat vandaag op leerjaar 3.
+Daardoor heeft leerjaar 1 en 2 nog geen examen, en dat klopt ook: het huidige examen mengt
+materie die een kind van zes nog niet gezien heeft.
+
+Vanaf stap 1 krijgt elk leerjaar zijn eigen examen in een spel, zodra dat leerjaar daar drie of
+meer hoofdstukken heeft. Het is een gewoon hoofdstuk met een eigen `plan` over de vraagtypes van
+dat niveau, dus het vraagt geen nieuwe machinerie. Onder de drie hoofdstukken is een examen
+zinloos, want dan is het hetzelfde als het hoofdstuk zelf.
 
 ## 5. Jasjes: dezelfde vraag, andere voorstelling
 
@@ -348,9 +356,9 @@ Samen ongeveer vijftig nieuwe hoofdstukken bovenop de zevenenveertig die er staa
 
 | stap | wat | acceptatiecriterium |
 | --- | --- | --- |
-| 0a | `leerjaar` op de 47 bestaande hoofdstukken, de keuzerij op het startscherm, groepering in `<details>`, sortering van de spelkaarten. Nog in het ene bestand. | de zelfcheck rekent exact 705 toetsen door met nul fouten, en logt de verdeling 3 / 18 / 26 |
+| 0a | `leerjaar` op de 47 bestaande hoofdstukken, de keuzerij op het startscherm, cumulatief filteren, sortering van de spelkaarten. Nog in het ene bestand. | de zelfcheck rekent exact 705 toetsen door met nul fouten, en logt de verdeling 3 / 18 / 26 |
 | 0b | opsplitsen in modules, jasjes in het chassis, `doelen` op elk hoofdstuk, `doelen.js` met alle zes leerjaren | nul fouten, en de zelfcheck meldt de ontbrekende dekking per leerjaar |
-| 1 | leerjaar 1 volledig | nul fouten, en geen ontbrekende doelen meer voor leerjaar 1 |
+| 1 | leerjaar 1 volledig, met een eigen examen per spel dat er drie of meer hoofdstukken heeft | nul fouten, en geen ontbrekende doelen meer voor leerjaar 1 |
 | 2 | leerjaar 2 volledig | nul fouten, geen ontbrekende doelen voor leerjaar 2 |
 | 3 | leerjaar 3 afwerken | nul fouten, geen ontbrekende doelen voor leerjaar 3 |
 | 4 | leerjaar 4 | nul fouten, geen ontbrekende doelen voor leerjaar 4 |
