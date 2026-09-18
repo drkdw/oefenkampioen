@@ -1,4 +1,4 @@
-import { shuffle, pad2, keuzes, vulAan, andere, reduced } from '../gereedschap.js';
+import { shuffle, pad2, keuzes, vulAan, vulRondom, positief, andere, reduced } from '../gereedschap.js';
 
   // "over" is standaardtaal in het hele taalgebied; "na" is in Belgie gebruikelijk maar
   // Taaladvies noemt de status ervan onduidelijk, dus voor een toets kiezen we "over".
@@ -139,7 +139,9 @@ export default {
     { leerjaar: 3, ico: '⏳', titel: 'Tijd berekenen', tekst: 'Hoe lang duurt het van de ene klok tot de andere?',
       badge: 'gemiddeld', minuten: [0, 30], plan: { duur: 10 } },
     { leerjaar: 3, ico: '🏆', titel: 'Het grote examen', tekst: 'Alles door elkaar. Durf je het aan?',
-      badge: 'moeilijk', minuten: ALLE_MIN, plan: { tijd: 2, lezen: 2, digitaal: 2, dagdeel: 2, duur: 2 } }
+      badge: 'moeilijk', minuten: ALLE_MIN, plan: { tijd: 2, lezen: 2, digitaal: 2, dagdeel: 2, duur: 2 } },
+    { leerjaar: 4, ico: '⏱️', titel: 'Seconden', tekst: 'Een minuut is 60 seconden.',
+      badge: 'gemiddeld', minuten: [0, 30], plan: { seconden: 10 } }
   ],
   zaadjes: function (soort, h) {
     var out = [], u, m;
@@ -151,6 +153,11 @@ export default {
     } else if (soort === 'lezen' || soort === 'digitaal') {
       for (u = 0; u < 24; u++) {
         for (m = 0; m < h.minuten.length; m++) out.push({ u: u, m: h.minuten[m] });
+      }
+    } else if (soort === 'seconden') {
+      for (var min = 1; min <= 10; min++) {
+        out.push({ richting: 'naarSec', min: min });
+        out.push({ richting: 'naarMin', min: min });
       }
     } else if (soort === 'dagdeel') {
       DEELEN.forEach(function (deel) {
@@ -190,6 +197,16 @@ export default {
       return { soort: soort, sleutel: 'dagdeel|' + z.d + z.u, d: z.d, u: z.u, h: wijzerUur(z.u), m: 0,
         ans: z.d, tijd: dagdeelTekst(z.u), options: keuzes(z.d, rest) };
     }
+    if (soort === 'seconden') {
+      var naarSec = z.richting === 'naarSec', ans5 = naarSec ? z.min * 60 : z.min;
+      var basis = naarSec ? z.min * 60 : z.min;
+      var kern8 = [basis + 60, basis - 60, basis + 30, basis - 30];
+      var fout11 = [];
+      vulAan(fout11, ans5, kern8, positief);
+      vulRondom(fout11, ans5, 5, positief);
+      return { soort: soort, sleutel: 'seconden|' + z.richting + z.min, richting: z.richting, min: z.min,
+        ans: String(ans5), options: keuzes(ans5, fout11.slice(0, 3)) };
+    }
     var eind = z.u * 60 + z.m + z.duur;
     var jd = DUURTEKST[z.duur];
     var fout = andere(DUREN, z.duur, 3).map(function (d) { return DUURTEKST[d]; });
@@ -197,7 +214,7 @@ export default {
       eu: Math.floor(eind / 60), em: eind % 60, ans: jd, options: keuzes(jd, fout) };
   },
   teken: function (v) {
-    if (v.soort === 'lezen') return '';
+    if (v.soort === 'lezen' || v.soort === 'seconden') return '';
     if (v.soort === 'duur') {
       return statischeKlok(wijzerUur(v.u), v.m) + '<span class="pijl">➡️</span>' +
         statischeKlok(wijzerUur(v.eu), v.em);
@@ -209,12 +226,13 @@ export default {
       spil() + '</svg>';
   },
   na: function (v) {
-    if (v.soort === 'lezen' || v.soort === 'duur') return;
+    if (v.soort === 'lezen' || v.soort === 'duur' || v.soort === 'seconden') return;
     setHands(v.h, v.m);
     var c = document.getElementById('clock');
     if (c) c.setAttribute('aria-label', 'Klok met de wijzers op ' + label(v.h, v.m));
   },
   scherm: function (v) { return v.soort === 'lezen' ? fmt24(v.u, v.m) : null; },
+  // seconden heeft geen klok en geen schermpje, enkel de vraagzin zelf
   vraag: function (v, nr) {
     var kop = 'Vraag ' + nr + ': ';
     if (v.soort === 'tijd') return { titel: kop + 'hoe laat is het?' };
@@ -224,6 +242,11 @@ export default {
         sub: 'Het is ' + v.d.toLowerCase() + '. Welke digitale tijd zie je op een gsm of tablet?' };
     }
     if (v.soort === 'dagdeel') return { titel: kop + 'in welk deel van de dag valt ' + v.tijd + '?', sub: 'Kies het juiste dagdeel.' };
+    if (v.soort === 'seconden') {
+      return v.richting === 'naarSec'
+        ? { titel: kop + 'hoeveel seconden zijn er in ' + v.min + ' minuten?', sub: 'Een minuut is 60 seconden.' }
+        : { titel: kop + 'hoeveel minuten zijn ' + (v.min * 60) + ' seconden?', sub: 'Deel door 60.' };
+    }
     return { titel: kop + 'hoe lang duurt het van ' + label(wijzerUur(v.u), v.m) + ' tot ' + label(wijzerUur(v.eu), v.em) + '?' };
   },
   uitleg: function (v) {
@@ -236,6 +259,10 @@ export default {
         : 'Voor de middag blijft het uur hetzelfde, je zet er alleen een nul voor.';
     }
     if (v.soort === 'dagdeel') return bereikTekst(v.d);
+    if (v.soort === 'seconden') {
+      return v.richting === 'naarSec' ? v.min + ' × 60 = ' + (v.min * 60) + ' seconden.'
+        : (v.min * 60) + ' : 60 = ' + v.min + ' minuten.';
+    }
     return 'Tel verder vanaf ' + label(wijzerUur(v.u), v.m) + ' tot je bij ' + label(wijzerUur(v.eu), v.em) + ' bent.';
   },
   kort: function (v) {
@@ -243,6 +270,7 @@ export default {
     if (v.soort === 'lezen') return 'Op de gsm stond ' + fmt24(v.u, v.m);
     if (v.soort === 'digitaal') return label(v.h, v.m) + ' in de ' + v.d.toLowerCase();
     if (v.soort === 'dagdeel') return 'In welk deel van de dag valt ' + v.tijd + '?';
+    if (v.soort === 'seconden') return v.richting === 'naarSec' ? v.min + ' minuten in seconden' : (v.min * 60) + ' seconden in minuten';
     return 'Van ' + label(wijzerUur(v.u), v.m) + ' tot ' + label(wijzerUur(v.eu), v.em);
   },
   test: function (check) {
