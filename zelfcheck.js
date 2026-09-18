@@ -2,7 +2,7 @@
 import { pad2 } from './gereedschap.js';
 import {
   SPELLEN, AANTALLEN, LEERJAREN, TEMPO, LOF, MOED, state, schoonNaam, naam, metNaam,
-  leesTempo, secondenVoor, jarenVan, planVoor, bouwToets, maakVraag, toonStart
+  leesTempo, secondenVoor, jarenVan, jasjesVoor, planVoor, bouwToets, maakVraag, toonStart
 } from './chassis.js';
 
 var fouten = 0;
@@ -41,17 +41,39 @@ SPELLEN.forEach(function (spel) {
       spel.id + ' hoofdstuk ' + (i + 1) + ': leerjaar is een getal van 1 tot 6 (nu ' + h.leerjaar + ')');
   });
   check(jarenVan(spel).length >= 1, spel.id + ': dekt minstens een leerjaar');
+  // een jasje verandert de voorstelling, nooit het antwoord en nooit de sleutel
+  spel.hoofdstukken.forEach(function (h, i) {
+    Object.keys(h.plan).forEach(function (soort) {
+      var jassen = jasjesVoor(soort, h);
+      if (jassen.length < 2) return;
+      spel.zaadjes(soort, h).slice(0, 8).forEach(function (z) {
+        var eerste = spel.maak(soort, z, h, jassen[0]);
+        jassen.slice(1).forEach(function (jasje) {
+          var v = spel.maak(soort, z, h, jasje);
+          check(v.ans === eerste.ans, spel.id + ' hoofdstuk ' + (i + 1) + ': jasje ' + jasje +
+            ' verandert het antwoord van ' + eerste.sleutel + ' (' + v.ans + ' in plaats van ' + eerste.ans + ')');
+          check(v.sleutel === eerste.sleutel, spel.id + ' hoofdstuk ' + (i + 1) + ': jasje ' + jasje +
+            ' zit in de sleutel (' + v.sleutel + ' in plaats van ' + eerste.sleutel + ')');
+        });
+      });
+    });
+  });
+
   if (spel.test) spel.test(check);
 
   AANTALLEN.forEach(function (aantal) {
     state.aantal = aantal;
     spel.hoofdstukken.forEach(function (h, i) {
-      var verdeling = planVoor(h, aantal), som = 0;
+      var verdeling = planVoor(h, aantal), som = 0, voorraad = {};
       Object.keys(verdeling).forEach(function (k) {
         som += verdeling[k];
         check(verdeling[k] >= 1, spel.id + ' hoofdstuk ' + (i + 1) + ': elk vraagtype komt voor bij ' + aantal);
-        check(spel.zaadjes(k, h).length >= verdeling[k],
-          spel.id + ' hoofdstuk ' + (i + 1) + ': genoeg verschillende vragen voor ' + k + ' bij ' + aantal);
+        voorraad[k] = spel.zaadjes(k, h).length;
+        check(voorraad[k] >= 1, spel.id + ' hoofdstuk ' + (i + 1) + ': er is minstens een vraag voor ' + k);
+        var jassen = jasjesVoor(k, h);
+        check(jassen.length >= 1, spel.id + ' hoofdstuk ' + (i + 1) + ': ' + k + ' heeft minstens een jasje');
+        check(jassen.filter(function (x, m) { return jassen.indexOf(x) === m; }).length === jassen.length,
+          spel.id + ' hoofdstuk ' + (i + 1) + ': de jasjes van ' + k + ' zijn onderling verschillend');
       });
       check(som === aantal, spel.id + ' hoofdstuk ' + (i + 1) + ' telt ' + aantal + ' vragen (nu ' + som + ')');
 
@@ -63,9 +85,12 @@ SPELLEN.forEach(function (spel) {
           var v = maakVraag(state.plan[q]);
           var sl = v.sleutel;
           check(!!sl, spel.id + ': elke vraag heeft een sleutel om dubbels te herkennen');
-          check(!gezien[sl], spel.id + ' hoofdstuk ' + (i + 1) + ': dezelfde vraag twee keer (' + sl + ')');
+          gezien[sl] = (gezien[sl] || 0) + 1;
+          // herhaling mag, maar alleen zo vaak als de te kleine voorraad het vraagt
+          var mag = Math.ceil(verdeling[state.plan[q]] / voorraad[state.plan[q]]);
+          check(gezien[sl] <= mag, spel.id + ' hoofdstuk ' + (i + 1) + ': ' + sl + ' komt ' +
+            gezien[sl] + ' keer voor terwijl de voorraad er ' + mag + ' toelaat');
           check(sl !== vorige, spel.id + ' hoofdstuk ' + (i + 1) + ': twee keer na elkaar dezelfde vraag');
-          gezien[sl] = 1;
           vorige = sl;
           check(typeof v.ans === 'string' && v.ans.length > 0, spel.id + ': elk antwoord is ingevuld');
           check(typeof spel.teken(v) === 'string', spel.id + ': elke vraag heeft een tekening');
@@ -96,6 +121,34 @@ SPELLEN.forEach(function (spel) {
     });
   });
 });
+// het jasjesmechaniek zelf, met een nepspel: twee zaadjes, drie jasjes, tien vragen. Zonder dit
+// zou de rondelogica pas getest zijn als een spel echt jasjes levert.
+(function () {
+  state.spel = {
+    id: 'nep',
+    hoofdstukken: [{ leerjaar: 1, ico: '?', titel: 'nep', tekst: 'nep', plan: { x: 10 } }],
+    zaadjes: function () { return [1, 2]; },
+    jasjes: function () { return ['a', 'b', 'c']; },
+    maak: function (soort, z, h, jasje) { return { sleutel: 's' + z, ans: String(z), jasje: jasje }; }
+  };
+  state.hfd = 0;
+  state.aantal = 10;
+  bouwToets();
+  var telS = {}, telJ = {}, vorigeS = null, vorigJ = null;
+  for (var q = 0; q < 10; q++) {
+    var v = maakVraag(state.plan[q]);
+    check(v.sleutel !== vorigeS, 'jasjes: nooit twee keer na elkaar hetzelfde zaadje');
+    check(v.jasje !== vorigJ, 'jasjes: nooit twee keer na elkaar hetzelfde jasje');
+    telS[v.sleutel] = (telS[v.sleutel] || 0) + 1;
+    telJ[v.jasje] = (telJ[v.jasje] || 0) + 1;
+    vorigeS = v.sleutel;
+    vorigJ = v.jasje;
+  }
+  check(telS.s1 === 5 && telS.s2 === 5,
+    'jasjes: twee zaadjes vullen tien vragen in gelijke rondes (nu ' + JSON.stringify(telS) + ')');
+  check(Object.keys(telJ).length === 3, 'jasjes: alle drie de jasjes komen aan bod');
+})();
+
 state.aantal = bewaardAantal;
 state.spel = bewaardSpel;
 state.hfd = bewaardHfd;
