@@ -37,6 +37,18 @@ import { shuffle, pad2, keuzes, vulAan, positief, vulRondom, andere } from '../g
       '</svg>';
   }
   function stuk(c) { return c >= 500 ? biljet(c) : munt(c); }
+  // eerste leerjaar: hele euro's, prijzen die passen bij het gewone rekenen tot 20
+  var WAREN_KLEIN = [
+    { ico: '🍎', naam: 'een appel', eur: 1 }, { ico: '🍌', naam: 'een banaan', eur: 1 },
+    { ico: '🧃', naam: 'een pakje sap', eur: 2 }, { ico: '📓', naam: 'een schrift', eur: 2 },
+    { ico: '🍞', naam: 'een broodje', eur: 3 }, { ico: '🍦', naam: 'een ijsje', eur: 3 },
+    { ico: '📚', naam: 'een boekje', eur: 4 }, { ico: '⚽', naam: 'een balletje', eur: 5 }
+  ];
+  function prijskaartjeKlein(w) {
+    return '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;font-family:Fredoka,sans-serif">' +
+      '<span style="font-size:48px">' + w.ico + '</span>' +
+      '<span style="font-size:16px;color:var(--ink-soft)">€ ' + w.eur + '</span></div>';
+  }
   function toonbank(lijst) {
     return '<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center">' +
       lijst.map(stuk).join('') + '</div>';
@@ -110,10 +122,14 @@ export default {
   tekst: 'Munten tellen, betalen en wisselgeld teruggeven.',
   top: 'Jij mag achter de kassa staan!',
   hoofdstukken: [
-    { leerjaar: 1, ico: '🪙', titel: 'Centen tellen', tekst: 'Van 1 cent tot 50 cent.',
-      badge: 'makkelijk', bron: [1, 2, 5, 10, 20, 50], min: 2, max: 4, plan: { tellen: 10 } },
-    { leerjaar: 1, ico: '🔎', titel: 'Welke munt is dit?', tekst: 'Van 1 cent tot 2 euro, één stuk tegelijk.',
-      badge: 'makkelijk', bron: MUNTEN, plan: { herkennen: 10 } },
+    { leerjaar: 1, ico: '🛍️', titel: 'Samen betalen', tekst: 'Een appel van 1 euro en een ijsje van 3 euro. Hoeveel samen?',
+      badge: 'makkelijk', plan: { samen: 10 } },
+    { leerjaar: 1, ico: '💰', titel: 'Gepast betalen', tekst: 'Hoeveel muntjes van 1 euro is hetzelfde als dit briefje?',
+      badge: 'makkelijk', plan: { gepast: 10 } },
+    { leerjaar: 1, ico: '🔎', titel: 'Welke munt is dit?', tekst: 'Vooral euro’s: van 50 cent tot 10 euro.',
+      badge: 'makkelijk', bron: [50, 100, 200, 500, 1000], plan: { herkennen: 10 } },
+    { leerjaar: 1, ico: '🏆', titel: 'Het eerste winkelexamen', tekst: 'Samen betalen, gepast betalen en munten herkennen.',
+      badge: 'gemiddeld', bron: [50, 100, 200, 500, 1000], plan: { samen: 4, gepast: 3, herkennen: 3 } },
     { leerjaar: 2, ico: '💶', titel: 'Euro’s en biljetten', tekst: 'Munten van 1 en 2 euro, briefjes van 5 en 10.',
       badge: 'makkelijk', bron: [100, 200, 500, 1000], min: 2, max: 3, plan: { tellen: 10 } },
     { leerjaar: 2, ico: '👛', titel: 'Alles door elkaar', tekst: 'Centen, euro’s en briefjes samen.',
@@ -122,7 +138,7 @@ export default {
       badge: 'moeilijk', bron: [5, 10, 20, 50, 100, 200], min: 2, max: 4, plan: { wissel: 10 } },
     { leerjaar: 2, ico: '❓', titel: 'Welke munt ontbreekt', tekst: 'Er is nog een muntje nodig. Welk?',
       badge: 'gemiddeld', bron: [5, 10, 20, 50, 100, 200], min: 2, max: 3, plan: { ontbreekt: 10 } },
-    { leerjaar: 2, ico: '🏆', titel: 'Het eerste winkelexamen', tekst: 'Tellen en het ontbrekende muntje door elkaar.',
+    { leerjaar: 2, ico: '🏆', titel: 'Het tweede winkelexamen', tekst: 'Tellen en het ontbrekende muntje door elkaar.',
       badge: 'gemiddeld', bron: [5, 10, 20, 50, 100, 200], min: 3, max: 5, plan: { tellen: 6, ontbreekt: 4 } },
     { leerjaar: 3, ico: '⌨️', titel: 'Aan de kassa', tekst: 'Typ zelf het bedrag in: euro’s en centen.',
       badge: 'gemiddeld', bron: [5, 10, 20, 50, 100, 200], min: 3, max: 5, plan: { typ: 10 } },
@@ -130,6 +146,14 @@ export default {
       badge: 'moeilijk', bron: [5, 10, 20, 50, 100, 200], min: 3, max: 5, plan: { tellen: 4, wissel: 2, ontbreekt: 2, typ: 2 } }
   ],
   zaadjes: function (soort, h) {
+    if (soort === 'samen') {
+      var uit4 = [];
+      WAREN_KLEIN.forEach(function (a, i) {
+        WAREN_KLEIN.forEach(function (b, j) { if (j > i) uit4.push({ a: a, b: b }); });
+      });
+      return uit4;
+    }
+    if (soort === 'gepast') return [100, 200, 500, 1000].map(function (c) { return { c: c }; });
     if (soort === 'herkennen') return h.bron.map(function (c) { return { c: c }; });
     if (soort === 'wissel') {
       // de prijs hoort bij het voorwerp, en je betaalt met het eerste briefje dat groot genoeg is
@@ -155,6 +179,20 @@ export default {
     return greepjes(h.bron, h.min, h.max, 60).map(function (g) { return { stukken: g }; });
   },
   maak: function (soort, z) {
+    if (soort === 'samen') {
+      var totaal2 = z.a.eur + z.b.eur, fout6 = [];
+      vulAan(fout6, totaal2, [z.a.eur, z.b.eur, totaal2 + 1, totaal2 - 1], positief);
+      vulRondom(fout6, totaal2, 1, positief);
+      return { soort: soort, sleutel: 'samen|' + z.a.naam + z.b.naam, a: z.a, b: z.b, ans: String(totaal2),
+        options: keuzes(totaal2, fout6.slice(0, 3)) };
+    }
+    if (soort === 'gepast') {
+      var muntjes = z.c / 100, fout7 = [];
+      vulAan(fout7, muntjes, [muntjes + 1, muntjes - 1, muntjes + 2, muntjes - 2], positief);
+      vulRondom(fout7, muntjes, 1, positief);
+      return { soort: soort, sleutel: 'gepast|' + z.c, c: z.c, ans: String(muntjes),
+        options: keuzes(muntjes, fout7.slice(0, 3)) };
+    }
     if (soort === 'herkennen') {
       var naam2 = muntnaam(z.c), fout3 = andere(MUNTEN, z.c, 3).map(muntnaam);
       return { soort: soort, sleutel: 'herkennen|' + z.c, c: z.c, ans: naam2, options: keuzes(naam2, fout3) };
@@ -182,6 +220,12 @@ export default {
       options: keuzes(geld(som), afleidersBedrag(som, z.stukken)) };
   },
   teken: function (v) {
+    if (v.soort === 'samen') {
+      return '<div style="display:flex;gap:24px;justify-content:center;align-items:center">' +
+        prijskaartjeKlein(v.a) + '<span style="font-size:24px;color:var(--ink-soft)">+</span>' +
+        prijskaartjeKlein(v.b) + '</div>';
+    }
+    if (v.soort === 'gepast') return stuk(v.c);
     if (v.soort === 'herkennen') return stuk(v.c);
     if (v.soort === 'wissel') {
       return prijskaartje(v.waar, v.prijs) + '<span class="pijl">➡️</span>' + stuk(v.betaald);
@@ -190,10 +234,13 @@ export default {
   },
   scherm: function (v) {
     if (v.soort === 'ontbreekt') return geld(v.doel);
+    if (v.soort === 'samen' || v.soort === 'gepast') return null;
     return null;
   },
   vraag: function (v, nr) {
     var kop = 'Vraag ' + nr + ': ';
+    if (v.soort === 'samen') return { titel: kop + 'hoeveel kosten ' + v.a.naam + ' en ' + v.b.naam + ' samen?', sub: 'Tel de twee prijzen op.' };
+    if (v.soort === 'gepast') return { titel: kop + 'hoeveel muntjes van 1 euro is hetzelfde als dit?', sub: 'Gepast betalen, zonder wisselgeld.' };
     if (v.soort === 'herkennen') return { titel: kop + 'welke munt of welk biljet is dit?', sub: 'Kies de juiste naam.' };
     if (v.soort === 'wissel') {
       return { titel: kop + 'je koopt ' + v.waar.naam + ' van ' + geld(v.prijs) + '.',
@@ -209,6 +256,8 @@ export default {
     return { titel: kop + 'hoeveel geld ligt hier?' };
   },
   uitleg: function (v) {
+    if (v.soort === 'samen') return v.a.naam + ' (€ ' + v.a.eur + ') en ' + v.b.naam + ' (€ ' + v.b.eur + ') samen is € ' + v.ans + '.';
+    if (v.soort === 'gepast') return geld(v.c) + ' is evenveel als ' + v.ans + ' muntjes van 1 euro.';
     if (v.soort === 'herkennen') return 'Dit is ' + v.ans + '.';
     if (v.soort === 'wissel') {
       return geld(v.betaald) + ' min ' + geld(v.prijs) + ' is ' + geld(v.terug) +
@@ -220,6 +269,8 @@ export default {
     return v.stukken.map(muntnaam).join(' + ') + ' = ' + geld(v.som) + '.';
   },
   kort: function (v) {
+    if (v.soort === 'samen') return v.a.naam + ' en ' + v.b.naam + ' samen';
+    if (v.soort === 'gepast') return 'Hoeveel muntjes van 1 euro is ' + geld(v.c) + '?';
     if (v.soort === 'herkennen') return 'Welke munt is dit?';
     if (v.soort === 'wissel') return geld(v.prijs) + ' betaald met ' + geld(v.betaald);
     if (v.soort === 'ontbreekt') return geld(v.som) + ' in de hand, ' + geld(v.doel) + ' nodig';
