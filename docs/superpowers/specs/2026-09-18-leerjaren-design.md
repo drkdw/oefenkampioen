@@ -72,6 +72,12 @@ verwarrender voor een kind dan een duidelijke fout voor de ontwikkelaar.
 Publiceren via GitHub Pages op `main`, map `/`. Geen bouwstap, geen dependencies. Geen
 `.nojekyll` nodig zolang geen map met een underscore begint.
 
+**Gebouwd tijdens stap 3.** GitHub Pages voor een privé-repo vraagt een betaald plan; de repo
+stond privé en Pages faalde daardoor stil met een 404 tot iemand het navroeg. Nu publiek (de
+volledige geschiedenis is nagekeken, er staat niets gevoeligs in), Pages actief op
+[drkdw.github.io/oefenkampioen](https://drkdw.github.io/oefenkampioen/), MIT-licentie, en de
+repo-metadata (beschrijving, homepage-link, topics) ingevuld.
+
 ## 4. De leerjaardimensie
 
 Eén veld per hoofdstuk, één geheel getal van 1 tot 6: het leerjaar waarin het doel wordt
@@ -347,14 +353,19 @@ waar een kind van zeven een gevoel bij kan vormen. Dat vraagt een eigen, kleine 
 niet een uitbreiding van de bestaande. Op te nemen bij een volgende stap, niet stilzwijgend
 weggelaten.
 
-### Leerjaar 3
+### Leerjaar 3 — gebouwd (stap 3), inclusief de liter uit stap 2
 
 | doel | spel |
 | --- | --- |
 | **gebouwd:** tafels 6, 7, 8, 9 met de ontbrekende factor en delen; alle tafels 1 tot 10 door elkaar | maaltafels |
-| breuken als deel van een geheel: 1/2, 1/3, 1/4 | breuken |
-| breuken vergelijken met een tekening | breuken |
-| omtrek van vierkant en rechthoek | meetkunde |
+| **gebouwd:** breuken als deel van een geheel: 1/2, 1/3, 2/3, 1/4, 3/4 | breuken (nieuw spel) |
+| **gebouwd:** breuken vergelijken met een tekening | breuken |
+| **gebouwd:** omtrek van vierkant en rechthoek | meetkunde (nieuw spel) |
+| **gebouwd, ingehaald uit stap 2:** liter aflezen op een maatbeker | maten |
+
+Breuken en Meetkunde zijn nieuwe spelmodules, precies zoals sectie 3 voorzag. Beide hebben nu
+twee respectievelijk één hoofdstuk, allebei onder de drempel van drie voor een eigen examen; dat
+komt vanzelf zodra leerjaar 4 en 5 er hoofdstukken aan toevoegen.
 
 Doel `2.2.17` (minimumdoelen, ijkpunt einde vierde leerjaar): *de leerlingen kennen paraat de
 vermenigvuldigings- en deeltafels van 1, 2, ..., 10.* Geen tafels van 11 of 12: die staan bij
@@ -419,7 +430,7 @@ Samen ongeveer vijftig nieuwe hoofdstukken bovenop de zevenenveertig die er staa
 | 0b | opsplitsen in modules, jasjes in het chassis | **gebouwd** |
 | 1 | leerjaar 1 volledig | **gebouwd**: 15 hoofdstukken, 930 toetsen, nul fouten |
 | 2 | leerjaar 2, op de liter na (zie sectie 9) | **gebouwd**: 30 hoofdstukken, 1065 toetsen, nul fouten |
-| 3 | leerjaar 3 afwerken | nog te doen |
+| 3 | leerjaar 3, plus de liter uit stap 2 | **gebouwd**: 77 hoofdstukken, 1155 toetsen, nul fouten |
 | 4 | leerjaar 4 | nog te doen |
 | 5 | leerjaar 5 | nog te doen |
 | 6 | leerjaar 6 | nog te doen |
@@ -448,6 +459,18 @@ Stap 2 kostte minder correctiewerk: één echte fout (het is-gelijk-teken achter
 vangnet voor kleine getallen zoals 1 + 1, waar te weinig foute keuzes overbleven na het
 weghalen van dubbels), gevangen door precies de "vier keuzes"-controle die al bestond. Geen
 curriculumcorrecties deze keer, wel één bewuste omissie: de liter (zie sectie 9).
+
+Stap 3 bouwde de liter alsnog en twee nieuwe spelmodules (Breuken, Meetkunde). Twee fouten
+kwamen weer terug in dezelfde vorm als eerder: een script dat halverwege faalde en een eerder
+geslaagde stap meesleurde in het verlies (twee keer, telkens een vergeten hoofdstuk-regel), en
+een `scherm()` zonder `null`-branch voor een nieuwe soort, gevangen door de controle uit stap 1.
+Daarnaast één echte curriculumfout die niets met code te maken had: het bestaande hoofdstuk
+"Centen tellen" in leerjaar 1 kon 50 + 50 + 50 + 50 optellen, ver boven de bevestigde grens van
+optellen tot 20. Vervangen door twee hoofdstukken die wél bij het echte leerplan passen: samen
+betalen met hele euro's, en gepast betalen zonder wisselgeld. Die fout was er al sinds stap 0a en
+is nooit opgemerkt tot de gebruiker er zelf naar vroeg: een teken dat de leerjaartoekenning van
+de 47 oorspronkelijke hoofdstukken in sectie 8 een aanname blijft, niet een bevestigd feit, tot
+iemand ze een voor een naleest.
 
 ## 11. Buiten scope
 
