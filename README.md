@@ -13,10 +13,10 @@ zodat de opmaak, de puntentelling, de opslag en de zelfcheck maar op een plaats 
 | Klokkijken | hele uren, kwartieren, dagdelen, digitale klok, tijdsduur |
 | Maaltafelmonsters | maaltafels, delen, de ontbrekende factor |
 | Het winkeltje | munten tellen, wisselgeld, welke munt ontbreekt |
-| De maatmonsters | liniaal lezen, m/cm/mm, kg/g, l/dl/cl, welke maat past |
+| Meten en wegen | liniaal lezen, m/cm/mm, kg/g, l/dl/cl, welke maat past |
 | De kalender | dagen, maanden, seizoenen, hoeveel dagen, verder tellen |
 | Bruggen bouwen | optellen en aftrekken tot 1000 over het tiental |
-| Spiegelmonsters | spiegelen, symmetrie, gedraaid of gespiegeld |
+| Spiegelen | spiegelen, symmetrie, gedraaid of gespiegeld |
 
 Elk spel heeft vijf tot zeven hoofdstukken. Een toets telt 10, 15 of 20 vragen, te kiezen op
 het startscherm, en evenveel punten. Twintig is de bovengrens: langer houdt een kind van acht

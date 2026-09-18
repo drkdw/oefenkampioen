@@ -1361,7 +1361,7 @@
     SPELLEN.push({
       id: 'maten',
       ico: '📏',
-      naam: 'De maatmonsters',
+      naam: 'Meten en wegen',
       tekst: 'Meter en centimeter, kilo en gram, liter en deciliter.',
       top: 'Jij meet alles tot op de millimeter!',
       hoofdstukken: [
@@ -1983,7 +1983,7 @@
     }
     function gelijk(a, b) { return sleutelVan(a) === sleutelVan(b); }
 
-    /* de vormen: telkens een half monster in de linkerhelft van het rooster */
+    /* de vormen: telkens een halve figuur in de linkerhelft van het rooster */
     var VORMEN = [
       [[0, 1], [1, 1], [1, 2], [2, 0], [2, 1], [3, 1], [4, 0], [4, 2]],
       [[0, 0], [1, 1], [2, 1], [2, 2], [3, 0], [3, 1], [4, 1]],
@@ -2039,7 +2039,7 @@
     SPELLEN.push({
       id: 'spiegel',
       ico: '\uD83E\uDD8B',
-      naam: 'Spiegelmonsters',
+      naam: 'Spiegelen',
       tekst: 'Spiegelen, symmetrie en de helft die ontbreekt.',
       top: 'Jij ziet elke spiegeling meteen!',
       hoofdstukken: [
@@ -2049,7 +2049,7 @@
           badge: 'gemiddeld', as: 'horizontaal', plan: { helft: 10 } },
         { ico: '\u2705', titel: 'Klopt de spiegeling?', tekst: 'Is dit echt gespiegeld, of gedraaid?',
           badge: 'moeilijk', as: 'verticaal', plan: { klopt: 10 } },
-        { ico: '\uD83D\uDD22', titel: 'Hoeveel vakjes?', tekst: 'Hoeveel vakjes kleur je in het hele monster?',
+        { ico: '\uD83D\uDD22', titel: 'Hoeveel vakjes?', tekst: 'Hoeveel vakjes kleur je in de hele figuur?',
           badge: 'makkelijk', as: 'verticaal', plan: { tellen: 10 } },
         { ico: '\uD83C\uDFC6', titel: 'Het grote spiegelexamen', tekst: 'Alles door elkaar.',
           badge: 'moeilijk', as: 'verticaal', plan: { helft: 5, klopt: 3, tellen: 2 } }
@@ -2074,7 +2074,7 @@
         var sl = soort + '|' + z.i + as + (z.echt ? 'e' : 'n');
 
         if (soort === 'tellen') {
-          // het hele monster is de helft plus de spiegeling: altijd het dubbele
+          // de hele figuur is de helft plus de spiegeling: altijd het dubbele
           var totaal = vorm.length * 2;
           var fout = [];
           vulAan(fout, totaal, [vorm.length, totaal + 1, totaal - 1, totaal + 2], positief);
@@ -2137,11 +2137,11 @@
       vraag: function (v, nr) {
         var kop = 'Vraag ' + nr + ': ';
         if (v.soort === 'tellen') {
-          return { titel: kop + 'hoeveel vakjes kleur je in het hele monster?',
+          return { titel: kop + 'hoeveel vakjes kleur je in de hele figuur?',
             sub: 'De helft staat er. De andere helft is de spiegeling.' };
         }
         if (v.soort === 'klopt') {
-          return { titel: kop + 'is het rechtse monster de spiegeling van het linkse?',
+          return { titel: kop + 'is de rechtse figuur de spiegeling van de linkse?',
             sub: 'Let op: gedraaid is niet hetzelfde als gespiegeld.' };
         }
         return { titel: kop + 'welke helft hoort aan de andere kant van de stippellijn?',
