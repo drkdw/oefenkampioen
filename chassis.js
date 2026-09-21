@@ -3,7 +3,8 @@ import { SPELLEN } from './spellen/index.js';
 
 // meer dan twintig vragen houdt een kind van acht niet vol
 var AANTALLEN = [10, 15, 20];
-// achter #admin komt er per profiel een knop bij om het écht en onomkeerbaar te wissen
+// verwijderen van een profiel kan enkel achter #admin: een kind mag zijn eigen profiel niet
+// kunnen laten verdwijnen, ook niet de onschuldige variant die de scores bewaart
 var adminModus = false;
 
 /* ==================== naam, aantal en opslag ==================== */
@@ -371,48 +372,30 @@ function toonProfielPaneel() {
       '<span class="profielinfo"><span>' + p.naam + '</span>' +
       '<span class="profielvoortgang">' + jaarNaam(leerjaarVoor(p.sleutel)) + ' · ' + n +
       (n === 1 ? ' hoofdstuk' : ' hoofdstukken') + ' geoefend</span></span></button>' +
-      '<button class="profielx" data-sleutel="' + p.sleutel + '" data-naam="' + p.naam +
-      '" aria-label="' + p.naam + ' uit de lijst halen">×</button>' +
-      (adminModus ? '<button class="profielwis" data-sleutel="' + p.sleutel + '" data-naam="' + p.naam +
-        '" aria-label="' + p.naam + ' echt en onomkeerbaar wissen">🗑</button>' : '') + '</div>';
+      (adminModus ? '<button class="profielx" data-sleutel="' + p.sleutel + '" data-naam="' + p.naam +
+        '" aria-label="' + p.naam + ' verwijderen">×</button>' : '') + '</div>';
   }).join('') || '<p class="lead">Nog geen profiel. Typ hieronder een naam.</p>';
   Array.prototype.forEach.call($('profielLijst').querySelectorAll('.profielkies'), function (b) {
     b.onclick = function () { wisselProfiel(b.dataset.sleutel); sluitProfielPaneel(); toonStart(); };
   });
+  // verwijderen kan enkel achter #admin, niet in de gewone weergave waar een kind ook in zit.
   // window.confirm() wordt door sommige browsers (waaronder test-browsers) onderdrukt en levert
-  // dan altijd "nee" op, zonder dat er iets te zien is: de vraag wordt daarom hier zelf gebouwd,
-  // in de rij, met een echt "ja" en "nee" om aan te tikken
+  // dan altijd "nee" op, zonder dat er iets te zien is: de vraag wordt daarom hier zelf gebouwd
   Array.prototype.forEach.call($('profielLijst').querySelectorAll('.profielx'), function (b) {
     b.onclick = function (e) {
       e.stopPropagation();
       var rij = b.closest('.profielrij'), sleutel = b.dataset.sleutel, naam = b.dataset.naam;
       rij.className = 'profielrij bevestig';
-      rij.innerHTML = '<span class="profielvraag">' + naam + ' uit deze lijst halen? De scores blijven ' +
-        'bewaard, tikt iemand die naam later opnieuw dan staan ze er terug.</span>' +
-        '<button class="profielja">Ja, uit de lijst</button>' +
+      rij.innerHTML = '<span class="profielvraag">' + naam + ' verwijderen?</span>' +
+        '<button class="profiellijst">Uit de lijst, scores blijven</button>' +
+        '<button class="profielja">Écht wissen, voorgoed weg</button>' +
         '<button class="profielnee">Nee</button>';
-      rij.querySelector('.profielja').onclick = function (e) {
+      rij.querySelector('.profiellijst').onclick = function (e) {
         e.stopPropagation();
         verwijderProfiel(sleutel);
         toonProfielPaneel();
         toonStart();
       };
-      rij.querySelector('.profielnee').onclick = function (e) {
-        e.stopPropagation();
-        toonProfielPaneel();
-      };
-    };
-  });
-  // enkel achter #admin: een onomkeerbare wis, apart van de gewone "uit de lijst"-knop hierboven
-  Array.prototype.forEach.call($('profielLijst').querySelectorAll('.profielwis'), function (b) {
-    b.onclick = function (e) {
-      e.stopPropagation();
-      var rij = b.closest('.profielrij'), sleutel = b.dataset.sleutel, naam = b.dataset.naam;
-      rij.className = 'profielrij bevestig';
-      rij.innerHTML = '<span class="profielvraag">' + naam + ' ECHT wissen? Naam, leerjaar en scores ' +
-        'zijn dan voorgoed weg. Dit kan niet ongedaan gemaakt worden.</span>' +
-        '<button class="profielja">Ja, wissen</button>' +
-        '<button class="profielnee">Nee</button>';
       rij.querySelector('.profielja').onclick = function (e) {
         e.stopPropagation();
         verwijderProfielEcht(sleutel);
@@ -427,6 +410,10 @@ function toonProfielPaneel() {
   });
 }
 function opentProfielPaneel() {
+  // hier gecheckt, niet enkel bij het opstarten: #admin achteraf toevoegen in de adresbalk ververst
+  // de pagina niet, dus een controle bij het opstarten alleen zou het nooit oppikken
+  adminModus = location.hash === '#admin';
+  $('paneelacties').hidden = !adminModus;
   toonProfielPaneel();
   $('profielPaneel').hidden = false;
   $('profielBackdrop').hidden = false;
@@ -694,8 +681,5 @@ toonStart();
 
 // de zelfcheck is er voor de ontwikkelaar, dus hij komt pas binnen bij #test
 if (location.hash === '#test') import('./zelfcheck.js');
-// bewaren/herstellen is voor een ouder, niet voor een kind dat op alles tikt: pas zichtbaar
-// achter deze link, net als de zelfcheck achter #test
-if (location.hash === '#admin') { adminModus = true; $('paneelacties').hidden = false; }
 
 export { SPELLEN, AANTALLEN, jasjesVoor, LEERJAREN, TEMPO, LOF, MOED, state, schoonNaam, naam, metNaam, leesTempo, secondenVoor, jarenVan, planVoor, bouwToets, maakVraag, toonStart };
