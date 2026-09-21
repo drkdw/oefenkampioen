@@ -68,8 +68,16 @@ seconden, want automatiseren betekent niet uitrekenen, en het winkeltje 30, want
 eerst munten tellen. Tempotoetsen voor de tafels lopen in Vlaanderen al vanaf het tweede
 leerjaar, dus de schakelaar is niet alleen voor de grootsten. Standaard staat hij uit.
 
-De naam van het kind en de beste score per hoofdstuk blijven bewaard in de browser. Scores
-worden op verhouding vergeleken, zodat 12 op 15 beter telt dan 7 op 10.
+Elk kind heeft een eigen profiel: naam, gekozen leerjaar, instellingen en beste score per
+hoofdstuk. Tik op de naam naast het geluidsicoon om te wisselen, een nieuw profiel toe te voegen
+of er een te verwijderen (dat laatste haalt enkel het knopje weg, de scores blijven staan tot de
+naam terugkomt). In dat paneel zie je per kind ook het leerjaar en hoeveel hoofdstukken al
+geoefend zijn.
+
+Die gegevens staan in `localStorage` van de browser: enkel op dit toestel, in deze ene browser,
+niet in een account en niet in de cloud. Wis je de browsergegevens, gebruik je een andere browser
+of een ander toestel, dan zijn ze weg. Scores worden op verhouding vergeleken, zodat 12 op 15
+beter telt dan 7 op 10.
 
 ## Hoe een spel in elkaar zit
 
