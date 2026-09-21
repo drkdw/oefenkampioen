@@ -188,6 +188,8 @@
   .profielinfo { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
   .profielvoortgang { font-size: 12px; color: var(--ink-soft); }
   .paneelnotitie { margin: 0; font-size: 12px; color: var(--ink-soft); }
+  .paneelacties { display: flex; gap: 8px; flex-wrap: wrap; }
+  .paneelacties .aantal { font-size: 13px; padding: 7px 12px; }
   .profielx {
     flex: none;
     width: 26px; height: 26px;
@@ -517,7 +519,13 @@
       <input id="naam" type="text" maxlength="16" placeholder="Typ de naam en druk op Enter" autocomplete="off">
     </div>
     <p class="paneelnotitie">Staat enkel op dit toestel, in deze browser. Geen account, geen
-      cloud: browsergegevens wissen of een ander toestel gebruiken wist ook dit.</p>
+      cloud: browsergegevens wissen of een ander toestel gebruiken wist ook dit. Bewaar af en toe
+      een bestandje, dan kan je het nadien terugzetten.</p>
+    <div class="paneelacties">
+      <button class="aantal" id="bewaarBtn">Bewaar als bestand</button>
+      <button class="aantal" id="herstelBtn">Herstel van bestand</button>
+      <input type="file" id="herstelInput" accept="application/json" hidden>
+    </div>
   </div>
 
   <div id="startScherm">
