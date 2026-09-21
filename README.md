@@ -70,17 +70,18 @@ leerjaar, dus de schakelaar is niet alleen voor de grootsten. Standaard staat hi
 
 Elk kind heeft een eigen profiel: naam, gekozen leerjaar, instellingen en beste score per
 hoofdstuk. Tik op de naam naast het geluidsicoon om te wisselen, een nieuw profiel toe te voegen
-of er een te verwijderen (dat laatste haalt enkel het knopje weg, de scores blijven staan tot de
-naam terugkomt). In dat paneel zie je per kind ook het leerjaar en hoeveel hoofdstukken al
+of er een uit de lijst te halen (dat laatste haalt enkel het knopje weg, de scores blijven staan
+tot de naam terugkomt). In dat paneel zie je per kind ook het leerjaar en hoeveel hoofdstukken al
 geoefend zijn.
 
 Die gegevens staan in `localStorage` van de browser: enkel op dit toestel, in deze ene browser,
 niet in een account en niet in de cloud. Wis je de browsergegevens, gebruik je een andere browser
-of een ander toestel, dan zijn ze weg, en niets waarschuwt daar vooraf voor. **Bewaar als
-bestand** in het profielenpaneel downloadt een klein bestandje met alle profielen en scores;
-**Herstel van bestand** zet dat later terug. Herstellen voegt enkel toe, het verwijdert nooit een
-profiel dat al op het toestel staat. Scores worden op verhouding vergeleken, zodat 12 op 15 beter
-telt dan 7 op 10.
+of een ander toestel, dan zijn ze weg, en niets waarschuwt daar vooraf voor. Open
+`index.html#admin` en het profielenpaneel krijgt er twee knoppen bij: **Bewaar als bestand**
+downloadt een klein bestandje met alle profielen en scores, **Herstel van bestand** zet dat later
+terug (voegt enkel toe, verwijdert nooit een profiel dat al op het toestel staat). Achter `#admin`
+omdat dit voor een ouder is, niet voor een kind dat op alles tikt — net zoals de zelfcheck achter
+`#test` zit. Scores worden op verhouding vergeleken, zodat 12 op 15 beter telt dan 7 op 10.
 
 ## Hoe een spel in elkaar zit
 
