@@ -131,7 +131,14 @@
     padding: 8px 12px;
   }
   .naamkaart input::placeholder { color: var(--ink-soft); }
-  .profielBtn { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .profielBtn { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .profielBtn .chev {
+    display: inline-block;
+    font-size: 10px;
+    color: var(--ink-soft);
+    transition: transform 0.15s ease;
+  }
+  .profielBtn[aria-expanded="true"] .chev { transform: rotate(180deg); }
   #profielBackdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.35); z-index: 10; }
   .paneel {
     position: absolute;

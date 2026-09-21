@@ -292,7 +292,7 @@ function toonStart() {
   Array.prototype.forEach.call($('spellen').children, function (b) {
     b.onclick = function () { toonMenu(SPELLEN[Number(b.dataset.i)]); };
   });
-  $('profielBtn').textContent = naam() || 'Wie speelt er?';
+  $('profielBtn').innerHTML = (naam() || 'Wie speelt er?') + ' <span class="chev">&#9662;</span>';
   $('leerjaren').innerHTML = LEERJAREN.map(function (lj) {
     return '<button class="aantal" data-lj="' + lj + '" aria-pressed="' + (lj === state.leerjaar) +
       '" aria-label="' + jaarNaam(lj) + '">' + lj + '</button>';
@@ -331,13 +331,20 @@ function toonProfielPaneel() {
       '<span class="profielinfo"><span>' + p.naam + '</span>' +
       '<span class="profielvoortgang">' + jaarNaam(leerjaarVoor(p.sleutel)) + ' · ' + n +
       (n === 1 ? ' hoofdstuk' : ' hoofdstukken') + ' geoefend</span></span></button>' +
-      '<button class="profielx" data-sleutel="' + p.sleutel + '" aria-label="' + p.naam + ' verwijderen">×</button></div>';
+      '<button class="profielx" data-sleutel="' + p.sleutel + '" data-naam="' + p.naam +
+      '" aria-label="' + p.naam + ' verwijderen">×</button></div>';
   }).join('') || '<p class="lead">Nog geen profiel. Typ hieronder een naam.</p>';
   Array.prototype.forEach.call($('profielLijst').querySelectorAll('.profielkies'), function (b) {
     b.onclick = function () { wisselProfiel(b.dataset.sleutel); sluitProfielPaneel(); toonStart(); };
   });
   Array.prototype.forEach.call($('profielLijst').querySelectorAll('.profielx'), function (b) {
-    b.onclick = function (e) { e.stopPropagation(); verwijderProfiel(b.dataset.sleutel); toonProfielPaneel(); toonStart(); };
+    b.onclick = function (e) {
+      e.stopPropagation();
+      if (!confirm(b.dataset.naam + ' verwijderen uit deze lijst? De scores blijven bewaard: typ de naam later opnieuw en ze staan er nog.')) return;
+      verwijderProfiel(b.dataset.sleutel);
+      toonProfielPaneel();
+      toonStart();
+    };
   });
 }
 function opentProfielPaneel() {
