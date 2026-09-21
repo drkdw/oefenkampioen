@@ -62,7 +62,7 @@ function leesAantal() {
 }
 // hoeveel seconden een vraag mag duren als het op tempo staat. Tafels moeten er het snelst
 // uit: automatiseren betekent niet uitrekenen. De andere spellen vragen eerst lezen en kijken.
-var TEMPO = { maal: 8, klok: 25, winkel: 30, maten: 25, kalender: 20, brug: 25, spiegel: 35, breuken: 30, meetkunde: 30 };
+var TEMPO = { maal: 8, klok: 25, winkel: 30, maten: 25, kalender: 20, brug: 25, spiegel: 35, breuken: 30, meetkunde: 30, verhoudingen: 30 };
 function secondenVoor(spel) { return TEMPO[spel.id] || 25; }
 function leesTempo() {
   try { return localStorage.getItem('oefenkampioen-tempo') === 'aan'; } catch (e) { return false; }
