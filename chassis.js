@@ -75,6 +75,34 @@ function naam() {
   var p = profielen().filter(function (p) { return p.sleutel === actief(); })[0];
   return p ? p.naam : '';
 }
+// bewaren/herstellen: geen account of cloud, dus dit bestandje is de enige weg terug als de
+// browsergegevens gewist worden. Herstellen voegt toe, het verwijdert nooit een profiel dat
+// hier al staat maar niet in het bestand zit
+function exporteerData() {
+  var data = {};
+  for (var i = 0; i < localStorage.length; i++) {
+    var k = localStorage.key(i);
+    if (k.indexOf('oefenkampioen-') === 0) data[k] = localStorage.getItem(k);
+  }
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+  a.download = 'oefenkampioen-bewaard.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function herstelData(data) {
+  Object.keys(data).forEach(function (k) {
+    if (k === 'oefenkampioen-profielen' || k.indexOf('oefenkampioen-') !== 0) return;
+    try { localStorage.setItem(k, data[k]); } catch (e) { /* mag mislukken */ }
+  });
+  if (!data['oefenkampioen-profielen']) return;
+  var backup = JSON.parse(data['oefenkampioen-profielen']);
+  var huidig = profielen();
+  backup.forEach(function (p) {
+    if (!huidig.some(function (h) { return h.sleutel === p.sleutel; })) huidig.push(p);
+  });
+  zetProfielen(huidig);
+}
 // de %-plaats wordt de naam met komma, of niets als er geen naam ingevuld is
 function metNaam(sjabloon) {
   var n = naam();
@@ -583,6 +611,19 @@ $('profielBtn').onclick = function () {
   if ($('profielPaneel').hidden) opentProfielPaneel(); else sluitProfielPaneel();
 };
 $('profielBackdrop').onclick = sluitProfielPaneel;
+$('bewaarBtn').onclick = exporteerData;
+$('herstelBtn').onclick = function () { $('herstelInput').click(); };
+$('herstelInput').onchange = function () {
+  var bestand = $('herstelInput').files[0];
+  if (!bestand) return;
+  bestand.text().then(function (tekst) {
+    try { herstelData(JSON.parse(tekst)); } catch (e) { alert('Dat bestand kon niet gelezen worden.'); return; }
+    $('herstelInput').value = '';
+    toonProfielPaneel();
+    toonStart();
+  });
+};
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
 $('soundBtn').onclick = function () {
   state.sound = !state.sound;
   $('soundBtn').textContent = state.sound ? '🔊' : '🔇';
