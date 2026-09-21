@@ -32,6 +32,17 @@ import { keuzes, vulAan, vulRondom, positief, andere, shuffle } from '../gereeds
   };
   var ALLE_GELIJK = Object.keys(GELIJKWAARDIG).reduce(function (a, k) { return a.concat(GELIJKWAARDIG[k]); }, []);
 
+  /* --------- leerjaar 5 --------- */
+
+  // een handvol breuken met een nette, niet-repeterende komma-vorm
+  var NAAR_KOMMA = [
+    { teller: 1, noemer: 2, komma: '0,5' }, { teller: 1, noemer: 4, komma: '0,25' },
+    { teller: 3, noemer: 4, komma: '0,75' }, { teller: 1, noemer: 5, komma: '0,2' },
+    { teller: 2, noemer: 5, komma: '0,4' }, { teller: 3, noemer: 5, komma: '0,6' },
+    { teller: 4, noemer: 5, komma: '0,8' }, { teller: 1, noemer: 10, komma: '0,1' },
+    { teller: 3, noemer: 10, komma: '0,3' }, { teller: 7, noemer: 10, komma: '0,7' }
+  ];
+
 export default {
   id: 'breuken',
   ico: '🍕',
@@ -54,7 +65,15 @@ export default {
     { leerjaar: 4, ico: '🎯', titel: 'Afronden', tekst: '47 afgerond op het tiental is 50.',
       badge: 'gemiddeld', plan: { rondTiental: 5, rondHonderdtal: 5 } },
     { leerjaar: 4, ico: '🏆', titel: 'Het eerste breukenexamen', tekst: 'Gelijkwaardig, optellen, en breuk van een getal.',
-      badge: 'moeilijk', plan: { gelijk: 3, breukPlus: 2, breukMin: 2, vanGetal: 3 } }
+      badge: 'moeilijk', plan: { gelijk: 3, breukPlus: 2, breukMin: 2, vanGetal: 3 } },
+    { leerjaar: 5, ico: '🧩', titel: 'Optellen met ongelijke noemer', tekst: '1/2 + 1/4. Maak eerst de noemers gelijk.',
+      badge: 'moeilijk', plan: { breukPlusOngelijk: 10 } },
+    { leerjaar: 5, ico: '✳️', titel: 'Breuk maal getal', tekst: '2/3 × 4. De teller keer het getal.',
+      badge: 'gemiddeld', plan: { breukMaal: 10 } },
+    { leerjaar: 5, ico: '🔟', titel: 'Breuk naar kommagetal', tekst: '3/4 is hetzelfde als 0,75.',
+      badge: 'gemiddeld', plan: { naarKomma: 10 } },
+    { leerjaar: 5, ico: '🏆', titel: 'Het tweede breukenexamen', tekst: 'Ongelijke noemer, breuk maal getal, en kommagetallen.',
+      badge: 'moeilijk', plan: { breukPlusOngelijk: 4, breukMaal: 3, naarKomma: 3 } }
   ],
   zaadjes: function (soort) {
     if (soort === 'vergelijk') {
@@ -83,6 +102,28 @@ export default {
       });
       return uit3;
     }
+    if (soort === 'breukPlusOngelijk') {
+      var uit6 = [];
+      [[2, 4], [2, 6], [2, 8], [3, 6], [3, 9], [4, 8]].forEach(function (paar) {
+        var klein = paar[0], groot = paar[1], factor = groot / klein;
+        for (var tk = 1; tk < klein; tk++) {
+          for (var tg = 1; tg < groot; tg++) {
+            if (tk * factor + tg < groot) uit6.push({ klein: klein, groot: groot, tk: tk, tg: tg });
+          }
+        }
+      });
+      return uit6;
+    }
+    if (soort === 'breukMaal') {
+      var uit7 = [];
+      [2, 3, 4, 5].forEach(function (noemer) {
+        for (var teller = 1; teller < noemer; teller++) {
+          for (var getal = 2; getal <= 9; getal++) uit7.push({ noemer: noemer, teller: teller, getal: getal });
+        }
+      });
+      return uit7;
+    }
+    if (soort === 'naarKomma') return NAAR_KOMMA.map(function (b, i) { return { i: i }; });
     if (soort === 'tiende') return [1, 2, 3, 4, 6, 7, 8, 9].map(function (t) { return { t: t }; });
     if (soort === 'honderdste') {
       var uit4 = [];
@@ -139,6 +180,31 @@ export default {
       return { soort: soort, sleutel: 'vanGetal|' + z.noemer + ':' + z.teller + ':' + z.getal, noemer: z.noemer,
         teller: z.teller, getal: z.getal, ans: String(deel), options: keuzes(deel, fout4.slice(0, 3)) };
     }
+    if (soort === 'breukPlusOngelijk') {
+      var factor2 = z.groot / z.klein, uitTeller2 = z.tk * factor2 + z.tg, juist4 = uitTeller2 + '/' + z.groot;
+      var kern3 = [];
+      for (var tt2 = 1; tt2 < z.groot; tt2++) if (tt2 !== uitTeller2) kern3.push(tt2 + '/' + z.groot);
+      kern3.push(z.tk + '/' + z.klein);
+      var fout8 = [];
+      vulAan(fout8, juist4, kern3);
+      return { soort: soort, sleutel: 'breukPlusOngelijk|' + z.klein + ':' + z.tk + ':' + z.groot + ':' + z.tg,
+        klein: z.klein, groot: z.groot, tk: z.tk, tg: z.tg, ans: juist4, options: keuzes(juist4, fout8.slice(0, 3)) };
+    }
+    if (soort === 'breukMaal') {
+      var prod2 = z.teller * z.getal, juist5 = prod2 + '/' + z.noemer;
+      var kern4 = [(prod2 + 1) + '/' + z.noemer, (prod2 - 1) + '/' + z.noemer, (prod2 + 2) + '/' + z.noemer,
+        z.getal + '/' + z.noemer, z.teller + '/' + z.noemer, (z.teller + z.getal) + '/' + z.noemer];
+      var fout9 = [];
+      vulAan(fout9, juist5, kern4);
+      return { soort: soort, sleutel: 'breukMaal|' + z.noemer + ':' + z.teller + ':' + z.getal,
+        noemer: z.noemer, teller: z.teller, getal: z.getal, ans: juist5, options: keuzes(juist5, fout9.slice(0, 3)) };
+    }
+    if (soort === 'naarKomma') {
+      var basis2 = NAAR_KOMMA[z.i];
+      var fout10 = andere(NAAR_KOMMA.map(function (b) { return b.komma; }), basis2.komma, 3);
+      return { soort: soort, sleutel: 'naarKomma|' + z.i, teller: basis2.teller, noemer: basis2.noemer,
+        ans: basis2.komma, options: keuzes(basis2.komma, fout10) };
+    }
     if (soort === 'tiende') {
       var komma = '0,' + z.t, fout5 = andere([1, 2, 3, 4, 6, 7, 8, 9].map(function (x) { return '0,' + x; }), komma, 3);
       return { soort: soort, sleutel: 'tiende|' + z.t, t: z.t, ans: komma, options: keuzes(komma, fout5) };
@@ -182,12 +248,15 @@ export default {
       return balkMet({ teller: Number(delen[0]), noemer: Number(delen[1]) });
     }
     if (v.soort === 'tiende') return balkMet({ teller: v.t, noemer: 10 });
+    if (v.soort === 'naarKomma') return balkMet({ teller: v.teller, noemer: v.noemer });
     if (v.soort === 'herkennen') return balkMet({ teller: v.teller, noemer: v.noemer });
     return '';
   },
   scherm: function (v) {
     if (v.soort === 'breukPlus') return v.t1 + '/' + v.noemer + ' + ' + v.t2 + '/' + v.noemer + ' = ?';
     if (v.soort === 'breukMin') return v.t1 + '/' + v.noemer + ' − ' + v.t2 + '/' + v.noemer + ' = ?';
+    if (v.soort === 'breukPlusOngelijk') return v.tk + '/' + v.klein + ' + ' + v.tg + '/' + v.groot + ' = ?';
+    if (v.soort === 'breukMaal') return v.teller + '/' + v.noemer + ' × ' + v.getal + ' = ?';
     return null;
   },
   vraag: function (v, nr) {
@@ -195,6 +264,9 @@ export default {
     if (v.soort === 'vergelijk') return { titel: kop + 'welke reep heeft het grootste gekleurde stuk?', sub: 'Kies de letter.' };
     if (v.soort === 'gelijk') return { titel: kop + 'welke breuk is hetzelfde als ' + v.basis + '?', sub: 'Kijk naar de gekleurde reep.' };
     if (v.soort === 'breukPlus' || v.soort === 'breukMin') return { titel: kop + 'wat is het antwoord?', sub: 'De noemer blijft gelijk.' };
+    if (v.soort === 'breukPlusOngelijk') return { titel: kop + 'wat is het antwoord?', sub: 'Maak eerst de noemers gelijk.' };
+    if (v.soort === 'breukMaal') return { titel: kop + 'wat is het antwoord?', sub: 'Vermenigvuldig enkel de teller.' };
+    if (v.soort === 'naarKomma') return { titel: kop + 'welk kommagetal is ' + v.teller + '/' + v.noemer + '?', sub: 'Kijk naar de gekleurde reep.' };
     if (v.soort === 'vanGetal') return { titel: kop + 'hoeveel is ' + v.teller + '/' + v.noemer + ' van ' + v.getal + '?', sub: 'Deel eerst door de noemer.' };
     if (v.soort === 'tiende') return { titel: kop + 'welk kommagetal is dit?', sub: 'Tel de gekleurde stukjes: dat zijn tienden.' };
     if (v.soort === 'honderdste') return { titel: kop + v.h + ' honderdsten, welk kommagetal is dat?', sub: 'Honderdsten schrijf je met twee cijfers na de komma.' };
@@ -209,6 +281,12 @@ export default {
     }
     if (v.soort === 'gelijk') return v.basis + ' en ' + v.ans + ' zijn evenveel: dezelfde grootte, andere stukjes.';
     if (v.soort === 'breukPlus') return v.t1 + '/' + v.noemer + ' + ' + v.t2 + '/' + v.noemer + ' = ' + v.ans + ': de noemer blijft, de tellers samen.';
+    if (v.soort === 'breukPlusOngelijk') {
+      return v.tk + '/' + v.klein + ' is hetzelfde als ' + (v.tk * v.groot / v.klein) + '/' + v.groot +
+        ', en dat plus ' + v.tg + '/' + v.groot + ' is ' + v.ans + '.';
+    }
+    if (v.soort === 'breukMaal') return v.teller + '/' + v.noemer + ' × ' + v.getal + ' = ' + (v.teller * v.getal) + '/' + v.noemer + ': de teller keer het getal, de noemer blijft.';
+    if (v.soort === 'naarKomma') return v.teller + '/' + v.noemer + ' is hetzelfde als ' + v.ans + '.';
     if (v.soort === 'breukMin') return v.t1 + '/' + v.noemer + ' − ' + v.t2 + '/' + v.noemer + ' = ' + v.ans + ': de noemer blijft, de tellers aftrekken.';
     if (v.soort === 'vanGetal') return v.getal + ' : ' + v.noemer + ' = ' + (v.getal / v.noemer) + ', en ' + v.teller + ' keer dat is ' + v.ans + '.';
     if (v.soort === 'tiende') return v.t + ' van de 10 stukjes is ' + v.ans + '.';
@@ -220,6 +298,9 @@ export default {
     if (v.soort === 'vergelijk') return 'Welke reep is het grootste stuk?';
     if (v.soort === 'gelijk') return 'Gelijkwaardig aan ' + v.basis;
     if (v.soort === 'breukPlus' || v.soort === 'breukMin') return v.t1 + '/' + v.noemer + ' en ' + v.t2 + '/' + v.noemer;
+    if (v.soort === 'breukPlusOngelijk') return v.tk + '/' + v.klein + ' en ' + v.tg + '/' + v.groot;
+    if (v.soort === 'breukMaal') return v.teller + '/' + v.noemer + ' × ' + v.getal;
+    if (v.soort === 'naarKomma') return v.teller + '/' + v.noemer + ' naar komma';
     if (v.soort === 'vanGetal') return v.teller + '/' + v.noemer + ' van ' + v.getal;
     if (v.soort === 'tiende') return v.t + ' tienden';
     if (v.soort === 'honderdste') return v.h + ' honderdsten';
