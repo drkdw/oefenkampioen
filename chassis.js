@@ -18,7 +18,19 @@ function schoonNaam(t) {
 // kind zijn. Sleutel '' is het profiel van vóór profielen bestonden: de oude vlakke sleutels
 // (hieronder, zonder ':sleutel') blijven zo automatisch zijn data, geen migratiecode nodig.
 function sleutelVan(t) { return schoonNaam(t).toLowerCase(); }
-function postfix() { var a = actief(); return a ? ':' + a : ''; }
+function postfixVoor(sleutel) { return sleutel ? ':' + sleutel : ''; }
+function postfix() { return postfixVoor(actief()); }
+// voor het profielenpaneel: het leerjaar en de voortgang van een kind opzoeken zonder erheen
+// te wisselen, zodat je in de lijst kan zien wat iedereen al gedaan heeft
+function leerjaarVoor(sleutel) {
+  var n;
+  try { n = parseInt(localStorage.getItem('oefenkampioen-leerjaar' + postfixVoor(sleutel)), 10); } catch (e) { n = NaN; }
+  return LEERJAREN.indexOf(n) > -1 ? n : 3;
+}
+function geoefendVoor(sleutel) {
+  try { return Object.keys(JSON.parse(localStorage.getItem('oefenkampioen-beste' + postfixVoor(sleutel)) || '{}')).length; }
+  catch (e) { return 0; }
+}
 function actief() {
   try { return localStorage.getItem('oefenkampioen-actief') || ''; } catch (e) { return ''; }
 }
@@ -280,24 +292,7 @@ function toonStart() {
   Array.prototype.forEach.call($('spellen').children, function (b) {
     b.onclick = function () { toonMenu(SPELLEN[Number(b.dataset.i)]); };
   });
-  var actiefSleutel = actief();
-  $('profielen').innerHTML = profielen().map(function (p) {
-    return '<span class="profielwrap"><button class="aantal profielknop" data-sleutel="' + p.sleutel +
-      '" aria-pressed="' + (p.sleutel === actiefSleutel) + '"><span class="avatar">' +
-      p.naam.charAt(0).toUpperCase() + '</span>' + p.naam + '</button>' +
-      '<button class="profielx" data-sleutel="' + p.sleutel + '" aria-label="' + p.naam + ' verwijderen">×</button></span>';
-  }).join('') + '<button class="aantal" id="profielPlus">+ nieuw</button>';
-  Array.prototype.forEach.call($('profielen').querySelectorAll('.profielknop'), function (b) {
-    b.onclick = function () { wisselProfiel(b.dataset.sleutel); toonStart(); };
-  });
-  Array.prototype.forEach.call($('profielen').querySelectorAll('.profielx'), function (b) {
-    b.onclick = function (e) { e.stopPropagation(); verwijderProfiel(b.dataset.sleutel); toonStart(); };
-  });
-  $('profielPlus').onclick = function () {
-    $('nieuwProfielKaart').hidden = false;
-    $('naam').value = '';
-    $('naam').focus();
-  };
+  $('profielBtn').textContent = naam() || 'Wie speelt er?';
   $('leerjaren').innerHTML = LEERJAREN.map(function (lj) {
     return '<button class="aantal" data-lj="' + lj + '" aria-pressed="' + (lj === state.leerjaar) +
       '" aria-label="' + jaarNaam(lj) + '">' + lj + '</button>';
@@ -324,6 +319,37 @@ function toonStart() {
   $('menuScherm').hidden = true;
   $('game').hidden = true;
   $('result').hidden = true;
+}
+/* ==================== profielenpaneel ==================== */
+function toonProfielPaneel() {
+  var actiefSleutel = actief();
+  $('profielLijst').innerHTML = profielen().map(function (p) {
+    var n = geoefendVoor(p.sleutel);
+    return '<div class="profielrij' + (p.sleutel === actiefSleutel ? ' actief' : '') + '">' +
+      '<button class="profielkies" data-sleutel="' + p.sleutel + '">' +
+      '<span class="avatar">' + p.naam.charAt(0).toUpperCase() + '</span>' +
+      '<span class="profielinfo"><span>' + p.naam + '</span>' +
+      '<span class="profielvoortgang">' + jaarNaam(leerjaarVoor(p.sleutel)) + ' · ' + n +
+      (n === 1 ? ' hoofdstuk' : ' hoofdstukken') + ' geoefend</span></span></button>' +
+      '<button class="profielx" data-sleutel="' + p.sleutel + '" aria-label="' + p.naam + ' verwijderen">×</button></div>';
+  }).join('') || '<p class="lead">Nog geen profiel. Typ hieronder een naam.</p>';
+  Array.prototype.forEach.call($('profielLijst').querySelectorAll('.profielkies'), function (b) {
+    b.onclick = function () { wisselProfiel(b.dataset.sleutel); sluitProfielPaneel(); toonStart(); };
+  });
+  Array.prototype.forEach.call($('profielLijst').querySelectorAll('.profielx'), function (b) {
+    b.onclick = function (e) { e.stopPropagation(); verwijderProfiel(b.dataset.sleutel); toonProfielPaneel(); toonStart(); };
+  });
+}
+function opentProfielPaneel() {
+  toonProfielPaneel();
+  $('profielPaneel').hidden = false;
+  $('profielBackdrop').hidden = false;
+  $('profielBtn').setAttribute('aria-expanded', 'true');
+}
+function sluitProfielPaneel() {
+  $('profielPaneel').hidden = true;
+  $('profielBackdrop').hidden = true;
+  $('profielBtn').setAttribute('aria-expanded', 'false');
 }
 function toonMenu(spel) {
   stopKlok();
@@ -540,11 +566,16 @@ $('homeBtn').onclick = function () { toonMenu(state.spel); };
 $('terugBtn').onclick = toonStart;
 function bevestigNieuwProfiel() {
   if ($('naam').value.trim()) nieuwProfiel($('naam').value);
-  $('nieuwProfielKaart').hidden = true;
+  $('naam').value = '';
+  toonProfielPaneel();
   toonStart();
 }
 $('naam').onblur = bevestigNieuwProfiel;
 $('naam').addEventListener('keydown', function (e) { if (e.key === 'Enter') bevestigNieuwProfiel(); });
+$('profielBtn').onclick = function () {
+  if ($('profielPaneel').hidden) opentProfielPaneel(); else sluitProfielPaneel();
+};
+$('profielBackdrop').onclick = sluitProfielPaneel;
 $('soundBtn').onclick = function () {
   state.sound = !state.sound;
   $('soundBtn').textContent = state.sound ? '🔊' : '🔇';
