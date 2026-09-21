@@ -360,18 +360,33 @@ function toonProfielPaneel() {
       '<span class="profielvoortgang">' + jaarNaam(leerjaarVoor(p.sleutel)) + ' · ' + n +
       (n === 1 ? ' hoofdstuk' : ' hoofdstukken') + ' geoefend</span></span></button>' +
       '<button class="profielx" data-sleutel="' + p.sleutel + '" data-naam="' + p.naam +
-      '" aria-label="' + p.naam + ' verwijderen">×</button></div>';
+      '" aria-label="' + p.naam + ' uit de lijst halen">×</button></div>';
   }).join('') || '<p class="lead">Nog geen profiel. Typ hieronder een naam.</p>';
   Array.prototype.forEach.call($('profielLijst').querySelectorAll('.profielkies'), function (b) {
     b.onclick = function () { wisselProfiel(b.dataset.sleutel); sluitProfielPaneel(); toonStart(); };
   });
+  // window.confirm() wordt door sommige browsers (waaronder test-browsers) onderdrukt en levert
+  // dan altijd "nee" op, zonder dat er iets te zien is: de vraag wordt daarom hier zelf gebouwd,
+  // in de rij, met een echt "ja" en "nee" om aan te tikken
   Array.prototype.forEach.call($('profielLijst').querySelectorAll('.profielx'), function (b) {
     b.onclick = function (e) {
       e.stopPropagation();
-      if (!confirm(b.dataset.naam + ' verwijderen uit deze lijst? De scores blijven bewaard: typ de naam later opnieuw en ze staan er nog.')) return;
-      verwijderProfiel(b.dataset.sleutel);
-      toonProfielPaneel();
-      toonStart();
+      var rij = b.closest('.profielrij'), sleutel = b.dataset.sleutel, naam = b.dataset.naam;
+      rij.className = 'profielrij bevestig';
+      rij.innerHTML = '<span class="profielvraag">' + naam + ' uit deze lijst halen? De scores blijven ' +
+        'bewaard, tikt iemand die naam later opnieuw dan staan ze er terug.</span>' +
+        '<button class="profielja">Ja, uit de lijst</button>' +
+        '<button class="profielnee">Nee</button>';
+      rij.querySelector('.profielja').onclick = function (e) {
+        e.stopPropagation();
+        verwijderProfiel(sleutel);
+        toonProfielPaneel();
+        toonStart();
+      };
+      rij.querySelector('.profielnee').onclick = function (e) {
+        e.stopPropagation();
+        toonProfielPaneel();
+      };
     };
   });
 }
@@ -611,7 +626,14 @@ $('profielBtn').onclick = function () {
   if ($('profielPaneel').hidden) opentProfielPaneel(); else sluitProfielPaneel();
 };
 $('profielBackdrop').onclick = sluitProfielPaneel;
-$('bewaarBtn').onclick = exporteerData;
+$('bewaarBtn').onclick = function () {
+  exporteerData();
+  // de browser bewaart het bestandje stil, zonder eigen melding: zonder dit tekstje lijkt het
+  // net of er niets gebeurt
+  $('bewaarBtn').textContent = 'Bewaard ✓';
+  clearTimeout($('bewaarBtn').timer);
+  $('bewaarBtn').timer = setTimeout(function () { $('bewaarBtn').textContent = 'Bewaar als bestand'; }, 2500);
+};
 $('herstelBtn').onclick = function () { $('herstelInput').click(); };
 $('herstelInput').onchange = function () {
   var bestand = $('herstelInput').files[0];
@@ -636,5 +658,8 @@ toonStart();
 
 // de zelfcheck is er voor de ontwikkelaar, dus hij komt pas binnen bij #test
 if (location.hash === '#test') import('./zelfcheck.js');
+// bewaren/herstellen is voor een ouder, niet voor een kind dat op alles tikt: pas zichtbaar
+// achter deze link, net als de zelfcheck achter #test
+if (location.hash === '#admin') $('paneelacties').hidden = false;
 
 export { SPELLEN, AANTALLEN, jasjesVoor, LEERJAREN, TEMPO, LOF, MOED, state, schoonNaam, naam, metNaam, leesTempo, secondenVoor, jarenVan, planVoor, bouwToets, maakVraag, toonStart };
