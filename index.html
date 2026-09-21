@@ -202,6 +202,18 @@
     padding: 0;
     cursor: pointer;
   }
+  .profielrij.bevestig { background: var(--bad-bg); border-radius: 14px; padding: 8px 10px; flex-wrap: wrap; }
+  .profielvraag { flex: 1 1 100%; font-size: 13px; color: var(--ink); }
+  .profielja, .profielnee {
+    font-family: Fredoka, sans-serif;
+    font-size: 13px;
+    border-radius: 999px;
+    padding: 6px 12px;
+    cursor: pointer;
+    border: 2px solid var(--line);
+  }
+  .profielja { background: var(--bad); color: var(--card); border-color: var(--bad); }
+  .profielnee { background: var(--card-2); color: var(--ink); }
 
   /* spellen en hoofdstukken delen dezelfde kaart */
   .menu { display: flex; flex-direction: column; gap: 10px; }
@@ -519,9 +531,8 @@
       <input id="naam" type="text" maxlength="16" placeholder="Typ de naam en druk op Enter" autocomplete="off">
     </div>
     <p class="paneelnotitie">Staat enkel op dit toestel, in deze browser. Geen account, geen
-      cloud: browsergegevens wissen of een ander toestel gebruiken wist ook dit. Bewaar af en toe
-      een bestandje, dan kan je het nadien terugzetten.</p>
-    <div class="paneelacties">
+      cloud: browsergegevens wissen of een ander toestel gebruiken wist ook dit.</p>
+    <div class="paneelacties" id="paneelacties" hidden>
       <button class="aantal" id="bewaarBtn">Bewaar als bestand</button>
       <button class="aantal" id="herstelBtn">Herstel van bestand</button>
       <input type="file" id="herstelInput" accept="application/json" hidden>
