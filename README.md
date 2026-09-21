@@ -38,25 +38,26 @@ zit moet de kwartieren immers nog kunnen oefenen.
 - een spel zonder iets voor het gekozen niveau staat niet op het startscherm
 - een kind dat vooruit wil, zet het leerjaar een stapje hoger
 
-Vandaag zitten er 77 hoofdstukken in: 17 in het eerste leerjaar, 31 in het tweede, 29 in het
-derde. Een kind in het derde heeft er dus 77 te oefenen, een kind in het eerste 17. Het
-vierde tot zesde leerjaar voegen nog niets toe.
+Vandaag zitten er 104 hoofdstukken in: 17 in het eerste leerjaar, 31 in het tweede, 29 in het
+derde, 15 in het vierde, 12 in het vijfde. Een kind in het vijfde heeft er dus 104 te oefenen,
+een kind in het eerste 17. Het zesde leerjaar voegt nog niets toe.
 
 ## De spellen
 
 | spel | wat |
 | --- | --- |
-| Klokkijken | hele uren, kwartieren, dagdelen, digitale klok, tijdsduur |
+| Klokkijken | hele uren, kwartieren, dagdelen, digitale klok, tijdsduur, seconden |
 | Maaltafels | sprongen tellen, maaltafels, delen, de ontbrekende factor |
 | Het winkeltje | samen en gepast betalen, munten tellen, wisselgeld |
-| Meten en wegen | vergelijken zonder meten, liniaal lezen, m/cm/mm, kg/g, l/dl/cl |
+| Meten en wegen | vergelijken zonder meten, liniaal lezen, liter aflezen, m/cm/mm, kg/g, l/dl/cl |
 | De kalender | dagen, maanden, seizoenen, hoeveel dagen, verder tellen |
-| Bruggen bouwen | splitsen, tellen, en optellen en aftrekken tot 1000 over het tiental |
+| Bruggen bouwen | splitsen, brug tot 20 en tot 1000, cijferend rekenen, negatieve getallen |
 | Spiegelen | vormen, richtingen, spiegelen, symmetrie, gedraaid of gespiegeld |
-| Breuken | een deel van een geheel, en welk stuk het grootste is |
-| Meetkunde | de omtrek van een vierkant en een rechthoek |
+| Breuken | deel van een geheel, gelijkwaardig, optellen, breuk maal getal, kommagetallen |
+| Meetkunde | omtrek, oppervlakte, hoeken, volume van een blok, driehoek |
+| Verhoudingen | procent van een getal, en rekenen met een schaal |
 
-Elk spel heeft één tot veertien hoofdstukken, afhankelijk van hoeveel leerjaren het al dekt.
+Elk spel heeft één tot vijftien hoofdstukken, afhankelijk van hoeveel leerjaren het al dekt.
 Een toets telt 10, 15 of 20 vragen, te kiezen op
 het startscherm, en evenveel punten. Twintig is de bovengrens: langer houdt een kind van acht
 niet vol. De verdeling over de vraagtypes schaalt mee met het gekozen aantal.
@@ -111,8 +112,9 @@ De foute keuzes zijn overal de denkfouten die kinderen echt maken, niet willekeu
 - **Maten**: een factor tien mis, of omrekenen in de verkeerde richting
 - **Bruggen**: het onthouden vergeten, een tiental te veel, de verkeerde bewerking, en bij de brug tot 20 het tiental gewoon vergeten (12 + 5 = 7 in plaats van 17)
 - **Spiegelen**: een halve slag gedraaid in plaats van gespiegeld, of gewoon opzij geschoven
-- **Breuken**: het aantal stukjes en het aantal gekleurde stukjes verwisselen
-- **Meetkunde**: enkel twee zijden optellen in plaats van vier, of de oppervlakte in plaats van de omtrek
+- **Breuken**: het aantal stukjes en het aantal gekleurde stukjes verwisselen, de noemer vergeten mee te nemen
+- **Meetkunde**: enkel twee zijden optellen in plaats van vier, oppervlakte in plaats van omtrek, vergeten door twee te delen bij een driehoek
+- **Verhoudingen**: het verschil nemen in plaats van het deel, of de schaal vergeten toe te passen
 
 ## Wat de tekening niet mag verklappen
 
@@ -124,7 +126,7 @@ getallenlijn blijven leeg bij "47 + ? = 55". De zelfcheck controleert dat alle d
 
 Open `index.html#test` en bekijk de console. De check rekent alle volledige toetsen door: elk
 spel, elk hoofdstuk, bij 10, 15 en 20 vragen, vijf rondes per combinatie; dat zijn er vandaag
-1155. Per vraag controleert hij onder meer dat er vier verschillende keuzes zijn met precies een
+1560. Per vraag controleert hij onder meer dat er vier verschillende keuzes zijn met precies een
 juist antwoord, dat een vraag niet vaker voorkomt dan de voorraad toelaat en nooit twee keer na
 elkaar, dat de invulvakjes samen het antwoord vormen, en dat er nergens `undefined` in een
 tekst, tekening of het schermpje sluipt.
@@ -137,7 +139,8 @@ toelaat.
 Daarbovenop heeft elk spel zijn eigen controles: dat de twaalf maanden samen 365 dagen tellen,
 dat quotient maal deler het deeltal geeft, dat heen en terug omrekenen weer op het beginpunt
 uitkomt, dat de twee sprongen van een brug samen de hele sprong zijn, dat twee keer spiegelen
-je terugbrengt bij het begin, en dat geen twee breuken in het vergelijkspel gelijkwaardig zijn.
+je terugbrengt bij het begin, dat geen twee breuken in het vergelijkspel gelijkwaardig zijn, en
+dat elke gelijkwaardige breuk in sectie 9 ook echt dezelfde waarde heeft als zijn basisbreuk.
 
 ## Licentie
 
