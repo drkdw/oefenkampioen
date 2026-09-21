@@ -77,11 +77,12 @@ geoefend zijn.
 Die gegevens staan in `localStorage` van de browser: enkel op dit toestel, in deze ene browser,
 niet in een account en niet in de cloud. Wis je de browsergegevens, gebruik je een andere browser
 of een ander toestel, dan zijn ze weg, en niets waarschuwt daar vooraf voor. Open
-`index.html#admin` en het profielenpaneel krijgt er twee knoppen bij: **Bewaar als bestand**
-downloadt een klein bestandje met alle profielen en scores, **Herstel van bestand** zet dat later
-terug (voegt enkel toe, verwijdert nooit een profiel dat al op het toestel staat). Achter `#admin`
-omdat dit voor een ouder is, niet voor een kind dat op alles tikt — net zoals de zelfcheck achter
-`#test` zit. Scores worden op verhouding vergeleken, zodat 12 op 15 beter telt dan 7 op 10.
+`index.html#admin` voor twee dingen die voor een ouder zijn, niet voor een kind dat op alles tikt
+— net zoals de zelfcheck achter `#test` zit: **Bewaar als bestand** downloadt een klein bestandje
+met alle profielen en scores, **Herstel van bestand** zet dat later terug (voegt enkel toe,
+verwijdert nooit een profiel dat al op het toestel staat); en bij elk profiel komt er een 🗑-knop
+bij die het écht en onomkeerbaar wist, naam en scores incluis, met een expliciete bevestiging
+ertussen. Scores worden op verhouding vergeleken, zodat 12 op 15 beter telt dan 7 op 10.
 
 ## Hoe een spel in elkaar zit
 
