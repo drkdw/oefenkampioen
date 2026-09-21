@@ -130,6 +130,31 @@
     padding: 8px 12px;
   }
   .naamkaart input::placeholder { color: var(--ink-soft); }
+  .profielwrap { position: relative; display: inline-flex; }
+  .profielknop .avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px; height: 20px;
+    border-radius: 999px;
+    background: var(--ink);
+    color: var(--card);
+    margin-right: 6px;
+    font-size: 13px;
+  }
+  .profielx {
+    position: absolute;
+    top: -7px; right: -7px;
+    width: 18px; height: 18px;
+    border-radius: 999px;
+    border: 2px solid var(--line);
+    background: var(--card);
+    color: var(--ink-soft);
+    font-size: 11px;
+    line-height: 1;
+    padding: 0;
+    cursor: pointer;
+  }
 
   /* spellen en hoofdstukken delen dezelfde kaart */
   .menu { display: flex; flex-direction: column; gap: 10px; }
@@ -439,9 +464,13 @@
   </header>
 
   <div id="startScherm">
-    <div class="naamkaart">
-      <label for="naam">Hoe heet jij?</label>
-      <input id="naam" type="text" maxlength="16" placeholder="Typ je naam" autocomplete="given-name">
+    <div class="naamkaart" role="group" aria-label="Wie speelt er?">
+      <span class="kaartlabel">Wie speelt er?</span>
+      <span class="aantallen" id="profielen"></span>
+    </div>
+    <div class="naamkaart" id="nieuwProfielKaart" hidden>
+      <label for="naam">Naam van het nieuwe kind</label>
+      <input id="naam" type="text" maxlength="16" placeholder="Typ de naam en druk op Enter" autocomplete="off">
     </div>
     <div class="naamkaart" role="group" aria-label="Leerjaar">
       <span class="kaartlabel">Welk leerjaar?</span>
