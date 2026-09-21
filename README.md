@@ -76,8 +76,11 @@ geoefend zijn.
 
 Die gegevens staan in `localStorage` van de browser: enkel op dit toestel, in deze ene browser,
 niet in een account en niet in de cloud. Wis je de browsergegevens, gebruik je een andere browser
-of een ander toestel, dan zijn ze weg. Scores worden op verhouding vergeleken, zodat 12 op 15
-beter telt dan 7 op 10.
+of een ander toestel, dan zijn ze weg, en niets waarschuwt daar vooraf voor. **Bewaar als
+bestand** in het profielenpaneel downloadt een klein bestandje met alle profielen en scores;
+**Herstel van bestand** zet dat later terug. Herstellen voegt enkel toe, het verwijdert nooit een
+profiel dat al op het toestel staat. Scores worden op verhouding vergeleken, zodat 12 op 15 beter
+telt dan 7 op 10.
 
 ## Hoe een spel in elkaar zit
 
