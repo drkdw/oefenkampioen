@@ -3,6 +3,8 @@ import { SPELLEN } from './spellen/index.js';
 
 // meer dan twintig vragen houdt een kind van acht niet vol
 var AANTALLEN = [10, 15, 20];
+// achter #admin komt er per profiel een knop bij om het écht en onomkeerbaar te wissen
+var adminModus = false;
 
 /* ==================== naam, aantal en opslag ==================== */
 // alleen letters, spaties, koppeltekens en apostrofs, zodat de naam veilig in een bericht past
@@ -69,6 +71,16 @@ function verwijderProfiel(sleutel) {
   // dan staan de scores er nog
   var lijst = profielen().filter(function (p) { return p.sleutel !== sleutel; });
   zetProfielen(lijst);
+  if (actief() === sleutel) wisselProfiel(lijst.length ? lijst[0].sleutel : '');
+}
+// enkel achter #admin: wist ook de onderliggende data, onomkeerbaar. Anders dan verwijderProfiel
+// hierboven, dat enkel het knopje uit de lijst haalt
+function verwijderProfielEcht(sleutel) {
+  var lijst = profielen().filter(function (p) { return p.sleutel !== sleutel; });
+  zetProfielen(lijst);
+  ['oefenkampioen-leerjaar', 'oefenkampioen-aantal', 'oefenkampioen-tempo', 'oefenkampioen-beste'].forEach(function (k) {
+    try { localStorage.removeItem(k + postfixVoor(sleutel)); } catch (e) { /* mag mislukken */ }
+  });
   if (actief() === sleutel) wisselProfiel(lijst.length ? lijst[0].sleutel : '');
 }
 function naam() {
@@ -360,7 +372,9 @@ function toonProfielPaneel() {
       '<span class="profielvoortgang">' + jaarNaam(leerjaarVoor(p.sleutel)) + ' · ' + n +
       (n === 1 ? ' hoofdstuk' : ' hoofdstukken') + ' geoefend</span></span></button>' +
       '<button class="profielx" data-sleutel="' + p.sleutel + '" data-naam="' + p.naam +
-      '" aria-label="' + p.naam + ' uit de lijst halen">×</button></div>';
+      '" aria-label="' + p.naam + ' uit de lijst halen">×</button>' +
+      (adminModus ? '<button class="profielwis" data-sleutel="' + p.sleutel + '" data-naam="' + p.naam +
+        '" aria-label="' + p.naam + ' echt en onomkeerbaar wissen">🗑</button>' : '') + '</div>';
   }).join('') || '<p class="lead">Nog geen profiel. Typ hieronder een naam.</p>';
   Array.prototype.forEach.call($('profielLijst').querySelectorAll('.profielkies'), function (b) {
     b.onclick = function () { wisselProfiel(b.dataset.sleutel); sluitProfielPaneel(); toonStart(); };
@@ -380,6 +394,28 @@ function toonProfielPaneel() {
       rij.querySelector('.profielja').onclick = function (e) {
         e.stopPropagation();
         verwijderProfiel(sleutel);
+        toonProfielPaneel();
+        toonStart();
+      };
+      rij.querySelector('.profielnee').onclick = function (e) {
+        e.stopPropagation();
+        toonProfielPaneel();
+      };
+    };
+  });
+  // enkel achter #admin: een onomkeerbare wis, apart van de gewone "uit de lijst"-knop hierboven
+  Array.prototype.forEach.call($('profielLijst').querySelectorAll('.profielwis'), function (b) {
+    b.onclick = function (e) {
+      e.stopPropagation();
+      var rij = b.closest('.profielrij'), sleutel = b.dataset.sleutel, naam = b.dataset.naam;
+      rij.className = 'profielrij bevestig';
+      rij.innerHTML = '<span class="profielvraag">' + naam + ' ECHT wissen? Naam, leerjaar en scores ' +
+        'zijn dan voorgoed weg. Dit kan niet ongedaan gemaakt worden.</span>' +
+        '<button class="profielja">Ja, wissen</button>' +
+        '<button class="profielnee">Nee</button>';
+      rij.querySelector('.profielja').onclick = function (e) {
+        e.stopPropagation();
+        verwijderProfielEcht(sleutel);
         toonProfielPaneel();
         toonStart();
       };
@@ -660,6 +696,6 @@ toonStart();
 if (location.hash === '#test') import('./zelfcheck.js');
 // bewaren/herstellen is voor een ouder, niet voor een kind dat op alles tikt: pas zichtbaar
 // achter deze link, net als de zelfcheck achter #test
-if (location.hash === '#admin') $('paneelacties').hidden = false;
+if (location.hash === '#admin') { adminModus = true; $('paneelacties').hidden = false; }
 
 export { SPELLEN, AANTALLEN, jasjesVoor, LEERJAREN, TEMPO, LOF, MOED, state, schoonNaam, naam, metNaam, leesTempo, secondenVoor, jarenVan, planVoor, bouwToets, maakVraag, toonStart };
