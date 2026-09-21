@@ -143,7 +143,11 @@ export default {
     { leerjaar: 3, ico: '⌨️', titel: 'Zelf omrekenen', tekst: 'Geen keuzes. Typ het getal zelf in.',
       badge: 'moeilijk', stelsel: 'lengte', paren: [['m', 'cm'], ['cm', 'mm'], ['kg', 'g'], ['l', 'ml']], plan: { typ: 10 } },
     { leerjaar: 3, ico: '🏆', titel: 'Het grote meetexamen', tekst: 'Alles door elkaar.',
-      badge: 'moeilijk', stelsel: 'lengte', paren: [['m', 'cm'], ['cm', 'mm'], ['kg', 'g'], ['l', 'dl']], plan: { om: 4, past: 3, liniaal: 2, typ: 1 } }
+      badge: 'moeilijk', stelsel: 'lengte', paren: [['m', 'cm'], ['cm', 'mm'], ['kg', 'g'], ['l', 'dl']], plan: { om: 4, past: 3, liniaal: 2, typ: 1 } },
+    { leerjaar: 6, ico: '🔀', titel: 'Alle omzettingen door elkaar', tekst: 'Lengte, gewicht en inhoud, alle eenheden samen.',
+      badge: 'moeilijk', stelsel: 'lengte',
+      paren: [['m', 'mm'], ['m', 'dm'], ['dm', 'mm'], ['kg', 'g'], ['l', 'ml'], ['l', 'cl'], ['dl', 'ml']],
+      plan: { om: 10 } }
   ],
   zaadjes: function (soort, h) {
     var uit = [];
