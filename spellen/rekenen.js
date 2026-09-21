@@ -223,7 +223,9 @@ export default {
     { leerjaar: 5, ico: '🌡️', titel: 'Negatieve getallen', tekst: 'Het was 3 graden, en het koelt 8 graden af.',
       badge: 'gemiddeld', plan: { temp: 10 } },
     { leerjaar: 5, ico: '🏆', titel: 'Het vierde rekenexamen', tekst: 'Grote getallen, delen door twee cijfers, en temperaturen.',
-      badge: 'moeilijk', plan: { grootgetal: 3, cijferDelen2: 4, temp: 3 } }
+      badge: 'moeilijk', plan: { grootgetal: 3, cijferDelen2: 4, temp: 3 } },
+    { leerjaar: 6, ico: '🔟', titel: 'Machten van tien', tekst: '10³ is 10 × 10 × 10 = 1000.',
+      badge: 'gemiddeld', plan: { macht: 10 } }
   ],
   zaadjes: function (soort, h) {
     var uit = [], a, b;
@@ -323,6 +325,11 @@ export default {
         for (var val = 4; val <= 15; val += 2) uit12.push({ start: start, val: val });
       }
       return uit12;
+    }
+    if (soort === 'macht') {
+      var uit13 = [];
+      for (var exp = 1; exp <= 6; exp++) uit13.push({ exp: exp });
+      return uit13;
     }
     if (soort === 'omgekeerd') {
       for (var oa = 1; oa <= 9; oa++) {
@@ -427,6 +434,15 @@ export default {
       return { soort: soort, sleutel: 'temp|' + z.start + ':' + z.val, start: z.start, val: z.val,
         ans: String(uitkomst2), options: keuzes(uitkomst2, fout12.slice(0, 3)) };
     }
+    if (soort === 'macht') {
+      var machtWaarde = Math.pow(10, z.exp);
+      // veelgemaakte fout: de exponent met tien vermenigvuldigen in plaats van tien keer zichzelf
+      var kern12 = [Math.pow(10, z.exp + 1), Math.pow(10, Math.max(0, z.exp - 1)), z.exp * 10, machtWaarde * 2];
+      var fout13 = [];
+      vulAan(fout13, machtWaarde, kern12, positief);
+      return { soort: soort, sleutel: 'macht|' + z.exp, exp: z.exp, ans: String(machtWaarde),
+        options: keuzes(machtWaarde, fout13.slice(0, 3)) };
+    }
     if (soort === 'tientallen' || soort === 'eenheden') {
       var tal = Math.floor(z.n / 10), eenh = z.n % 10, juist2 = soort === 'tientallen' ? tal : eenh;
       var kern2 = [juist2 + 1, juist2 - 1, juist2 + 2, soort === 'tientallen' ? eenh : tal];
@@ -507,6 +523,7 @@ export default {
     if (v.soort === 'grootgetal') return getalTegel(v.n);
     if (v.soort === 'cijferDelen2') return kolom(v.deeltal, v.deler, ':');
     if (v.soort === 'temp') return '';
+    if (v.soort === 'macht') return '<div style="font-family:Fredoka,sans-serif;font-size:40px;color:var(--ink);text-align:center">10<sup style="font-size:24px">' + v.exp + '</sup></div>';
     if (v.soort === 'paar' || v.soort === 'omgekeerd') return '';
     return lijn(v.a, v.b, v.plus, v.soort !== 'gat');
   },
@@ -519,7 +536,7 @@ export default {
         v.soort === 'eenheden' || v.soort === 'dubbel' || v.soort === 'helft' || v.soort === 'paar' ||
         v.soort === 'duizendtal' || v.soort === 'honderdtal' || v.soort === 'cijferPlus' ||
         v.soort === 'cijferMin' || v.soort === 'cijferKeer' || v.soort === 'cijferDelen' ||
-        v.soort === 'grootgetal' || v.soort === 'cijferDelen2' || v.soort === 'temp') return null;
+        v.soort === 'grootgetal' || v.soort === 'cijferDelen2' || v.soort === 'temp' || v.soort === 'macht') return null;
     var teken = v.plus ? ' + ' : ' − ';
     if (v.soort === 'gat') return v.a + teken + '? = ' + v.uit;
     return v.a + teken + v.b;
@@ -550,6 +567,7 @@ export default {
       return { titel: kop + 'het is ' + v.start + ' °C, en het koelt ' + v.val + ' graden af.',
         sub: 'Wat is de nieuwe temperatuur?' };
     }
+    if (v.soort === 'macht') return { titel: kop + 'hoeveel is 10 tot de macht ' + v.exp + '?', sub: v.exp + ' keer een nul erbij.' };
     if (v.soort === 'gat') return { titel: kop + 'welk getal ontbreekt?', sub: 'Hoe groot is de sprong?' };
     if (v.soort === 'typ') return { titel: kop + 'hoeveel is ' + v.a + (v.plus ? ' plus ' : ' min ') + v.b + '?', sub: 'Typ alleen het getal.' };
     return { titel: kop + 'hoeveel is ' + v.a + (v.plus ? ' plus ' : ' min ') + v.b + '?' };
@@ -568,6 +586,7 @@ export default {
     if (v.soort === 'grootgetal') return v.n + ' : 1000 = ' + v.ans + '.';
     if (v.soort === 'cijferDelen2') return v.deeltal + ' : ' + v.deler + ' = ' + v.ans + ', want ' + v.ans + ' × ' + v.deler + ' = ' + v.deeltal + '.';
     if (v.soort === 'temp') return v.start + ' − ' + v.val + ' = ' + v.ans + ' °C. Onder nul tel je verder in het negatieve.';
+    if (v.soort === 'macht') return '10 tot de macht ' + v.exp + ' is 10 × zichzelf, ' + v.exp + ' keer: ' + v.ans + '.';
     if (v.soort === 'tientallen') return v.n + ' bestaat uit ' + v.tal + ' tientallen en ' + v.eenh + ' eenheden.';
     if (v.soort === 'eenheden') return v.n + ' bestaat uit ' + v.tal + ' tientallen en ' + v.eenh + ' eenheden.';
     if (v.soort === 'dubbel') return 'Het dubbele van ' + v.n + ' is ' + (v.n * 2) + ': ' + v.n + ' + ' + v.n + '.';
@@ -600,6 +619,7 @@ export default {
     if (v.soort === 'grootgetal') return 'Duizendtallen in ' + v.n;
     if (v.soort === 'cijferDelen2') return v.deeltal + ' : ' + v.deler + ' (twee cijfers)';
     if (v.soort === 'temp') return v.start + ' °C, ' + v.val + ' graden erbij of eraf';
+    if (v.soort === 'macht') return '10 tot de macht ' + v.exp;
     if (v.soort === 'tientallen') return 'Tientallen in ' + v.n;
     if (v.soort === 'eenheden') return 'Eenheden in ' + v.n;
     if (v.soort === 'dubbel') return 'Het dubbele van ' + v.n;
