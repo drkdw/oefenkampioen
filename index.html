@@ -69,6 +69,7 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
+    position: relative;
   }
 
   header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -130,6 +131,68 @@
     padding: 8px 12px;
   }
   .naamkaart input::placeholder { color: var(--ink-soft); }
+  .profielBtn { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #profielBackdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.35); z-index: 10; }
+  .paneel {
+    position: absolute;
+    top: 56px; right: 0;
+    z-index: 11;
+    width: min(300px, calc(100% - 8px));
+    max-height: 70vh;
+    overflow-y: auto;
+    background: var(--card);
+    border: 3px solid var(--line);
+    border-radius: 20px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .profielrij { display: flex; align-items: center; gap: 8px; }
+  .profielkies {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-align: left;
+    font-family: Fredoka, sans-serif;
+    font-size: 15px;
+    border: 2px solid var(--line);
+    background: var(--card-2);
+    color: var(--ink);
+    border-radius: 14px;
+    padding: 8px 10px;
+    cursor: pointer;
+  }
+  .profielrij.actief .profielkies { background: var(--ink); color: var(--card); border-color: var(--ink); }
+  .profielrij.actief .profielkies .avatar { background: var(--card); color: var(--ink); }
+  .profielrij.actief .profielvoortgang { color: var(--card); opacity: 0.8; }
+  .profielkies .avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px; height: 26px;
+    flex: none;
+    border-radius: 999px;
+    background: var(--ink);
+    color: var(--card);
+    font-size: 14px;
+  }
+  .profielinfo { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .profielvoortgang { font-size: 12px; color: var(--ink-soft); }
+  .paneelnotitie { margin: 0; font-size: 12px; color: var(--ink-soft); }
+  .profielx {
+    flex: none;
+    width: 26px; height: 26px;
+    border-radius: 999px;
+    border: 2px solid var(--line);
+    background: var(--card-2);
+    color: var(--ink-soft);
+    font-size: 13px;
+    line-height: 1;
+    padding: 0;
+    cursor: pointer;
+  }
 
   /* spellen en hoofdstukken delen dezelfde kaart */
   .menu { display: flex; flex-direction: column; gap: 10px; }
@@ -435,14 +498,22 @@
 <div class="wrap">
   <header>
     <h1 id="kop">Oefen<span class="tick">kampioen</span></h1>
+    <button class="aantal profielBtn" id="profielBtn" aria-haspopup="true" aria-expanded="false"></button>
     <button class="icon-btn" id="soundBtn" aria-label="Geluid aan of uit">&#128266;</button>
   </header>
 
-  <div id="startScherm">
+  <div id="profielBackdrop" hidden></div>
+  <div class="paneel" id="profielPaneel" hidden role="dialog" aria-label="Profielen">
+    <div id="profielLijst"></div>
     <div class="naamkaart">
-      <label for="naam">Hoe heet jij?</label>
-      <input id="naam" type="text" maxlength="16" placeholder="Typ je naam" autocomplete="given-name">
+      <label for="naam">Nieuw profiel</label>
+      <input id="naam" type="text" maxlength="16" placeholder="Typ de naam en druk op Enter" autocomplete="off">
     </div>
+    <p class="paneelnotitie">Staat enkel op dit toestel, in deze browser. Geen account, geen
+      cloud: browsergegevens wissen of een ander toestel gebruiken wist ook dit.</p>
+  </div>
+
+  <div id="startScherm">
     <div class="naamkaart" role="group" aria-label="Leerjaar">
       <span class="kaartlabel">Welk leerjaar?</span>
       <span class="aantallen" id="leerjaren"></span>

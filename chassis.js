@@ -1,4 +1,4 @@
-import { shuffle, pad2, $, reduced } from './gereedschap.js';
+import { shuffle, pad2, $, reduced, hoofdletter } from './gereedschap.js';
 import { SPELLEN } from './spellen/index.js';
 
 // meer dan twintig vragen houdt een kind van acht niet vol
@@ -14,11 +14,66 @@ function schoonNaam(t) {
   });
   return uit.trim().slice(0, 16);
 }
-function naam() {
-  try { return schoonNaam(localStorage.getItem('oefenkampioen-naam')); } catch (e) { return ''; }
+// elk kind is een profiel: sleutel = naam plat en klein, zodat "Emma" en "emma " hetzelfde
+// kind zijn. Sleutel '' is het profiel van vóór profielen bestonden: de oude vlakke sleutels
+// (hieronder, zonder ':sleutel') blijven zo automatisch zijn data, geen migratiecode nodig.
+function sleutelVan(t) { return schoonNaam(t).toLowerCase(); }
+function postfixVoor(sleutel) { return sleutel ? ':' + sleutel : ''; }
+function postfix() { return postfixVoor(actief()); }
+// voor het profielenpaneel: het leerjaar en de voortgang van een kind opzoeken zonder erheen
+// te wisselen, zodat je in de lijst kan zien wat iedereen al gedaan heeft
+function leerjaarVoor(sleutel) {
+  var n;
+  try { n = parseInt(localStorage.getItem('oefenkampioen-leerjaar' + postfixVoor(sleutel)), 10); } catch (e) { n = NaN; }
+  return LEERJAREN.indexOf(n) > -1 ? n : 3;
 }
-function zetNaam(t) {
-  try { localStorage.setItem('oefenkampioen-naam', schoonNaam(t)); } catch (e) { /* zonder opslag werkt het gewoon */ }
+function geoefendVoor(sleutel) {
+  try { return Object.keys(JSON.parse(localStorage.getItem('oefenkampioen-beste' + postfixVoor(sleutel)) || '{}')).length; }
+  catch (e) { return 0; }
+}
+function actief() {
+  try { return localStorage.getItem('oefenkampioen-actief') || ''; } catch (e) { return ''; }
+}
+function zetActief(sleutel) {
+  try { localStorage.setItem('oefenkampioen-actief', sleutel); } catch (e) { /* mag mislukken */ }
+}
+function wisselProfiel(sleutel) {
+  zetActief(sleutel);
+  state.leerjaar = leesLeerjaar();
+  state.aantal = leesAantal();
+  state.tempo = leesTempo();
+}
+function migreer() {
+  var oud = schoonNaam(localStorage.getItem('oefenkampioen-naam'));
+  var lijst = oud ? [{ sleutel: '', naam: oud }] : [];
+  zetProfielen(lijst);
+  return lijst;
+}
+function profielen() {
+  try { return JSON.parse(localStorage.getItem('oefenkampioen-profielen')) || migreer(); }
+  catch (e) { return migreer(); }
+}
+function zetProfielen(lijst) {
+  try { localStorage.setItem('oefenkampioen-profielen', JSON.stringify(lijst)); } catch (e) { /* mag mislukken */ }
+}
+function nieuwProfiel(t) {
+  var sleutel = sleutelVan(t);
+  if (!sleutel) return;
+  var lijst = profielen(), bestaand = lijst.filter(function (p) { return p.sleutel === sleutel; })[0];
+  if (bestaand) bestaand.naam = hoofdletter(schoonNaam(t)); else lijst.push({ sleutel: sleutel, naam: hoofdletter(schoonNaam(t)) });
+  zetProfielen(lijst);
+  wisselProfiel(sleutel);
+}
+function verwijderProfiel(sleutel) {
+  // haalt enkel het knopje weg: de data onder die sleutel blijft staan, dus komt de naam terug
+  // dan staan de scores er nog
+  var lijst = profielen().filter(function (p) { return p.sleutel !== sleutel; });
+  zetProfielen(lijst);
+  if (actief() === sleutel) wisselProfiel(lijst.length ? lijst[0].sleutel : '');
+}
+function naam() {
+  var p = profielen().filter(function (p) { return p.sleutel === actief(); })[0];
+  return p ? p.naam : '';
 }
 // de %-plaats wordt de naam met komma, of niets als er geen naam ingevuld is
 function metNaam(sjabloon) {
@@ -30,13 +85,13 @@ var MOED = ['Bijna%!', 'Dat lukt de volgende keer%!', 'Goed geprobeerd%!', 'Kijk
 var LEERJAREN = [1, 2, 3, 4, 5, 6];
 function leesLeerjaar() {
   var n;
-  try { n = parseInt(localStorage.getItem('oefenkampioen-leerjaar'), 10); } catch (e) { n = NaN; }
+  try { n = parseInt(localStorage.getItem('oefenkampioen-leerjaar' + postfix()), 10); } catch (e) { n = NaN; }
   // zolang de andere leerjaren nog leeg zijn begint het spel bij het derde: daar staat alles
   return LEERJAREN.indexOf(n) > -1 ? n : 3;
 }
 function zetLeerjaar(lj) {
   state.leerjaar = lj;
-  try { localStorage.setItem('oefenkampioen-leerjaar', String(lj)); } catch (e) { /* mag mislukken */ }
+  try { localStorage.setItem('oefenkampioen-leerjaar' + postfix(), String(lj)); } catch (e) { /* mag mislukken */ }
 }
 function jaarNaam(lj) { return (lj === 1 ? '1ste' : lj + 'de') + ' leerjaar'; }
 function jarenVan(spel) {
@@ -57,7 +112,7 @@ function dekkingTekst(spel) {
 }
 function leesAantal() {
   var a;
-  try { a = parseInt(localStorage.getItem('oefenkampioen-aantal'), 10); } catch (e) { a = NaN; }
+  try { a = parseInt(localStorage.getItem('oefenkampioen-aantal' + postfix()), 10); } catch (e) { a = NaN; }
   return AANTALLEN.indexOf(a) > -1 ? a : AANTALLEN[0];
 }
 // hoeveel seconden een vraag mag duren als het op tempo staat. Tafels moeten er het snelst
@@ -65,11 +120,11 @@ function leesAantal() {
 var TEMPO = { maal: 8, klok: 25, winkel: 30, maten: 25, kalender: 20, brug: 25, spiegel: 35, breuken: 30, meetkunde: 30, verhoudingen: 30 };
 function secondenVoor(spel) { return TEMPO[spel.id] || 25; }
 function leesTempo() {
-  try { return localStorage.getItem('oefenkampioen-tempo') === 'aan'; } catch (e) { return false; }
+  try { return localStorage.getItem('oefenkampioen-tempo' + postfix()) === 'aan'; } catch (e) { return false; }
 }
 function zetTempo(aan) {
   state.tempo = aan;
-  try { localStorage.setItem('oefenkampioen-tempo', aan ? 'aan' : 'uit'); } catch (e) { /* mag mislukken */ }
+  try { localStorage.setItem('oefenkampioen-tempo' + postfix(), aan ? 'aan' : 'uit'); } catch (e) { /* mag mislukken */ }
 }
 function stopKlok() {
   if (state.klok) clearTimeout(state.klok);
@@ -89,10 +144,10 @@ function startKlok() {
 
 function zetAantal(a) {
   state.aantal = a;
-  try { localStorage.setItem('oefenkampioen-aantal', String(a)); } catch (e) { /* mag mislukken */ }
+  try { localStorage.setItem('oefenkampioen-aantal' + postfix(), String(a)); } catch (e) { /* mag mislukken */ }
 }
 function lees() {
-  try { return JSON.parse(localStorage.getItem('oefenkampioen-beste') || '{}'); } catch (e) { return {}; }
+  try { return JSON.parse(localStorage.getItem('oefenkampioen-beste' + postfix()) || '{}'); } catch (e) { return {}; }
 }
 function bewaar(sleutel, score, van) {
   try {
@@ -100,7 +155,7 @@ function bewaar(sleutel, score, van) {
     // vergelijken op verhouding, want een toets kan 10, 15 of 20 vragen tellen
     if (!oud || !oud.van || score / van > oud.score / oud.van) {
       b[sleutel] = { score: score, van: van };
-      localStorage.setItem('oefenkampioen-beste', JSON.stringify(b));
+      localStorage.setItem('oefenkampioen-beste' + postfix(), JSON.stringify(b));
     }
   } catch (e) { /* zonder opslag werkt de app gewoon verder */ }
 }
@@ -237,7 +292,7 @@ function toonStart() {
   Array.prototype.forEach.call($('spellen').children, function (b) {
     b.onclick = function () { toonMenu(SPELLEN[Number(b.dataset.i)]); };
   });
-  $('naam').value = naam();
+  $('profielBtn').textContent = naam() || 'Wie speelt er?';
   $('leerjaren').innerHTML = LEERJAREN.map(function (lj) {
     return '<button class="aantal" data-lj="' + lj + '" aria-pressed="' + (lj === state.leerjaar) +
       '" aria-label="' + jaarNaam(lj) + '">' + lj + '</button>';
@@ -264,6 +319,37 @@ function toonStart() {
   $('menuScherm').hidden = true;
   $('game').hidden = true;
   $('result').hidden = true;
+}
+/* ==================== profielenpaneel ==================== */
+function toonProfielPaneel() {
+  var actiefSleutel = actief();
+  $('profielLijst').innerHTML = profielen().map(function (p) {
+    var n = geoefendVoor(p.sleutel);
+    return '<div class="profielrij' + (p.sleutel === actiefSleutel ? ' actief' : '') + '">' +
+      '<button class="profielkies" data-sleutel="' + p.sleutel + '">' +
+      '<span class="avatar">' + p.naam.charAt(0).toUpperCase() + '</span>' +
+      '<span class="profielinfo"><span>' + p.naam + '</span>' +
+      '<span class="profielvoortgang">' + jaarNaam(leerjaarVoor(p.sleutel)) + ' · ' + n +
+      (n === 1 ? ' hoofdstuk' : ' hoofdstukken') + ' geoefend</span></span></button>' +
+      '<button class="profielx" data-sleutel="' + p.sleutel + '" aria-label="' + p.naam + ' verwijderen">×</button></div>';
+  }).join('') || '<p class="lead">Nog geen profiel. Typ hieronder een naam.</p>';
+  Array.prototype.forEach.call($('profielLijst').querySelectorAll('.profielkies'), function (b) {
+    b.onclick = function () { wisselProfiel(b.dataset.sleutel); sluitProfielPaneel(); toonStart(); };
+  });
+  Array.prototype.forEach.call($('profielLijst').querySelectorAll('.profielx'), function (b) {
+    b.onclick = function (e) { e.stopPropagation(); verwijderProfiel(b.dataset.sleutel); toonProfielPaneel(); toonStart(); };
+  });
+}
+function opentProfielPaneel() {
+  toonProfielPaneel();
+  $('profielPaneel').hidden = false;
+  $('profielBackdrop').hidden = false;
+  $('profielBtn').setAttribute('aria-expanded', 'true');
+}
+function sluitProfielPaneel() {
+  $('profielPaneel').hidden = true;
+  $('profielBackdrop').hidden = true;
+  $('profielBtn').setAttribute('aria-expanded', 'false');
 }
 function toonMenu(spel) {
   stopKlok();
@@ -478,7 +564,18 @@ $('againBtn').onclick = function () { startHoofdstuk(state.hfd); };
 $('menuBtn').onclick = function () { toonMenu(state.spel); };
 $('homeBtn').onclick = function () { toonMenu(state.spel); };
 $('terugBtn').onclick = toonStart;
-$('naam').oninput = function () { zetNaam($('naam').value); $('lead').textContent = lead(); };
+function bevestigNieuwProfiel() {
+  if ($('naam').value.trim()) nieuwProfiel($('naam').value);
+  $('naam').value = '';
+  toonProfielPaneel();
+  toonStart();
+}
+$('naam').onblur = bevestigNieuwProfiel;
+$('naam').addEventListener('keydown', function (e) { if (e.key === 'Enter') bevestigNieuwProfiel(); });
+$('profielBtn').onclick = function () {
+  if ($('profielPaneel').hidden) opentProfielPaneel(); else sluitProfielPaneel();
+};
+$('profielBackdrop').onclick = sluitProfielPaneel;
 $('soundBtn').onclick = function () {
   state.sound = !state.sound;
   $('soundBtn').textContent = state.sound ? '🔊' : '🔇';
