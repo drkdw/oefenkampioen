@@ -38,9 +38,9 @@ zit moet de kwartieren immers nog kunnen oefenen.
 - een spel zonder iets voor het gekozen niveau staat niet op het startscherm
 - een kind dat vooruit wil, zet het leerjaar een stapje hoger
 
-Vandaag zitten er 104 hoofdstukken in: 17 in het eerste leerjaar, 31 in het tweede, 29 in het
-derde, 15 in het vierde, 12 in het vijfde. Een kind in het vijfde heeft er dus 104 te oefenen,
-een kind in het eerste 17. Het zesde leerjaar voegt nog niets toe.
+Alle zes leerjaren van het lager onderwijs zitten erin: 114 hoofdstukken, 17 in het eerste
+leerjaar tot 10 nieuwe in het zesde. Een kind in het zesde heeft er dus 114 te oefenen, een kind
+in het eerste 17. Elk hoofdstuk hoort bij het leerjaar waarin het in de klas aan bod komt.
 
 ## De spellen
 
@@ -49,15 +49,15 @@ een kind in het eerste 17. Het zesde leerjaar voegt nog niets toe.
 | Klokkijken | hele uren, kwartieren, dagdelen, digitale klok, tijdsduur, seconden |
 | Maaltafels | sprongen tellen, maaltafels, delen, de ontbrekende factor |
 | Het winkeltje | samen en gepast betalen, munten tellen, wisselgeld |
-| Meten en wegen | vergelijken zonder meten, liniaal lezen, liter aflezen, m/cm/mm, kg/g, l/dl/cl |
+| Meten en wegen | vergelijken zonder meten, liniaal lezen, liter aflezen, alle omzettingen door elkaar |
 | De kalender | dagen, maanden, seizoenen, hoeveel dagen, verder tellen |
-| Bruggen bouwen | splitsen, brug tot 20 en tot 1000, cijferend rekenen, negatieve getallen |
+| Bruggen bouwen | splitsen, brug tot 20 en tot 1000, cijferend rekenen, negatieve getallen, machten van tien |
 | Spiegelen | vormen, richtingen, spiegelen, symmetrie, gedraaid of gespiegeld |
 | Breuken | deel van een geheel, gelijkwaardig, optellen, breuk maal getal, kommagetallen |
-| Meetkunde | omtrek, oppervlakte, hoeken, volume van een blok, driehoek |
-| Verhoudingen | procent van een getal, en rekenen met een schaal |
+| Meetkunde | omtrek, oppervlakte, hoeken, volume, driehoek, ruimtefiguren, hoeken meten |
+| Verhoudingen | procent, schaal, btw en korting, verhoudingstabel, snelheid, gemiddelde, diagrammen |
 
-Elk spel heeft één tot vijftien hoofdstukken, afhankelijk van hoeveel leerjaren het al dekt.
+Elk spel heeft vijf tot zestien hoofdstukken, afhankelijk van hoeveel leerjaren het dekt.
 Een toets telt 10, 15 of 20 vragen, te kiezen op
 het startscherm, en evenveel punten. Twintig is de bovengrens: langer houdt een kind van acht
 niet vol. De verdeling over de vraagtypes schaalt mee met het gekozen aantal.
@@ -114,7 +114,7 @@ De foute keuzes zijn overal de denkfouten die kinderen echt maken, niet willekeu
 - **Spiegelen**: een halve slag gedraaid in plaats van gespiegeld, of gewoon opzij geschoven
 - **Breuken**: het aantal stukjes en het aantal gekleurde stukjes verwisselen, de noemer vergeten mee te nemen
 - **Meetkunde**: enkel twee zijden optellen in plaats van vier, oppervlakte in plaats van omtrek, vergeten door twee te delen bij een driehoek
-- **Verhoudingen**: het verschil nemen in plaats van het deel, of de schaal vergeten toe te passen
+- **Verhoudingen**: het verschil nemen in plaats van het deel, de schaal vergeten toe te passen, of de eenheidsprijs verwarren met het gevraagde aantal
 
 ## Wat de tekening niet mag verklappen
 
@@ -126,7 +126,7 @@ getallenlijn blijven leeg bij "47 + ? = 55". De zelfcheck controleert dat alle d
 
 Open `index.html#test` en bekijk de console. De check rekent alle volledige toetsen door: elk
 spel, elk hoofdstuk, bij 10, 15 en 20 vragen, vijf rondes per combinatie; dat zijn er vandaag
-1560. Per vraag controleert hij onder meer dat er vier verschillende keuzes zijn met precies een
+1710. Per vraag controleert hij onder meer dat er vier verschillende keuzes zijn met precies een
 juist antwoord, dat een vraag niet vaker voorkomt dan de voorraad toelaat en nooit twee keer na
 elkaar, dat de invulvakjes samen het antwoord vormen, en dat er nergens `undefined` in een
 tekst, tekening of het schermpje sluipt.
