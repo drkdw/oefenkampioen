@@ -40,6 +40,36 @@ import { keuzes, vulAan, vulRondom, positief, andere } from '../gereedschap.js';
       'font-family="Fredoka, sans-serif" font-size="15" fill="var(--ink)">' + hoogte + '</text></svg>';
   }
 
+  // dezelfde twee stralen als hoekTekening, nu met een boogje en cijfers om echt af te lezen
+  function hoekMetGraden(graden) {
+    var cx = 20, cy = 100, lengte = 85, boog = 40, rad = graden * Math.PI / 180;
+    var x2 = cx + lengte * Math.cos(rad), y2 = cy - lengte * Math.sin(rad);
+    var p = ['<line x1="' + cx + '" y1="' + cy + '" x2="' + (cx + lengte) + '" y2="' + cy +
+      '" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/>',
+      '<line x1="' + cx + '" y1="' + cy + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) +
+      '" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/>'];
+    [0, 30, 60, 90, 120, 150, 180].forEach(function (g) {
+      var r2 = g * Math.PI / 180, tx = cx + boog * Math.cos(r2), ty = cy - boog * Math.sin(r2);
+      p.push('<circle cx="' + tx.toFixed(1) + '" cy="' + ty.toFixed(1) + '" r="2" fill="var(--ink-soft)"/>');
+    });
+    p.push('<circle cx="' + cx + '" cy="' + cy + '" r="4" fill="var(--ink)"/>');
+    return '<svg viewBox="0 0 120 120" width="120" height="120" role="img" ' +
+      'aria-label="Een hoek van ' + graden + ' graden, met streepjes om de dertig graden">' + p.join('') + '</svg>';
+  }
+
+  // de zes ruimtefiguren van het zesde leerjaar, met hun aantal vlakken, hoekpunten en ribben
+  var RUIMTEFIGUREN = [
+    { naam: 'kubus', ico: '🎲', vlakken: 6, hoekpunten: 8, ribben: 12 },
+    { naam: 'balk', ico: '📦', vlakken: 6, hoekpunten: 8, ribben: 12 },
+    { naam: 'cilinder', ico: '🥫', vlakken: 3, hoekpunten: 0, ribben: 2 },
+    { naam: 'bol', ico: '⚽', vlakken: 1, hoekpunten: 0, ribben: 0 },
+    { naam: 'kegel', ico: '🍦', vlakken: 2, hoekpunten: 1, ribben: 1 },
+    { naam: 'piramide', ico: '🔺', vlakken: 5, hoekpunten: 5, ribben: 8 }
+  ];
+  function ruimteTekening(f) {
+    return '<div style="font-size:64px;text-align:center">' + f.ico + '</div>';
+  }
+
   var HOEKSOORT = ['scherp', 'recht', 'stomp', 'gestrekt'];
   function classificeer(graden) {
     if (graden === 90) return 'recht';
@@ -73,7 +103,11 @@ export default {
     { leerjaar: 5, ico: '📦', titel: 'Volume van een blok', tekst: 'Lengte keer breedte keer hoogte.',
       badge: 'moeilijk', plan: { volume: 10 } },
     { leerjaar: 5, ico: '🔺', titel: 'Oppervlakte van een driehoek', tekst: 'Basis keer hoogte, gedeeld door twee.',
-      badge: 'moeilijk', plan: { driehoek: 10 } }
+      badge: 'moeilijk', plan: { driehoek: 10 } },
+    { leerjaar: 6, ico: '🎲', titel: 'Ruimtefiguren', tekst: 'Kubus, balk, bol, cilinder, kegel en piramide.',
+      badge: 'gemiddeld', plan: { herkennen: 5, eigenschap: 5 } },
+    { leerjaar: 6, ico: '📐', titel: 'Hoeken meten', tekst: 'Hoeveel graden is deze hoek precies?',
+      badge: 'moeilijk', plan: { graden: 10 } }
   ],
   zaadjes: function (soort) {
     if (soort === 'hoek') {
@@ -99,6 +133,19 @@ export default {
       }
       return uit4;
     }
+    if (soort === 'herkennen') return RUIMTEFIGUREN.map(function (f, i) { return { i: i }; });
+    if (soort === 'eigenschap') {
+      var uit5 = [];
+      RUIMTEFIGUREN.forEach(function (f, i) {
+        ['vlakken', 'hoekpunten', 'ribben'].forEach(function (prop) { uit5.push({ i: i, prop: prop }); });
+      });
+      return uit5;
+    }
+    if (soort === 'graden') {
+      var uit6 = [];
+      for (var graden3 = 10; graden3 <= 180; graden3 += 10) uit6.push({ graden: graden3 });
+      return uit6;
+    }
     var uit = [];
     for (var breedte = 2; breedte <= 12; breedte++) {
       for (var hoogte = breedte; hoogte <= 12; hoogte++) uit.push({ breedte: breedte, hoogte: hoogte });
@@ -118,6 +165,28 @@ export default {
       vulRondom(foutV, vol, 1, positief);
       return { soort: soort, sleutel: 'volume|' + z.l + ':' + z.b + ':' + z.h, l: z.l, b: z.b, h: z.h,
         ans: String(vol), options: keuzes(vol, foutV.slice(0, 3)) };
+    }
+    if (soort === 'herkennen') {
+      var figuur = RUIMTEFIGUREN[z.i], namen = RUIMTEFIGUREN.map(function (f) { return f.naam; });
+      return { soort: soort, sleutel: 'herkennen|' + z.i, figuur: figuur, ans: figuur.naam,
+        options: keuzes(figuur.naam, andere(namen, figuur.naam, 3)) };
+    }
+    if (soort === 'eigenschap') {
+      var figuur2 = RUIMTEFIGUREN[z.i], waarde = figuur2[z.prop];
+      var poelWaarden = RUIMTEFIGUREN.map(function (f) { return f[z.prop]; });
+      var foutE = [];
+      vulAan(foutE, waarde, poelWaarden);
+      vulRondom(foutE, waarde, 1, function (k) { return k >= 0; });
+      return { soort: soort, sleutel: 'eigenschap|' + z.i + ':' + z.prop, figuur: figuur2, prop: z.prop,
+        ans: String(waarde), options: keuzes(waarde, foutE.slice(0, 3)) };
+    }
+    if (soort === 'graden') {
+      var kernG = [z.graden + 10, z.graden - 10, z.graden + 20, z.graden - 20];
+      var foutG = [];
+      vulAan(foutG, z.graden, kernG, function (k) { return k >= 0 && k <= 180; });
+      vulRondom(foutG, z.graden, 10, function (k) { return k >= 0 && k <= 180; });
+      return { soort: soort, sleutel: 'graden|' + z.graden, graden: z.graden, ans: String(z.graden),
+        options: keuzes(z.graden, foutG.slice(0, 3)) };
     }
     if (soort === 'driehoek') {
       var oppD = z.basis * z.hoogte / 2, foutD = [];
@@ -146,6 +215,9 @@ export default {
       vierkant: vierkant, ans: String(omtrek), options: keuzes(omtrek, fout.slice(0, 3)) };
   },
   teken: function (v) {
+    if (v.soort === 'herkennen') return ruimteTekening(v.figuur);
+    if (v.soort === 'eigenschap') return ruimteTekening(v.figuur);
+    if (v.soort === 'graden') return hoekMetGraden(v.graden);
     if (v.soort === 'hoek') return hoekTekening(v.graden);
     if (v.soort === 'volume') return blokTekening(v.l, v.b, v.h);
     if (v.soort === 'driehoek') return driehoekTekening(v.basis, v.hoogte);
@@ -154,6 +226,9 @@ export default {
   scherm: function () { return null; },
   vraag: function (v, nr) {
     var kop = 'Vraag ' + nr + ': ';
+    if (v.soort === 'herkennen') return { titel: kop + 'welke ruimtefiguur is dit?', sub: 'Kies de juiste naam.' };
+    if (v.soort === 'eigenschap') return { titel: kop + 'hoeveel ' + v.prop + ' heeft een ' + v.figuur.naam + '?', sub: 'Denk aan de vorm.' };
+    if (v.soort === 'graden') return { titel: kop + 'hoeveel graden is deze hoek?', sub: 'De streepjes staan om de dertig graden.' };
     if (v.soort === 'hoek') return { titel: kop + 'wat voor hoek is dit?', sub: 'Scherp, recht, stomp of gestrekt?' };
     var vorm = v.vierkant ? 'het vierkant' : 'de rechthoek';
     if (v.soort === 'oppervlakte') return { titel: kop + 'wat is de oppervlakte van ' + vorm + '?', sub: 'Breedte keer hoogte.' };
@@ -162,6 +237,9 @@ export default {
     return { titel: kop + 'wat is de omtrek van ' + vorm + '?', sub: 'Tel alle zijden samen.' };
   },
   uitleg: function (v) {
+    if (v.soort === 'herkennen') return 'Dit is een ' + v.ans + '.';
+    if (v.soort === 'eigenschap') return 'Een ' + v.figuur.naam + ' heeft ' + v.ans + ' ' + v.prop + '.';
+    if (v.soort === 'graden') return 'Deze hoek is ' + v.ans + ' graden.';
     if (v.soort === 'hoek') {
       return v.ans === 'recht' ? 'Een rechte hoek is precies 90 graden.'
         : v.ans === 'gestrekt' ? 'Een gestrekte hoek is een rechte lijn: 180 graden.'
@@ -180,6 +258,9 @@ export default {
     if (v.soort === 'oppervlakte') return 'Oppervlakte van ' + v.breedte + ' × ' + v.hoogte;
     if (v.soort === 'volume') return 'Volume van ' + v.l + ' × ' + v.b + ' × ' + v.h;
     if (v.soort === 'driehoek') return 'Driehoek ' + v.basis + ' × ' + v.hoogte;
+    if (v.soort === 'herkennen') return 'Welke ruimtefiguur is dit?';
+    if (v.soort === 'eigenschap') return v.prop + ' van een ' + v.figuur.naam;
+    if (v.soort === 'graden') return 'Een hoek van ' + v.ans + ' graden';
     return 'Omtrek van ' + v.breedte + ' × ' + v.hoogte;
   },
   test: function (check) {
