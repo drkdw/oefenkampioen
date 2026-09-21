@@ -69,20 +69,22 @@ eerst munten tellen. Tempotoetsen voor de tafels lopen in Vlaanderen al vanaf he
 leerjaar, dus de schakelaar is niet alleen voor de grootsten. Standaard staat hij uit.
 
 Elk kind heeft een eigen profiel: naam, gekozen leerjaar, instellingen en beste score per
-hoofdstuk. Tik op de naam naast het geluidsicoon om te wisselen, een nieuw profiel toe te voegen
-of er een uit de lijst te halen (dat laatste haalt enkel het knopje weg, de scores blijven staan
-tot de naam terugkomt). In dat paneel zie je per kind ook het leerjaar en hoeveel hoofdstukken al
-geoefend zijn.
+hoofdstuk. Tik op de naam naast het geluidsicoon om te wisselen of een nieuw profiel toe te
+voegen. In dat paneel zie je per kind ook het leerjaar en hoeveel hoofdstukken al geoefend zijn.
+Verwijderen kan enkel achter `index.html#admin`, niet in de gewone weergave: een kind mag zijn
+eigen profiel niet kunnen laten verdwijnen, ook niet de onschuldige variant. Achter `#admin` komt
+er per profiel een kruisje bij dat de keuze geeft tussen **uit de lijst** (de scores blijven
+staan, typ de naam later opnieuw en ze staan er terug) en **écht wissen** (naam, leerjaar en
+scores voorgoed weg, met een expliciete bevestiging ertussen).
 
 Die gegevens staan in `localStorage` van de browser: enkel op dit toestel, in deze ene browser,
 niet in een account en niet in de cloud. Wis je de browsergegevens, gebruik je een andere browser
-of een ander toestel, dan zijn ze weg, en niets waarschuwt daar vooraf voor. Open
-`index.html#admin` voor twee dingen die voor een ouder zijn, niet voor een kind dat op alles tikt
-— net zoals de zelfcheck achter `#test` zit: **Bewaar als bestand** downloadt een klein bestandje
-met alle profielen en scores, **Herstel van bestand** zet dat later terug (voegt enkel toe,
-verwijdert nooit een profiel dat al op het toestel staat); en bij elk profiel komt er een 🗑-knop
-bij die het écht en onomkeerbaar wist, naam en scores incluis, met een expliciete bevestiging
-ertussen. Scores worden op verhouding vergeleken, zodat 12 op 15 beter telt dan 7 op 10.
+of een ander toestel, dan zijn ze weg, en niets waarschuwt daar vooraf voor. `#admin` geeft ook
+twee bewaarknoppen, om diezelfde reden voor een ouder bedoeld, net als de zelfcheck achter
+`#test`: **Bewaar als bestand** downloadt een klein bestandje met alle profielen en scores,
+**Herstel van bestand** zet dat later terug (voegt enkel toe, verwijdert nooit een profiel dat al
+op het toestel staat). Scores worden op verhouding vergeleken, zodat 12 op 15 beter telt dan 7 op
+10.
 
 ## Hoe een spel in elkaar zit
 
