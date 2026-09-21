@@ -215,7 +215,15 @@ export default {
     { leerjaar: 4, ico: '➗', titel: 'Cijferend delen', tekst: 'Een getal delen door een cijfer, zonder rest.',
       badge: 'moeilijk', plan: { cijferDelen: 10 } },
     { leerjaar: 4, ico: '🏆', titel: 'Het derde rekenexamen', tekst: 'Duizendtallen en cijferend rekenen door elkaar.',
-      badge: 'moeilijk', plan: { duizendtal: 2, cijferPlus: 2, cijferMin: 2, cijferKeer: 2, cijferDelen: 2 } }
+      badge: 'moeilijk', plan: { duizendtal: 2, cijferPlus: 2, cijferMin: 2, cijferKeer: 2, cijferDelen: 2 } },
+    { leerjaar: 5, ico: '💯', titel: 'Getallen tot een miljoen', tekst: '45 000 is 45 duizendtallen.',
+      badge: 'gemiddeld', plan: { grootgetal: 10 } },
+    { leerjaar: 5, ico: '➗', titel: 'Delen door twee cijfers', tekst: '840 gedeeld door 20.',
+      badge: 'moeilijk', plan: { cijferDelen2: 10 } },
+    { leerjaar: 5, ico: '🌡️', titel: 'Negatieve getallen', tekst: 'Het was 3 graden, en het koelt 8 graden af.',
+      badge: 'gemiddeld', plan: { temp: 10 } },
+    { leerjaar: 5, ico: '🏆', titel: 'Het vierde rekenexamen', tekst: 'Grote getallen, delen door twee cijfers, en temperaturen.',
+      badge: 'moeilijk', plan: { grootgetal: 3, cijferDelen2: 4, temp: 3 } }
   ],
   zaadjes: function (soort, h) {
     var uit = [], a, b;
@@ -296,6 +304,25 @@ export default {
         for (var deler = 2; deler <= 9; deler++) uit9.push({ quot: quot, deler: deler });
       }
       return uit9;
+    }
+    if (soort === 'grootgetal') {
+      var uit10 = [];
+      for (var groot = 12000; groot <= 990000; groot += 3701) uit10.push({ n: groot });
+      return uit10;
+    }
+    if (soort === 'cijferDelen2') {
+      var uit11 = [];
+      for (var quot2 = 11; quot2 <= 90; quot2++) {
+        for (var deler2 = 10; deler2 <= 90; deler2 += 10) uit11.push({ quot: quot2, deler: deler2 });
+      }
+      return uit11;
+    }
+    if (soort === 'temp') {
+      var uit12 = [];
+      for (var start = 0; start <= 10; start++) {
+        for (var val = 4; val <= 15; val += 2) uit12.push({ start: start, val: val });
+      }
+      return uit12;
     }
     if (soort === 'omgekeerd') {
       for (var oa = 1; oa <= 9; oa++) {
@@ -379,6 +406,27 @@ export default {
       return { soort: soort, sleutel: 'cijferDelen|' + deeltal + ':' + z.deler, deeltal: deeltal, deler: z.deler,
         ans: String(z.quot), options: keuzes(z.quot, afleidersCijfer(z.quot, kern7)) };
     }
+    if (soort === 'grootgetal') {
+      var duizTal = Math.floor(z.n / 1000);
+      var kern9 = [duizTal + 1, duizTal - 1, duizTal + 10, duizTal - 10];
+      return { soort: soort, sleutel: 'grootgetal|' + z.n, n: z.n, ans: String(duizTal),
+        options: keuzes(duizTal, afleidersCijfer(duizTal, kern9)) };
+    }
+    if (soort === 'cijferDelen2') {
+      var deeltal2 = z.quot * z.deler;
+      var kern10 = [z.quot + 1, z.quot - 1, z.quot + 10, z.quot - 10];
+      return { soort: soort, sleutel: 'cijferDelen2|' + deeltal2 + ':' + z.deler, deeltal: deeltal2, deler: z.deler,
+        ans: String(z.quot), options: keuzes(z.quot, afleidersCijfer(z.quot, kern10)) };
+    }
+    if (soort === 'temp') {
+      var uitkomst2 = z.start - z.val;
+      var kern11 = [uitkomst2 + 1, uitkomst2 - 1, z.start + z.val, uitkomst2 + 10];
+      var fout12 = [];
+      vulAan(fout12, uitkomst2, kern11);
+      vulRondom(fout12, uitkomst2, 1);
+      return { soort: soort, sleutel: 'temp|' + z.start + ':' + z.val, start: z.start, val: z.val,
+        ans: String(uitkomst2), options: keuzes(uitkomst2, fout12.slice(0, 3)) };
+    }
     if (soort === 'tientallen' || soort === 'eenheden') {
       var tal = Math.floor(z.n / 10), eenh = z.n % 10, juist2 = soort === 'tientallen' ? tal : eenh;
       var kern2 = [juist2 + 1, juist2 - 1, juist2 + 2, soort === 'tientallen' ? eenh : tal];
@@ -456,6 +504,9 @@ export default {
     if (v.soort === 'cijferMin') return kolom(v.a, v.b, '−');
     if (v.soort === 'cijferKeer') return kolom(v.a, v.b, '×');
     if (v.soort === 'cijferDelen') return kolom(v.deeltal, v.deler, ':');
+    if (v.soort === 'grootgetal') return getalTegel(v.n);
+    if (v.soort === 'cijferDelen2') return kolom(v.deeltal, v.deler, ':');
+    if (v.soort === 'temp') return '';
     if (v.soort === 'paar' || v.soort === 'omgekeerd') return '';
     return lijn(v.a, v.b, v.plus, v.soort !== 'gat');
   },
@@ -467,7 +518,8 @@ export default {
     if (v.soort === 'volgend' || v.soort === 'rang' || v.soort === 'tientallen' ||
         v.soort === 'eenheden' || v.soort === 'dubbel' || v.soort === 'helft' || v.soort === 'paar' ||
         v.soort === 'duizendtal' || v.soort === 'honderdtal' || v.soort === 'cijferPlus' ||
-        v.soort === 'cijferMin' || v.soort === 'cijferKeer' || v.soort === 'cijferDelen') return null;
+        v.soort === 'cijferMin' || v.soort === 'cijferKeer' || v.soort === 'cijferDelen' ||
+        v.soort === 'grootgetal' || v.soort === 'cijferDelen2' || v.soort === 'temp') return null;
     var teken = v.plus ? ' + ' : ' − ';
     if (v.soort === 'gat') return v.a + teken + '? = ' + v.uit;
     return v.a + teken + v.b;
@@ -492,6 +544,12 @@ export default {
     if (v.soort === 'cijferMin') return { titel: kop + 'hoeveel is ' + v.a + ' min ' + v.b + '?', sub: 'Zet ze onder elkaar.' };
     if (v.soort === 'cijferKeer') return { titel: kop + 'hoeveel is ' + v.a + ' keer ' + v.b + '?', sub: 'Vermenigvuldig cijfer per cijfer.' };
     if (v.soort === 'cijferDelen') return { titel: kop + 'hoeveel is ' + v.deeltal + ' gedeeld door ' + v.deler + '?', sub: 'Zonder rest.' };
+    if (v.soort === 'grootgetal') return { titel: kop + 'hoeveel duizendtallen zitten er in ' + v.n + '?', sub: 'Deel door 1000.' };
+    if (v.soort === 'cijferDelen2') return { titel: kop + 'hoeveel is ' + v.deeltal + ' gedeeld door ' + v.deler + '?', sub: 'De deler heeft nu twee cijfers.' };
+    if (v.soort === 'temp') {
+      return { titel: kop + 'het is ' + v.start + ' °C, en het koelt ' + v.val + ' graden af.',
+        sub: 'Wat is de nieuwe temperatuur?' };
+    }
     if (v.soort === 'gat') return { titel: kop + 'welk getal ontbreekt?', sub: 'Hoe groot is de sprong?' };
     if (v.soort === 'typ') return { titel: kop + 'hoeveel is ' + v.a + (v.plus ? ' plus ' : ' min ') + v.b + '?', sub: 'Typ alleen het getal.' };
     return { titel: kop + 'hoeveel is ' + v.a + (v.plus ? ' plus ' : ' min ') + v.b + '?' };
@@ -507,6 +565,9 @@ export default {
     if (v.soort === 'cijferMin') return v.a + ' − ' + v.b + ' = ' + (v.a - v.b) + '.';
     if (v.soort === 'cijferKeer') return v.a + ' × ' + v.b + ' = ' + (v.a * v.b) + '.';
     if (v.soort === 'cijferDelen') return v.deeltal + ' : ' + v.deler + ' = ' + v.ans + ', want ' + v.ans + ' × ' + v.deler + ' = ' + v.deeltal + '.';
+    if (v.soort === 'grootgetal') return v.n + ' : 1000 = ' + v.ans + '.';
+    if (v.soort === 'cijferDelen2') return v.deeltal + ' : ' + v.deler + ' = ' + v.ans + ', want ' + v.ans + ' × ' + v.deler + ' = ' + v.deeltal + '.';
+    if (v.soort === 'temp') return v.start + ' − ' + v.val + ' = ' + v.ans + ' °C. Onder nul tel je verder in het negatieve.';
     if (v.soort === 'tientallen') return v.n + ' bestaat uit ' + v.tal + ' tientallen en ' + v.eenh + ' eenheden.';
     if (v.soort === 'eenheden') return v.n + ' bestaat uit ' + v.tal + ' tientallen en ' + v.eenh + ' eenheden.';
     if (v.soort === 'dubbel') return 'Het dubbele van ' + v.n + ' is ' + (v.n * 2) + ': ' + v.n + ' + ' + v.n + '.';
@@ -536,6 +597,9 @@ export default {
     if (v.soort === 'cijferMin') return v.a + ' − ' + v.b;
     if (v.soort === 'cijferKeer') return v.a + ' × ' + v.b;
     if (v.soort === 'cijferDelen') return v.deeltal + ' : ' + v.deler;
+    if (v.soort === 'grootgetal') return 'Duizendtallen in ' + v.n;
+    if (v.soort === 'cijferDelen2') return v.deeltal + ' : ' + v.deler + ' (twee cijfers)';
+    if (v.soort === 'temp') return v.start + ' °C, ' + v.val + ' graden erbij of eraf';
     if (v.soort === 'tientallen') return 'Tientallen in ' + v.n;
     if (v.soort === 'eenheden') return 'Eenheden in ' + v.n;
     if (v.soort === 'dubbel') return 'Het dubbele van ' + v.n;
