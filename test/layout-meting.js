@@ -26,6 +26,12 @@ export async function meet() {
   var lj = document.querySelector('#leerjaren [data-lj="3"]');
   if (lj) lj.click();
   if (document.documentElement.scrollWidth > innerWidth + 1) fouten.push('startscherm scrollt horizontaal');
+  // the header stays on one row, and neither the title nor the name button is cut off
+  var kop = document.querySelector('header'), rijen = Array.prototype.map.call(kop.children, function (e) { return e.getBoundingClientRect().top; });
+  if (Math.max.apply(null, rijen) - Math.min.apply(null, rijen) > 16) fouten.push(innerWidth + '×' + innerHeight + ' de kop loopt over twee regels');
+  ['kop', 'profielBtn'].forEach(function (id) {
+    if ($(id).scrollWidth > $(id).clientWidth + 1) fouten.push(innerWidth + '×' + innerHeight + ' ' + id + ' wordt afgekapt');
+  });
   var spellen = [['Klokkijken', 'Kwartieren'], ['Spiegelen', 'naar rechts'], ['Meten en wegen', 'Zelf omrekenen']];
   for (var n = 0; n < spellen.length; n++) {
     var g = spellen[n];
