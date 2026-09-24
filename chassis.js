@@ -1,5 +1,6 @@
 import { shuffle, pad2, $, reduced, hoofdletter } from './gereedschap.js';
 import { SPELLEN } from './spellen/index.js';
+import { datumVan, mengDagen, dagErbij, sterrenVoor, stickerVoor, voorstelVoor, dagenDezeMaand, dagNummer } from './beloning.js';
 
 // an eight-year-old cannot keep going for more than twenty questions
 var AANTALLEN = [10, 15, 20];
@@ -99,7 +100,7 @@ function verwijderProfiel(sleutel) {
 function verwijderProfielEcht(sleutel) {
   var lijst = profielen().filter(function (p) { return p.sleutel !== sleutel; });
   zetProfielen(lijst);
-  ['oefenkampioen-leerjaar', 'oefenkampioen-aantal', 'oefenkampioen-tempo', 'oefenkampioen-beste'].forEach(function (k) {
+  ['oefenkampioen-leerjaar', 'oefenkampioen-aantal', 'oefenkampioen-tempo', 'oefenkampioen-beste', 'oefenkampioen-dagen'].forEach(function (k) {
     try { localStorage.removeItem(k + postfixVoor(sleutel)); } catch (e) { /* may fail */ }
   });
   // the old name would otherwise hand key '' back to whoever types it again
@@ -128,6 +129,16 @@ function exporteerData() {
 function leesBesteVoor(sleutel) {
   try { return JSON.parse(localStorage.getItem('oefenkampioen-beste' + postfixVoor(sleutel)) || '{}') || {}; }
   catch (e) { return {}; }
+}
+function vandaag() { return datumVan(new Date()); }
+// always passed through mengDagen, so a damaged value reads as fewer days, never as garbage
+function leesDagen(sleutel) {
+  try { return mengDagen(JSON.parse(localStorage.getItem('oefenkampioen-dagen' + postfixVoor(sleutel)) || '[]'), []); }
+  catch (e) { return []; }
+}
+function bewaarDag() {
+  try { localStorage.setItem('oefenkampioen-dagen' + postfix(), JSON.stringify(dagErbij(leesDagen(actief()), vandaag()))); }
+  catch (e) { /* may fail */ }
 }
 // keep the better of two best scores per chapter, and only well-formed entries
 function mengBeste(hier, daar) {
@@ -163,6 +174,10 @@ function herstelData(data) {
     var pf = postfixVoor(doel.sleutel);
     schrijf['oefenkampioen-beste' + pf] = JSON.stringify(mengBeste(leesBesteVoor(doel.sleutel),
       typeof beste === 'string' ? JSON.parse(beste) : {}));
+    // days are merged, never replaced: restoring an old file must not erase a day
+    var dagen = data['oefenkampioen-dagen' + bron];
+    schrijf['oefenkampioen-dagen' + pf] = JSON.stringify(mengDagen(leesDagen(doel.sleutel),
+      typeof dagen === 'string' ? JSON.parse(dagen) : []));
     if (!nieuw) return;
     ['leerjaar', 'aantal', 'tempo'].forEach(function (k) {
       if (typeof data['oefenkampioen-' + k + bron] === 'string') schrijf['oefenkampioen-' + k + pf] = data['oefenkampioen-' + k + bron];
@@ -207,11 +222,6 @@ function jarenVan(spel) {
 function hoofdstukkenVoor(spel) {
   return spel.hoofdstukken.map(function (h, i) { return { h: h, i: i }; })
     .filter(function (r) { return r.h.leerjaar <= state.leerjaar; });
-}
-// only called for games already filtered on having something for this school year
-function dekkingTekst(spel) {
-  var n = hoofdstukkenVoor(spel).length;
-  return n + (n === 1 ? ' hoofdstuk' : ' hoofdstukken');
 }
 function leesAantal() {
   var a;
@@ -264,7 +274,7 @@ function bewaar(sleutel, score, van) {
 /* ==================== state ==================== */
 var state = {
   spel: null, hfd: 0, leerjaar: 3, aantal: 10, q: 0, score: 0, results: [], fouten: [],
-  current: null, answered: false, sound: true, tempo: false, klok: null,
+  current: null, answered: false, sound: true, tempo: false, klok: null, verder: null, instellingenOpen: false,
   plan: [], decks: {}, jassen: {}, vorigJasje: null, vorigeSleutel: null
 };
 var ac = null;
@@ -362,17 +372,82 @@ function maakVraag(soort) {
 }
 
 /* ==================== screens ==================== */
+var SCHERMEN = { start: 'startScherm', menu: 'menuScherm', game: 'game', result: 'result', stickers: 'stickerScherm' };
+// one place decides what is visible; the body attribute lets CSS hide the big header in a test
+function toonScherm(naam) {
+  Object.keys(SCHERMEN).forEach(function (k) { $(SCHERMEN[k]).hidden = k !== naam; });
+  document.body.dataset.scherm = naam;
+}
+var VERDER_MS = 2500;
+function stopVerder() {
+  if (state.verder) clearTimeout(state.verder);
+  state.verder = null;
+}
+function volgende() {
+  stopVerder();
+  if (state.q >= state.aantal) toonResultaat(); else volgendeVraag();
+}
+// the doek has a maximum height; a drawing taller than that is scaled down as a whole, so four
+// mirror grids stay readable instead of being cut off
+var DOEK_RAND = 26;
+function pasDoekAan() {
+  var doek = $('doek');
+  doek.style.zoom = '';
+  if ($('doekCard').hidden) return;
+  var max = parseFloat(getComputedStyle($('doekCard')).maxHeight) - DOEK_RAND;
+  if (max > 0 && doek.scrollHeight > max) doek.style.zoom = Math.max(0.45, max / doek.scrollHeight).toFixed(3);
+}
+function zetGeluidKnoppen() {
+  $('soundBtn').textContent = $('soundBtn2').textContent = state.sound ? '🔊' : '🔇';
+}
 function lead() {
   var n = naam();
-  return (n ? 'Hoi ' + n + '! ' : '') + 'Kies een spel. Elke toets telt ' +
-    state.aantal + ' vragen en ' + state.aantal + ' punten.' +
+  return (n ? 'Hoi ' + n + '! ' : '') + 'Kies een spel.' +
     (state.tempo ? ' De klok loopt mee: te traag telt als fout.' : '');
 }
-function kaart(ico, nr, titel, tekst, beste, badge) {
-  var b = beste && Number(beste.van) > 0 ? '<span class="beste">beste ' + Number(beste.score) + '/' + Number(beste.van) + '</span>' : '';
+var MAANDEN = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus',
+  'september', 'oktober', 'november', 'december'];
+function sterrenTekst(n) { return '★★★'.slice(0, n) + '☆☆☆'.slice(n); }
+function sterrenVanSpel(spel, beste) {
+  var lijst = hoofdstukkenVoor(spel), verdiend = 0;
+  lijst.forEach(function (r) { verdiend += sterrenVoor(beste[spel.id + ':' + r.i]); });
+  return { verdiend: verdiend, max: lijst.length * 3 };
+}
+// counts only chapters up to the chosen school year, so the goal stays within reach
+function stickersVoorLeerjaar(beste) {
+  var n = 0, totaal = 0;
+  SPELLEN.forEach(function (s) {
+    hoofdstukkenVoor(s).forEach(function (r) {
+      totaal++;
+      if (sterrenVoor(beste[s.id + ':' + r.i]) === 3) n++;
+    });
+  });
+  return { n: n, totaal: totaal };
+}
+function voorJouHtml(v) {
+  var kop = '<span class="vj-kop">⭐ Voor jou vandaag</span>';
+  var dagen = dagenDezeMaand(leesDagen(actief()), vandaag());
+  var regel = dagen ? '<span class="vj-dagen">Al ' + dagen + (dagen === 1 ? ' dag' : ' dagen') + ' geoefend in ' +
+    MAANDEN[Number(vandaag().slice(5, 7)) - 1] + '</span>' : '';
+  if (v.reden === 'alles') {
+    return kop + '<span class="vj-titel">Alles 3 sterren!</span><span class="vj-tekst">' +
+      (state.leerjaar < 6 ? 'Probeer eens het ' + jaarNaam(state.leerjaar + 1) + '.' : 'Kies gerust een hoofdstuk om te herhalen.') +
+      '</span>' + regel;
+  }
+  var h = v.spel.hoofdstukken[v.index];
+  var tekst = v.reden === 'verbeter'
+    ? 'Je had ' + Number(v.beste.score) + ' op ' + Number(v.beste.van) + '. Haal je er 3 sterren?'
+    : 'Iets nieuws om te proberen.';
+  return kop + '<span class="vj-titel">' + v.spel.ico + ' ' + v.spel.naam + ': ' + h.titel + '</span>' +
+    '<span class="vj-tekst">' + tekst + '</span>' + regel;
+}
+function kaart(ico, nr, titel, tekst, beste, badge, sticker) {
+  var n = sterrenVoor(beste);
   return '<span class="ico">' + ico + '</span>' +
     '<span class="tekst"><h2>' + (nr ? nr + '. ' : '') + titel + '</h2><p>' + tekst + '</p></span>' +
-    b + (badge ? '<span class="badge ' + badge + '">' + badge + '</span>' : '');
+    '<span class="hfd-rechts">' + (sticker && n === 3 ? '<span class="hfd-sticker" aria-hidden="true">' + sticker + '</span>' : '') +
+    '<span class="sterren" aria-label="' + n + ' van 3 sterren">' + sterrenTekst(n) + '</span>' +
+    (badge ? '<span class="badge ' + badge + '">' + badge + '</span>' : '') + '</span>';
 }
 function toonStart() {
   // a running tempo timer would otherwise fire a fail beep on the start screen
@@ -382,19 +457,29 @@ function toonStart() {
   // open a game first to find out it is empty there
   var rijen = SPELLEN.map(function (s, i) { return { s: s, i: i }; })
     .filter(function (r) { return hoofdstukkenVoor(r.s).length > 0; });
+  var st = stickersVoorLeerjaar(beste);
   $('spellen').innerHTML = rijen.map(function (r) {
-    // the game card shows the best chapter result of that game
-    var top = null;
-    r.s.hoofdstukken.forEach(function (h, k) {
-      var b = beste[r.s.id + ':' + k];
-      if (b && b.van && (!top || b.score / b.van > top.score / top.van)) top = b;
-    });
-    var tekst = r.s.tekst + '<span class="dekking">' + dekkingTekst(r.s) + '</span>';
-    return '<button class="hfd" data-i="' + r.i + '">' + kaart(r.s.ico, 0, r.s.naam, tekst, top, '') + '</button>';
-  }).join('');
-  Array.prototype.forEach.call($('spellen').children, function (b) {
+    var sv = sterrenVanSpel(r.s, beste);
+    return '<button class="tegel" data-i="' + r.i + '"><span class="tegel-ico" aria-hidden="true">' + r.s.ico + '</span>' +
+      '<span class="tegel-naam">' + r.s.naam + '</span>' +
+      '<span class="tegel-sterren" aria-label="' + sv.verdiend + ' van ' + sv.max + ' sterren">★ ' + sv.verdiend + ' / ' + sv.max + '</span></button>';
+  }).join('') + '<button class="tegel stickers" id="stickerTegel"><span class="tegel-ico" aria-hidden="true">📒</span>' +
+    '<span class="tegel-naam">Mijn stickers</span><span class="tegel-sterren">' + st.n + ' / ' + st.totaal + '</span></button>';
+  Array.prototype.forEach.call($('spellen').querySelectorAll('.tegel[data-i]'), function (b) {
     b.onclick = function () { toonMenu(SPELLEN[Number(b.dataset.i)]); };
   });
+  $('stickerTegel').onclick = toonStickerboek;
+  var voorstel = voorstelVoor(SPELLEN, beste, state.leerjaar, dagNummer(vandaag()));
+  $('voorJou').innerHTML = voorJouHtml(voorstel);
+  $('voorJou').onclick = function () {
+    if (voorstel.reden === 'alles') { zetInstellingen(true); return; }
+    state.spel = voorstel.spel;
+    startHoofdstuk(voorstel.index);
+  };
+  $('instelRegel').innerHTML = '<span>' + jaarNaam(state.leerjaar) + ' · ' + state.aantal + ' vragen · ' +
+    (state.tempo ? 'met klok' : 'rustig') + '</span><span aria-hidden="true">' + (state.instellingenOpen ? '✕' : '⚙') + '</span>';
+  $('instelRegel').setAttribute('aria-expanded', String(state.instellingenOpen));
+  $('instellingen').hidden = !state.instellingenOpen;
   $('profielBtn').innerHTML = (naam() || 'Wie speelt er?') + ' <span class="chev">&#9662;</span>';
   $('leerjaren').innerHTML = LEERJAREN.map(function (lj) {
     return '<button class="aantal" data-lj="' + lj + '" aria-pressed="' + (lj === state.leerjaar) +
@@ -418,10 +503,30 @@ function toonStart() {
   });
   $('lead').textContent = lead();
   $('kop').innerHTML = 'Oefen<span class="tick">kampioen</span>';
-  $('startScherm').hidden = false;
-  $('menuScherm').hidden = true;
-  $('game').hidden = true;
-  $('result').hidden = true;
+  stopVerder();
+  toonScherm('start');
+}
+function zetInstellingen(open) {
+  state.instellingenOpen = open;
+  toonStart();
+  if (open) $('leerjaren').querySelector('[aria-pressed="true"]').focus();
+}
+function toonStickerboek() {
+  var beste = lees(), st = stickersVoorLeerjaar(beste);
+  $('stickerTeller').textContent = st.n + ' / ' + st.totaal;
+  $('stickerBoek').innerHTML = SPELLEN.map(function (s) {
+    var lijst = hoofdstukkenVoor(s);
+    if (!lijst.length) return '';
+    var verdiend = lijst.filter(function (r) { return sterrenVoor(beste[s.id + ':' + r.i]) === 3; }).length;
+    return '<section class="boekspel"><h3>' + s.ico + ' ' + s.naam + ' · ' + verdiend + ' van ' + lijst.length + '</h3>' +
+      '<div class="boek">' + lijst.map(function (r) {
+        return sterrenVoor(beste[s.id + ':' + r.i]) === 3
+          ? '<span class="vak" role="img" aria-label="Sticker van ' + r.h.titel + '" title="' + r.h.titel + '">' + stickerVoor(s.id, r.i) + '</span>'
+          : '<span class="vak leeg" role="img" aria-label="' + r.h.titel + ': nog 3 sterren halen" title="' + r.h.titel + '">?</span>';
+      }).join('') + '</div></section>';
+  }).join('');
+  $('kop').innerHTML = 'Oefen<span class="tick">kampioen</span>';
+  toonScherm('stickers');
 }
 /* ==================== profiles panel ==================== */
 function toonProfielPaneel() {
@@ -518,7 +623,7 @@ function toonMenu(spel) {
     }
     nr++;
     html += '<button class="hfd" data-i="' + r.i + '">' +
-      kaart(r.h.ico, nr, r.h.titel, r.h.tekst, beste[spel.id + ':' + r.i], r.h.badge) + '</button>';
+      kaart(r.h.ico, nr, r.h.titel, r.h.tekst, beste[spel.id + ':' + r.i], r.h.badge, stickerVoor(spel.id, r.i)) + '</button>';
   });
   $('menu').innerHTML = html;
   Array.prototype.forEach.call($('menu').querySelectorAll('.hfd'), function (b) {
@@ -530,10 +635,8 @@ function toonMenu(spel) {
     ? 'Kies een hoofdstuk. Elke toets telt ' + state.aantal + ' vragen.'
     : 'Hier staat nog niets voor het ' + jaarNaam(state.leerjaar) +
       '. Kies bovenaan een ander leerjaar, of een ander spel.';
-  $('startScherm').hidden = true;
-  $('menuScherm').hidden = false;
-  $('game').hidden = true;
-  $('result').hidden = true;
+  stopVerder();
+  toonScherm('menu');
 }
 function startHoofdstuk(i) {
   stopKlok();
@@ -544,9 +647,8 @@ function startHoofdstuk(i) {
   state.fouten = [];
   bouwToets();
   $('hfdTitel').textContent = state.spel.hoofdstukken[i].titel;
-  $('menuScherm').hidden = true;
-  $('result').hidden = true;
-  $('game').hidden = false;
+  stopVerder();
+  toonScherm('game');
   volgendeVraag();
 }
 
@@ -578,6 +680,10 @@ function volgendeVraag() {
   var sch = spel.scherm ? spel.scherm(v) : null;
   $('scherm').textContent = sch || '';
   $('schermCard').hidden = !sch;
+  $('game').classList.toggle('met-scherm', !!sch);
+  $('game').classList.toggle('zonder-doek', $('doekCard').hidden);
+  $('blad').hidden = true;
+  $('typhint').textContent = '';
 
   var tekst = spel.vraag(v, state.q + 1);
   $('question').textContent = tekst.titel;
@@ -588,6 +694,7 @@ function volgendeVraag() {
   $('typen').hidden = !v.typen;
   if (v.options) {
     $('options').innerHTML = '';
+    $('options').classList.toggle('lang', v.options.some(function (o) { return o.text.length > 14; }));
     v.options.forEach(function (o, i) {
       var b = document.createElement('button');
       b.className = 'opt';
@@ -617,9 +724,8 @@ function volgendeVraag() {
 
   $('feedback').textContent = '';
   $('feedback').className = 'feedback';
-  $('nextBtn').disabled = true;
-  $('nextBtn').textContent = v.typen ? 'Typ eerst een antwoord' : 'Kies eerst een antwoord';
   drawDots();
+  pasDoekAan();
   // the previous focus was the now disabled next button; land on the new question instead
   (v.typen ? $('in0') : $('question')).focus();
 }
@@ -658,8 +764,19 @@ function antwoord(btn, tekst, ok) {
 
   state.q++;
   drawDots();
-  $('nextBtn').disabled = false;
   $('nextBtn').textContent = state.q >= state.aantal ? '🏁 Bekijk je punten' : 'Volgende vraag';
+  $('blad').className = 'blad ' + (ok ? 'goed' : 'fout');
+  $('blad').hidden = false;
+  // right: carry on by itself after a short, visible wait; wrong: the explanation stays until
+  // the child taps, because then it is the part that matters
+  $('verderbalk').hidden = !ok;
+  if (ok) {
+    var balk = $('verdervulling');
+    balk.style.animation = 'none';
+    void balk.offsetWidth;
+    balk.style.animation = 'leeglopen ' + VERDER_MS + 'ms linear forwards';
+    state.verder = setTimeout(volgende, VERDER_MS);
+  }
   $('nextBtn').focus();
 }
 
@@ -669,8 +786,7 @@ function controleer() {
   for (var i = 0; i < v.typen.velden.length; i++) {
     var n = parseInt($('in' + i).value, 10);
     if (isNaN(n) || n < 0 || n >= Math.pow(10, v.typen.velden[i].max || 2)) {
-      $('feedback').className = 'feedback bad';
-      $('feedback').textContent = v.typen.hulp || 'Vul elk vakje in met een getal.';
+      $('typhint').textContent = v.typen.hulp || 'Vul elk vakje in met een getal.';
       return;
     }
     waarden.push(n);
@@ -687,10 +803,19 @@ function controleer() {
 
 /* ==================== result ==================== */
 function toonResultaat() {
-  var s = state.score;
-  bewaar(state.spel.id + ':' + state.hfd, s, state.aantal);
-  var deel = s / state.aantal;
-  $('stars').textContent = deel >= 0.9 ? '⭐⭐⭐' : deel >= 0.7 ? '⭐⭐' : deel >= 0.5 ? '⭐' : '💪';
+  var s = state.score, sleutel = state.spel.id + ':' + state.hfd;
+  // compare the stars of the best score before and after, so the sticker appears only once
+  var voor = sterrenVoor(lees()[sleutel]);
+  bewaar(sleutel, s, state.aantal);
+  bewaarDag();
+  var na = sterrenVoor(lees()[sleutel]), deel = s / state.aantal, n = sterrenVoor({ score: s, van: state.aantal });
+  $('stars').innerHTML = n ? [0, 1, 2].map(function (k) {
+    return '<span class="ster' + (k < n ? ' aan' : '') + '" style="animation-delay:' + (k * 0.35) + 's">★</span>';
+  }).join('') : '💪';
+  $('stars').setAttribute('aria-label', n + ' van 3 sterren');
+  var nieuw = voor < 3 && na === 3;
+  $('nieuweSticker').hidden = !nieuw;
+  if (nieuw) $('stickerGroot').textContent = stickerVoor(state.spel.id, state.hfd);
   $('resultTitle').textContent = metNaam(deel >= 0.7 ? 'Goed gedaan%!' : 'Volgende keer beter%!');
   $('resultScore').textContent = s + ' / ' + state.aantal;
   $('resultMsg').textContent = deel >= 0.9 ? (state.spel.top || 'Jij bent een echte kampioen!')
@@ -706,19 +831,19 @@ function toonResultaat() {
   } else {
     $('review').hidden = true;
   }
-  $('game').hidden = true;
-  $('result').hidden = false;
+  toonScherm('result');
 }
 
 /* ==================== buttons ==================== */
-$('nextBtn').onclick = function () {
-  if (state.q >= state.aantal) toonResultaat(); else volgendeVraag();
-};
+$('nextBtn').onclick = volgende;
 $('checkBtn').onclick = controleer;
 $('againBtn').onclick = function () { startHoofdstuk(state.hfd); };
 $('menuBtn').onclick = function () { toonMenu(state.spel); };
 $('homeBtn').onclick = function () { toonMenu(state.spel); };
 $('terugBtn').onclick = toonStart;
+$('stickerTerugBtn').onclick = toonStart;
+$('naarBoekBtn').onclick = toonStickerboek;
+$('instelRegel').onclick = function () { zetInstellingen(!state.instellingenOpen); };
 // no blur handler on purpose: blur rebuilt the list between mousedown and click, which swallowed
 // a tap on another profile and could end a running test
 function bevestigNieuwProfiel() {
@@ -770,10 +895,11 @@ $('herstelInput').onchange = function () {
     toonMelding('Teruggezet: ' + n + (n === 1 ? ' profiel.' : ' profielen.'));
   });
 };
-$('soundBtn').onclick = function () {
+$('soundBtn').onclick = $('soundBtn2').onclick = function () {
   state.sound = !state.sound;
-  $('soundBtn').textContent = state.sound ? '🔊' : '🔇';
+  zetGeluidKnoppen();
 };
+window.addEventListener('resize', function () { if (!$('game').hidden) pasDoekAan(); });
 
 state.leerjaar = leesLeerjaar();
 state.aantal = leesAantal();
@@ -783,4 +909,4 @@ toonStart();
 // the self-check is for the developer, so it is only loaded with #test
 if (location.hash === '#test') import('./zelfcheck.js');
 
-export { SPELLEN, AANTALLEN, jasjesVoor, LEERJAREN, TEMPO, LOF, MOED, state, schoonNaam, schoonProfielen, mengBeste, naam, metNaam, leesTempo, secondenVoor, jarenVan, planVoor, bouwToets, maakVraag, toonStart };
+export { leesDagen, SPELLEN, AANTALLEN, jasjesVoor, LEERJAREN, TEMPO, LOF, MOED, state, schoonNaam, schoonProfielen, mengBeste, naam, metNaam, leesTempo, secondenVoor, jarenVan, planVoor, bouwToets, maakVraag, toonStart };
