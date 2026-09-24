@@ -279,7 +279,7 @@ function bewaar(sleutel, score, van) {
 /* ==================== state ==================== */
 var state = {
   spel: null, hfd: 0, leerjaar: 3, aantal: 10, q: 0, score: 0, results: [], fouten: [],
-  current: null, answered: false, sound: true, tempo: false, klok: null,
+  current: null, answered: false, sound: true, tempo: false, klok: null, verder: null,
   plan: [], decks: {}, jassen: {}, vorigJasje: null, vorigeSleutel: null
 };
 var ac = null;
@@ -377,6 +377,34 @@ function maakVraag(soort) {
 }
 
 /* ==================== screens ==================== */
+var SCHERMEN = { start: 'startScherm', menu: 'menuScherm', game: 'game', result: 'result' };
+// one place decides what is visible; the body attribute lets CSS hide the big header in a test
+function toonScherm(naam) {
+  Object.keys(SCHERMEN).forEach(function (k) { $(SCHERMEN[k]).hidden = k !== naam; });
+  document.body.dataset.scherm = naam;
+}
+var VERDER_MS = 2500;
+function stopVerder() {
+  if (state.verder) clearTimeout(state.verder);
+  state.verder = null;
+}
+function volgende() {
+  stopVerder();
+  if (state.q >= state.aantal) toonResultaat(); else volgendeVraag();
+}
+// the doek has a maximum height; a drawing taller than that is scaled down as a whole, so four
+// mirror grids stay readable instead of being cut off
+var DOEK_RAND = 26;
+function pasDoekAan() {
+  var doek = $('doek');
+  doek.style.zoom = '';
+  if ($('doekCard').hidden) return;
+  var max = parseFloat(getComputedStyle($('doekCard')).maxHeight) - DOEK_RAND;
+  if (max > 0 && doek.scrollHeight > max) doek.style.zoom = Math.max(0.45, max / doek.scrollHeight).toFixed(3);
+}
+function zetGeluidKnoppen() {
+  $('soundBtn').textContent = $('soundBtn2').textContent = state.sound ? '🔊' : '🔇';
+}
 function lead() {
   var n = naam();
   return (n ? 'Hoi ' + n + '! ' : '') + 'Kies een spel. Elke toets telt ' +
@@ -433,10 +461,8 @@ function toonStart() {
   });
   $('lead').textContent = lead();
   $('kop').innerHTML = 'Oefen<span class="tick">kampioen</span>';
-  $('startScherm').hidden = false;
-  $('menuScherm').hidden = true;
-  $('game').hidden = true;
-  $('result').hidden = true;
+  stopVerder();
+  toonScherm('start');
 }
 /* ==================== profiles panel ==================== */
 function toonProfielPaneel() {
@@ -545,10 +571,8 @@ function toonMenu(spel) {
     ? 'Kies een hoofdstuk. Elke toets telt ' + state.aantal + ' vragen.'
     : 'Hier staat nog niets voor het ' + jaarNaam(state.leerjaar) +
       '. Kies bovenaan een ander leerjaar, of een ander spel.';
-  $('startScherm').hidden = true;
-  $('menuScherm').hidden = false;
-  $('game').hidden = true;
-  $('result').hidden = true;
+  stopVerder();
+  toonScherm('menu');
 }
 function startHoofdstuk(i) {
   stopKlok();
@@ -559,9 +583,8 @@ function startHoofdstuk(i) {
   state.fouten = [];
   bouwToets();
   $('hfdTitel').textContent = state.spel.hoofdstukken[i].titel;
-  $('menuScherm').hidden = true;
-  $('result').hidden = true;
-  $('game').hidden = false;
+  stopVerder();
+  toonScherm('game');
   volgendeVraag();
 }
 
@@ -593,6 +616,10 @@ function volgendeVraag() {
   var sch = spel.scherm ? spel.scherm(v) : null;
   $('scherm').textContent = sch || '';
   $('schermCard').hidden = !sch;
+  $('game').classList.toggle('met-scherm', !!sch);
+  $('game').classList.toggle('zonder-doek', $('doekCard').hidden);
+  $('blad').hidden = true;
+  $('typhint').textContent = '';
 
   var tekst = spel.vraag(v, state.q + 1);
   $('question').textContent = tekst.titel;
@@ -603,6 +630,7 @@ function volgendeVraag() {
   $('typen').hidden = !v.typen;
   if (v.options) {
     $('options').innerHTML = '';
+    $('options').classList.toggle('lang', v.options.some(function (o) { return o.text.length > 14; }));
     v.options.forEach(function (o, i) {
       var b = document.createElement('button');
       b.className = 'opt';
@@ -632,9 +660,8 @@ function volgendeVraag() {
 
   $('feedback').textContent = '';
   $('feedback').className = 'feedback';
-  $('nextBtn').disabled = true;
-  $('nextBtn').textContent = v.typen ? 'Typ eerst een antwoord' : 'Kies eerst een antwoord';
   drawDots();
+  pasDoekAan();
   // the previous focus was the now disabled next button; land on the new question instead
   (v.typen ? $('in0') : $('question')).focus();
 }
@@ -673,8 +700,19 @@ function antwoord(btn, tekst, ok) {
 
   state.q++;
   drawDots();
-  $('nextBtn').disabled = false;
   $('nextBtn').textContent = state.q >= state.aantal ? '🏁 Bekijk je punten' : 'Volgende vraag';
+  $('blad').className = 'blad ' + (ok ? 'goed' : 'fout');
+  $('blad').hidden = false;
+  // right: carry on by itself after a short, visible wait; wrong: the explanation stays until
+  // the child taps, because then it is the part that matters
+  $('verderbalk').hidden = !ok;
+  if (ok) {
+    var balk = $('verdervulling');
+    balk.style.animation = 'none';
+    void balk.offsetWidth;
+    balk.style.animation = 'leeglopen ' + VERDER_MS + 'ms linear forwards';
+    state.verder = setTimeout(volgende, VERDER_MS);
+  }
   $('nextBtn').focus();
 }
 
@@ -684,8 +722,7 @@ function controleer() {
   for (var i = 0; i < v.typen.velden.length; i++) {
     var n = parseInt($('in' + i).value, 10);
     if (isNaN(n) || n < 0 || n >= Math.pow(10, v.typen.velden[i].max || 2)) {
-      $('feedback').className = 'feedback bad';
-      $('feedback').textContent = v.typen.hulp || 'Vul elk vakje in met een getal.';
+      $('typhint').textContent = v.typen.hulp || 'Vul elk vakje in met een getal.';
       return;
     }
     waarden.push(n);
@@ -722,14 +759,11 @@ function toonResultaat() {
   } else {
     $('review').hidden = true;
   }
-  $('game').hidden = true;
-  $('result').hidden = false;
+  toonScherm('result');
 }
 
 /* ==================== buttons ==================== */
-$('nextBtn').onclick = function () {
-  if (state.q >= state.aantal) toonResultaat(); else volgendeVraag();
-};
+$('nextBtn').onclick = volgende;
 $('checkBtn').onclick = controleer;
 $('againBtn').onclick = function () { startHoofdstuk(state.hfd); };
 $('menuBtn').onclick = function () { toonMenu(state.spel); };
@@ -786,10 +820,11 @@ $('herstelInput').onchange = function () {
     toonMelding('Teruggezet: ' + n + (n === 1 ? ' profiel.' : ' profielen.'));
   });
 };
-$('soundBtn').onclick = function () {
+$('soundBtn').onclick = $('soundBtn2').onclick = function () {
   state.sound = !state.sound;
-  $('soundBtn').textContent = state.sound ? '🔊' : '🔇';
+  zetGeluidKnoppen();
 };
+window.addEventListener('resize', function () { if (!$('game').hidden) pasDoekAan(); });
 
 state.leerjaar = leesLeerjaar();
 state.aantal = leesAantal();
