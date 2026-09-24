@@ -1,12 +1,12 @@
 import { keuzes, vulAan, positief, reduced } from '../gereedschap.js';
 
-  // de maaltafels van het lager onderwijs lopen van 1 tot 10
+  // primary school multiplication tables run from 1 to 10
   var MAX = 10;
   var ALLE_TAFELS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-  // de tafels van het tweede leerjaar; de rest komt in het derde
+  // the tables of second grade; the rest comes in third grade
   var KLEINE_TAFELS = [1, 2, 3, 4, 5, 10];
 
-  /* leerjaar 1: voorbereidend sprongen tellen, nog geen tafel */
+  /* grade 1: preparatory skip counting, no tables yet */
   function sprongRij(rij) {
     return '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">' +
       rij.concat('?').map(function (n) {
@@ -16,31 +16,32 @@ import { keuzes, vulAan, positief, reduced } from '../gereedschap.js';
       }).join('') + '</div>';
   }
   function omgekeerd(p) { return Number(String(p).split('').reverse().join('')); }
+  // Flemish order: in the table of 3 it is 7 × 3, the table number comes last (a is the table)
   function som(v) {
     if (v.soort === 'delen') return v.p + ' : ' + v.a;
-    if (v.soort === 'ontbreekt') return v.links ? '? × ' + v.b + ' = ' + v.p : v.a + ' × ? = ' + v.p;
-    return v.a + ' × ' + v.b;
+    if (v.soort === 'ontbreekt') return v.links ? '? × ' + v.a + ' = ' + v.p : v.b + ' × ? = ' + v.p;
+    return v.b + ' × ' + v.a;
   }
   function verderWeg(juist) {
     var uit = [];
     for (var d = 1; d <= 14; d++) { uit.push(juist + d); uit.push(juist - d); }
     return uit;
   }
-  // de fouten die kinderen van 8 en 9 echt maken, niet zomaar willekeurige getallen
+  // the mistakes 8 and 9 year olds really make, not just random numbers
   function afleidersKeer(a, b) {
     var p = a * b, lijst = [], kern = [];
-    if (p <= 20) kern.push(a + b);   // optellen in plaats van vermenigvuldigen
-    kern.push(a * (b + 1));          // een rij te ver in de tafel
-    kern.push(a * (b - 1));          // een rij te kort
-    kern.push(omgekeerd(p));         // de twee cijfers van het product omgewisseld
-    kern.push((a + 1) * b);          // de buurtafel genomen
+    if (p <= 20) kern.push(a + b);   // adding instead of multiplying
+    kern.push(a * (b + 1));          // one row too far in the table
+    kern.push(a * (b - 1));          // one row short
+    kern.push(omgekeerd(p));         // the two digits of the product swapped
+    kern.push((a + 1) * b);          // took the neighbouring table
     kern.push((a - 1) * b);
     vulAan(lijst, p, kern, positief);
     vulAan(lijst, p, verderWeg(p), positief);
     return lijst.slice(0, 3);
   }
   function afleidersFactor(juist, ander) {
-    // het gezochte getal is een factor, dus de afleiders blijven kleine getallen
+    // the number asked for is a factor, so the distractors stay small numbers
     var lijst = [];
     vulAan(lijst, juist, [juist + 1, juist - 1, ander, juist + 2], positief);
     vulAan(lijst, juist, verderWeg(juist).filter(function (k) { return k <= MAX + 2; }), positief);
@@ -137,9 +138,9 @@ export default {
           velden: [{ ph: '0', aria: 'Jouw antwoord', ant: p, max: 3 }] } };
     }
     if (soort === 'ontbreekt') {
-      // soms ontbreekt het linkse getal, soms het rechtse
+      // sometimes the left number is missing, sometimes the right one
       var links = Math.random() < 0.5;
-      var juist = links ? a : b, ander = links ? b : a;
+      var juist = links ? b : a, ander = links ? a : b;
       return { soort: soort, sleutel: sl, a: a, b: b, p: p, links: links, ans: String(juist),
         options: keuzes(juist, afleidersFactor(juist, ander)) };
     }
@@ -151,7 +152,7 @@ export default {
     var m = document.getElementById('monster');
     if (!m) return;
     m.classList.add(ok ? 'gevangen' : 'mis');
-    // het monster verdwijnt in de kooi; laat niet zomaar een leeg vak achter
+    // the monster disappears into the cage; do not just leave an empty box behind
     if (ok) setTimeout(function () {
       if (m.isConnected) m.parentNode.innerHTML = '<span class="stempel">👾 in de kooi!</span>';
     }, reduced ? 0 : 650);
@@ -164,14 +165,14 @@ export default {
     }
     if (v.soort === 'ontbreekt') return { titel: kop + 'welk getal ontbreekt?', sub: 'Zoek het getal dat het vraagteken vervangt.' };
     if (v.soort === 'delen') return { titel: kop + 'hoeveel is ' + v.p + ' gedeeld door ' + v.a + '?', sub: 'Denk aan de tafel van ' + v.a + '.' };
-    if (v.soort === 'typ') return { titel: kop + 'hoeveel is ' + v.a + ' keer ' + v.b + '?', sub: 'Typ zelf het antwoord in.' };
-    return { titel: kop + 'hoeveel is ' + v.a + ' keer ' + v.b + '?' };
+    if (v.soort === 'typ') return { titel: kop + 'hoeveel is ' + v.b + ' keer ' + v.a + '?', sub: 'Typ zelf het antwoord in.' };
+    return { titel: kop + 'hoeveel is ' + v.b + ' keer ' + v.a + '?' };
   },
   uitleg: function (v) {
     if (v.soort === 'sprong') return 'Je telt in sprongen van ' + v.stap + ': na ' + v.rij[2] + ' komt ' + v.ans + '.';
-    if (v.soort === 'delen') return v.p + ' : ' + v.a + ' = ' + v.b + ', want ' + v.a + ' × ' + v.b + ' = ' + v.p + '.';
-    if (v.soort === 'ontbreekt') return v.a + ' × ' + v.b + ' = ' + v.p + '.';
-    return v.a + ' keer ' + v.b + ' is ' + v.p + '. En ' + v.b + ' × ' + v.a + ' geeft evenveel.';
+    if (v.soort === 'delen') return v.p + ' : ' + v.a + ' = ' + v.b + ', want ' + v.b + ' × ' + v.a + ' = ' + v.p + '.';
+    if (v.soort === 'ontbreekt') return v.b + ' × ' + v.a + ' = ' + v.p + '.';
+    return v.b + ' keer ' + v.a + ' is ' + v.p + '. En ' + v.a + ' × ' + v.b + ' geeft evenveel.';
   },
   kort: function (v) { return v.soort === 'sprong' ? 'Tellen in sprongen van ' + v.stap : som(v); },
   test: function (check) {
@@ -179,12 +180,12 @@ export default {
     var proef = function (a, b, moet) {
       check(afleidersKeer(a, b).indexOf(moet) > -1, 'afleider ' + moet + ' ontbreekt bij ' + a + ' x ' + b);
     };
-    proef(6, 7, 48);   // een rij te ver
-    proef(6, 7, 36);   // een rij te kort
-    proef(6, 7, 24);   // 42 met de cijfers omgewisseld
-    proef(2, 3, 5);    // opgeteld in plaats van vermenigvuldigd
-    proef(9, 8, 81);   // de buurtafel
-    // bij grote producten is optellen geen geloofwaardige fout meer
+    proef(6, 7, 48);   // one row too far
+    proef(6, 7, 36);   // one row short
+    proef(6, 7, 24);   // 42 with the digits swapped
+    proef(2, 3, 5);    // added instead of multiplied
+    proef(9, 8, 81);   // the neighbouring table
+    // with large products, adding is no longer a believable mistake
     check(afleidersKeer(8, 9).indexOf(17) === -1, 'bij 72 staat optellen er niet bij');
     ALLE_TAFELS.concat([1]).forEach(function (a) {
       for (var b = 1; b <= MAX; b++) {
@@ -195,9 +196,9 @@ export default {
         check(fa.every(function (x) { return x > 0 && x <= MAX + 2; }), 'factorafleiders blijven kleine getallen');
       }
     });
-    check(som({ soort: 'keer', a: 6, b: 7 }) === '6 × 7', 'som van een keervraag');
+    check(som({ soort: 'keer', a: 6, b: 7 }) === '7 × 6', 'som van een keervraag: de tafel staat achteraan');
     check(som({ soort: 'delen', a: 6, b: 7, p: 42 }) === '42 : 6', 'som van een deelvraag');
-    check(som({ soort: 'ontbreekt', a: 6, b: 7, p: 42, links: true }) === '? × 7 = 42', 'gat links');
+    check(som({ soort: 'ontbreekt', a: 6, b: 7, p: 42, links: true }) === '? × 6 = 42', 'gat links');
     for (var mk = 0; mk < 24; mk++) {
       check(monster(mk).indexOf('<svg') === 0 && monster(mk).indexOf('aria-label') > -1, 'monster ' + mk + ' is een geldige tekening');
     }

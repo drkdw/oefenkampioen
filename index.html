@@ -1,8 +1,15 @@
 <!doctype html>
+<html lang="nl-BE">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Oefenkampioen</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
+<meta name="description" content="Gratis oefenspellen voor het lager onderwijs in Vlaanderen, van het eerste tot het zesde leerjaar: rekenen, klokkijken, geld, meten, breuken en meer.">
+<meta property="og:title" content="Oefenkampioen">
+<meta property="og:description" content="Gratis oefenspellen voor het lager onderwijs in Vlaanderen, leerjaar 1 tot 6.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://drkdw.github.io/oefenkampioen/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8F%86%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400&display=swap">
 <style>
   :root {
     --bg: #EDF3FF;
@@ -48,9 +55,9 @@
   }
 
   * { box-sizing: border-box; }
-  /* zonder deze regel verliest het hidden-attribuut van een flex-container zijn werking */
+  /* without this rule the hidden attribute stops working on a flex container */
   [hidden] { display: none !important; }
-  /* niets in dikke letters: dik leest minder makkelijk dan normaal */
+  /* nothing in bold: bold reads less easily than normal */
   h1, h2, h3, b, strong { font-weight: normal; }
   body {
     margin: 0;
@@ -142,9 +149,9 @@
   #profielBackdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.35); z-index: 10; }
   .paneel {
     position: absolute;
-    top: 56px; right: 0;
+    top: 56px; right: 16px;
     z-index: 11;
-    width: min(300px, calc(100% - 8px));
+    width: min(300px, calc(100% - 32px));
     max-height: 70vh;
     overflow-y: auto;
     background: var(--card);
@@ -192,7 +199,7 @@
   .paneelacties .aantal { font-size: 13px; padding: 7px 12px; }
   .profielx {
     flex: none;
-    width: 26px; height: 26px;
+    width: 32px; height: 32px;
     border-radius: 999px;
     border: 2px solid var(--line);
     background: var(--card-2);
@@ -215,7 +222,7 @@
   .profielja { background: var(--bad); color: var(--card); border-color: var(--bad); }
   .profielnee, .profiellijst { background: var(--card-2); color: var(--ink); }
 
-  /* spellen en hoofdstukken delen dezelfde kaart */
+  /* games and chapters share the same card */
   .menu { display: flex; flex-direction: column; gap: 10px; }
   .hfd {
     display: flex;
@@ -244,8 +251,8 @@
   .hfd .tekst { flex: 1 1 auto; min-width: 0; }
   .hfd h2 { font-family: Fredoka, sans-serif; font-size: 18px; margin: 0; }
   .hfd p { margin: 2px 0 0; font-size: 14px; color: var(--ink-soft); }
-  /* kopje tussen de hoofdstukken van twee leerjaren in een vlakke lijst; geen interactie,
-     enkel om de lijst leesbaar te houden zodra ze over meerdere leerjaren loopt */
+  /* heading between the chapters of two school years in a flat list; no interaction,
+     only to keep the list readable once it spans several school years */
   .jaarkop { font-family: Fredoka, sans-serif; font-size: 14px; color: var(--ink-soft); margin: 6px 4px -2px; }
   .jaarkop:first-child { margin-top: 0; }
   .dekking { display: block; margin-top: 3px; font-size: 13px; }
@@ -268,7 +275,7 @@
     white-space: nowrap;
   }
 
-  /* spelscherm */
+  /* game screen */
   .scorebar { display: flex; align-items: center; gap: 10px; }
   .score-badge {
     font-family: Fredoka, sans-serif;
@@ -309,7 +316,7 @@
   .dot.bad  { background: var(--bad);  color: var(--bg); }
   .dot.now  { background: transparent; border-color: var(--accent); color: var(--accent); }
 
-  /* het doek: elk spel tekent hier zijn eigen ding */
+  /* the canvas: each game draws its own thing here */
   .doek {
     position: relative;
     background: var(--card);
@@ -324,7 +331,7 @@
     overflow: hidden;
     min-height: 200px;
   }
-  /* wat een spel tekent kan uit meerdere stukken bestaan: klok, pijl, klok */
+  /* what a game draws can consist of several pieces: clock, arrow, clock */
   #doek {
     display: flex;
     flex-wrap: wrap;
@@ -356,7 +363,7 @@
     display: flex; align-items: center; gap: 8px;
   }
 
-  /* klok */
+  /* clock */
   svg.clock { width: min(280px, 72vw); height: auto; max-width: 100%; display: block; }
   svg.klein { width: min(140px, 34vw); }
   .pijl { font-size: 26px; flex: none; }
@@ -370,7 +377,7 @@
   svg.monster.mis { animation: mis .4s; }
   @keyframes mis { 25% { transform: translateX(-11px); } 75% { transform: translateX(11px); } }
 
-  /* het schermpje: som, digitale tijd, bedrag */
+  /* the little screen: sum, digital time, amount */
   .scherm-card { display: flex; justify-content: center; }
   .scherm {
     font-family: Fredoka, sans-serif;
@@ -391,6 +398,7 @@
     text-align: center;
     margin: 0;
   }
+  .question:focus { outline: none; }
   #game { display: flex; flex-direction: column; gap: 20px; }
   .qbox { display: flex; flex-direction: column; gap: 6px; }
   .subq {
@@ -421,7 +429,7 @@
   .opt.pick-bad  { background: var(--bad-bg);  border-color: var(--bad);  color: var(--bad); }
   .opt.reveal    { border-color: var(--good); color: var(--good); }
 
-  /* zelf intypen */
+  /* typing it in yourself */
   .typen { display: flex; flex-direction: column; align-items: center; gap: 14px; }
   .veld {
     display: flex; align-items: center; gap: 4px;
@@ -519,7 +527,7 @@
 <div class="wrap">
   <header>
     <h1 id="kop">Oefen<span class="tick">kampioen</span></h1>
-    <button class="aantal profielBtn" id="profielBtn" aria-haspopup="true" aria-expanded="false"></button>
+    <button class="aantal profielBtn" id="profielBtn" aria-haspopup="dialog" aria-expanded="false"></button>
     <button class="icon-btn" id="soundBtn" aria-label="Geluid aan of uit">&#128266;</button>
   </header>
 
@@ -528,15 +536,17 @@
     <div id="profielLijst"></div>
     <div class="naamkaart">
       <label for="naam">Nieuw profiel</label>
-      <input id="naam" type="text" maxlength="16" placeholder="Typ de naam en druk op Enter" autocomplete="off">
+      <input id="naam" type="text" maxlength="16" placeholder="Typ een naam" autocomplete="off">
+      <button class="aantal" id="naamOk">Voeg toe</button>
     </div>
     <p class="paneelnotitie">Staat enkel op dit toestel, in deze browser. Geen account, geen
       cloud: browsergegevens wissen of een ander toestel gebruiken wist ook dit.</p>
     <div class="paneelacties" id="paneelacties" hidden>
       <button class="aantal" id="bewaarBtn">Bewaar als bestand</button>
       <button class="aantal" id="herstelBtn">Herstel van bestand</button>
-      <input type="file" id="herstelInput" accept="application/json" hidden>
+      <input type="file" id="herstelInput" accept=".json,application/json" hidden>
     </div>
+    <p class="paneelnotitie" id="paneelmelding" role="status" hidden></p>
   </div>
 
   <div id="startScherm">
@@ -582,7 +592,7 @@
     <div class="scherm-card" id="schermCard" hidden><span class="scherm" id="scherm"></span></div>
 
     <div class="qbox">
-      <p class="question" id="question"></p>
+      <p class="question" id="question" tabindex="-1"></p>
       <p class="subq" id="subq" hidden></p>
     </div>
 

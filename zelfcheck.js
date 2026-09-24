@@ -1,7 +1,7 @@
-// de eigen controles: open index.html#test en bekijk de console
+// the app's own checks: open index.html#test and look at the console
 import { pad2 } from './gereedschap.js';
 import {
-  SPELLEN, AANTALLEN, LEERJAREN, TEMPO, LOF, MOED, state, schoonNaam, naam, metNaam,
+  SPELLEN, AANTALLEN, LEERJAREN, TEMPO, LOF, MOED, state, schoonNaam, schoonProfielen, mengBeste, naam, metNaam,
   leesTempo, secondenVoor, jarenVan, jasjesVoor, planVoor, bouwToets, maakVraag, toonStart
 } from './chassis.js';
 
@@ -12,6 +12,18 @@ check(schoonNaam('  Sam  ') === 'Sam', 'naam wordt opgekuist');
 check(schoonNaam('<img src=x>') === 'img srcx', 'tekens die markup maken verdwijnen uit de naam');
 check(schoonNaam('Jean-Luc') === 'Jean-Luc', 'koppeltekens blijven');
 check(schoonNaam('abcdefghijklmnopqrstuvwxyz').length === 16, 'de naam wordt afgekapt');
+check(schoonNaam('Zoë') === 'Zoë' && schoonNaam('李明') === '李明', 'namen in elk schrift blijven heel');
+// an imported file is untrusted: every profile is rebuilt, markup and junk never get through
+var schoon = schoonProfielen([{ sleutel: 'k"><img src=z onerror=alert(1)>', naam: '<b>Lars</b>' }, null, { naam: 5 },
+  { sleutel: 'emma', naam: 'emma' }, { sleutel: 'emma', naam: 'Emma dubbel' }, { sleutel: '', naam: '' }]);
+check(schoon.length === 2, 'een importlijst houdt enkel geldige, unieke profielen over (nu ' + schoon.length + ')');
+check(JSON.stringify(schoon).indexOf('<') === -1 && JSON.stringify(schoon).indexOf('"k"') === -1, 'geen markup in een geïmporteerd profiel');
+check(!schoonProfielen({ sleutel: 'x', naam: 'X' }).length && !schoonProfielen('onzin').length, 'geen lijst betekent geen profielen');
+var beste = mengBeste({ 'klok:0': { score: 9, van: 10 } }, { 'klok:0': { score: 3, van: 10 }, 'klok:1': { score: 15, van: 20 },
+  'x"><img': { score: 1, van: 2 }, 'maal:2': { score: '<img>', van: 10 }, 'maal:3': { score: 12, van: 10 } });
+check(beste['klok:0'].score === 9, 'herstellen overschrijft een betere score niet');
+check(beste['klok:1'] && beste['klok:1'].score === 15, 'herstellen voegt een nieuwe score toe');
+check(Object.keys(beste).length === 2, 'kapotte of verzonnen scores gaan niet mee (nu ' + Object.keys(beste).join(', ') + ')');
 check(metNaam('Bijna%!') === 'Bijna!' || naam() !== '', 'zonder naam blijft het bericht kloppen');
 LOF.concat(MOED).forEach(function (t) {
   check(t.indexOf('%') > -1, 'elk bericht heeft een plaats voor de naam: ' + t);
@@ -30,7 +42,7 @@ SPELLEN.forEach(function (spel) {
   ['ico', 'naam', 'tekst', 'zaadjes', 'maak', 'teken', 'vraag', 'uitleg', 'kort'].forEach(function (k) {
     check(spel[k] !== undefined, spel.id + ' heeft ' + k);
   });
-  // een icoon is een teken of twee; staat er meer, dan is een escape blijven staan als tekst
+  // an icon is one or two characters; if there are more, an escape was left behind as text
   check(spel.ico.length <= 4, spel.id + ': het spelicoon is geen echt teken (' + spel.ico + ')');
   var sec = secondenVoor(spel);
   check(sec >= 5 && sec <= 60, spel.id + ': de tempotijd is bruikbaar (' + sec + 's)');
@@ -41,7 +53,7 @@ SPELLEN.forEach(function (spel) {
       spel.id + ' hoofdstuk ' + (i + 1) + ': leerjaar is een getal van 1 tot 6 (nu ' + h.leerjaar + ')');
   });
   check(jarenVan(spel).length >= 1, spel.id + ': dekt minstens een leerjaar');
-  // een jasje verandert de voorstelling, nooit het antwoord en nooit de sleutel
+  // a jasje changes the presentation, never the answer and never the key
   spel.hoofdstukken.forEach(function (h, i) {
     Object.keys(h.plan).forEach(function (soort) {
       var jassen = jasjesVoor(soort, h);
@@ -86,7 +98,7 @@ SPELLEN.forEach(function (spel) {
           var sl = v.sleutel;
           check(!!sl, spel.id + ': elke vraag heeft een sleutel om dubbels te herkennen');
           gezien[sl] = (gezien[sl] || 0) + 1;
-          // herhaling mag, maar alleen zo vaak als de te kleine voorraad het vraagt
+          // repeats are allowed, but only as often as the too-small supply requires
           var mag = Math.ceil(verdeling[state.plan[q]] / voorraad[state.plan[q]]);
           check(gezien[sl] <= mag, spel.id + ' hoofdstuk ' + (i + 1) + ': ' + sl + ' komt ' +
             gezien[sl] + ' keer voor terwijl de voorraad er ' + mag + ' toelaat');
@@ -95,13 +107,17 @@ SPELLEN.forEach(function (spel) {
           check(typeof v.ans === 'string' && v.ans.length > 0, spel.id + ': elk antwoord is ingevuld');
           check(typeof spel.teken(v) === 'string', spel.id + ': elke vraag heeft een tekening');
           check(spel.teken(v).indexOf('undefined') === -1, spel.id + ': geen undefined in de tekening');
-          // scherm() mag null zijn, maar toont het iets, dan mag daar geen undefined in staan
+          // scherm() may be null, but if it shows something, that must not contain undefined
           var doek = spel.scherm(v);
           check(doek === null || String(doek).indexOf('undefined') === -1, spel.id + ': geen undefined in het schermpje');
           var t = spel.vraag(v, q + 1);
           check(t && t.titel && t.titel.indexOf('undefined') === -1, spel.id + ': elke vraag heeft een tekst');
           check(spel.uitleg(v).indexOf('undefined') === -1, spel.id + ': elke uitleg is volledig');
           check(spel.kort(v).indexOf('undefined') === -1, spel.id + ': elke korte tekst is volledig');
+          // Flemish notation: a comma decimal, never a period or a float artefact like 0.30000000000000004
+          var alleTekst = [t.titel, t.sub || '', spel.uitleg(v), spel.kort(v), v.ans].concat(
+            v.options ? v.options.map(function (o) { return o.text; }) : []).join(' | ');
+          check(!/\d\.\d/.test(alleTekst), spel.id + ' hoofdstuk ' + (i + 1) + ': een punt als komma in "' + alleTekst.slice(0, 80) + '"');
 
           if (v.options) {
             check(v.options.length === 4, spel.id + ': vier keuzes');
@@ -114,6 +130,9 @@ SPELLEN.forEach(function (spel) {
             check(v.typen.velden.length >= 1, spel.id + ': minstens een invulvakje');
             var getypt = v.typen.velden.map(function (f) {
               check(typeof f.ant === 'number' && f.ant >= 0, spel.id + ': elk vakje heeft een antwoord');
+              // the check button refuses anything longer than the field, so the answer must fit
+              check(f.ant < Math.pow(10, f.max || 2), spel.id + ' hoofdstuk ' + (i + 1) + ': het antwoord ' + f.ant +
+                ' past niet in een vakje van ' + (f.max || 2) + ' cijfers');
               return f.pad ? pad2(f.ant) : String(f.ant);
             }).join(v.typen.scheider);
             check(getypt === v.ans, spel.id + ': de vakjes samen geven het antwoord (' + getypt + ' vs ' + v.ans + ')');
@@ -124,8 +143,8 @@ SPELLEN.forEach(function (spel) {
     });
   });
 });
-// het jasjesmechaniek zelf, met een nepspel: twee zaadjes, drie jasjes, tien vragen. Zonder dit
-// zou de rondelogica pas getest zijn als een spel echt jasjes levert.
+// the jasje mechanism itself, with a fake game: two zaadjes, three jasjes, ten questions. Without
+// this the round logic would only be tested once a game actually provides jasjes.
 (function () {
   state.spel = {
     id: 'nep',
@@ -161,7 +180,7 @@ var perJaar = {};
 SPELLEN.forEach(function (s2) {
   s2.hoofdstukken.forEach(function (h) { perJaar[h.leerjaar] = (perJaar[h.leerjaar] || 0) + 1; });
 });
-// nieuw in dat jaar, en tussen haakjes wat een kind van dat niveau in totaal te oefenen heeft
+// new in that year, and in brackets what a child at that level has to practise in total
 var opgeteld = 0;
 console.log('Hoofdstukken per leerjaar (nieuw, cumulatief): ' + LEERJAREN.map(function (lj) {
   opgeteld += perJaar[lj] || 0;
