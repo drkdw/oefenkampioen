@@ -22,6 +22,16 @@ python3 -m http.server 8000
 en ga naar `http://localhost:8000`. Alleen nodig om te testen voor je pusht; wie het spel
 gewoon speelt, heeft dit nooit nodig en gebruikt de link hierboven.
 
+De tests draaien zonder installatie, enkel met Node:
+
+```sh
+node --import ./test/pre.mjs test/alles.mjs
+```
+
+Dat bouwt elke vraag van elk spel en controleert de beloningslogica. In de browser meet
+`(await import('/test/layout-meting.js')).meet()` of vraag, keuzes en de volgende-knop op het
+huidige scherm passen zonder te scrollen.
+
 Opvolger van de losse spellen klok-oefenen en maaltafelmonsters. Die zijn hier mee ingebouwd,
 zodat de opmaak, de puntentelling, de opslag en de zelfcheck maar op een plaats staan.
 
@@ -42,6 +52,20 @@ zit moet de kwartieren immers nog kunnen oefenen.
 Alle zes leerjaren van het lager onderwijs zitten erin: 114 hoofdstukken, 17 in het eerste
 leerjaar tot 10 nieuwe in het zesde. Een kind in het zesde heeft er dus 114 te oefenen, een kind
 in het eerste 17. Elk hoofdstuk hoort bij het leerjaar waarin het in de klas aan bod komt.
+
+## Het startscherm en de beloningen
+
+Bovenaan staat **Voor jou vandaag**: een hoofdstuk met 1 of 2 sterren om te verbeteren, anders een
+hoofdstuk dat je nog nooit speelde, en elke dag begint het zoeken bij een ander spel. Daaronder
+één regel met leerjaar, aantal vragen en tempo, die openklapt, en dan de spellen als tegels.
+
+Elk hoofdstuk heeft 0 tot 3 sterren volgens je beste score: 1 vanaf 50%, 2 vanaf 70%, 3 vanaf
+90%. Drie sterren geeft een sticker in **Mijn stickers**, een vast figuurtje per hoofdstuk. De
+tellers tellen enkel tot je eigen leerjaar. Per kind telt de app op hoeveel dagen er deze maand
+geoefend is; er is geen reeks die breekt als je een dag overslaat.
+
+Tijdens een toets past alles op het scherm, ook op een kleine gsm en liggend. Na een juist
+antwoord gaat het na 2,5 seconden vanzelf verder; na een fout blijft de uitleg staan.
 
 ## De spellen
 
@@ -101,6 +125,8 @@ De bestanden:
 | `spellen/index.js` | de spellen, in de volgorde van het startscherm |
 | `spellen/*.js` | een spel per bestand |
 | `zelfcheck.js` | de controles, alleen binnengehaald bij `#test` |
+| `beloning.js` | sterren, stickers, het voorstel van de dag en de dagen geoefend, zonder scherm of opslag |
+| `test/` | de Node-tests en de layoutmeting |
 
 Het chassis kent de schermen, de punten, de bolletjes, de opslag en de zelfcheck. Een spel is
 een module met `export default` op een object dat deze dingen levert:
