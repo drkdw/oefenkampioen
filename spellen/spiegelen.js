@@ -192,7 +192,7 @@ export default {
       // one exact answer per case: mirrored, turned, or shifted
       var juisteTekst = z.echt ? 'ja, gespiegeld' : gedraaid ? 'nee, gedraaid' : 'nee, verschoven';
       return { soort: soort, sleutel: sl, vorm: vorm, getoond: getoond, kleur: kleur, as: as, ans: juisteTekst,
-        options: shuffle(['ja, gespiegeld', 'nee, gedraaid', 'nee, verschoven', 'ja, maar de as ligt verkeerd']
+        options: shuffle(['ja, gespiegeld', 'nee, gedraaid', 'nee, verschoven', 'nee, er ontbreekt een vakje']
           .map(function (t) { return { text: t, ok: t === juisteTekst }; })) };
     }
     // half: four grids as choices, but those do not fit in a button, so the choice is by letter
