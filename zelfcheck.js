@@ -1,7 +1,7 @@
 // the app's own checks: open index.html#test and look at the console
 import { pad2 } from './gereedschap.js';
 import {
-  SPELLEN, AANTALLEN, LEERJAREN, TEMPO, LOF, MOED, state, schoonNaam, schoonProfielen, mengBeste, naam, metNaam,
+  leesDagen, SPELLEN, AANTALLEN, LEERJAREN, TEMPO, LOF, MOED, state, schoonNaam, schoonProfielen, mengBeste, naam, metNaam,
   leesTempo, secondenVoor, jarenVan, jasjesVoor, planVoor, bouwToets, maakVraag, toonStart
 } from './chassis.js';
 import { STICKERS, sterrenVoor, voorstelVoor } from './beloning.js';
@@ -36,6 +36,7 @@ check(leesTempo() === false || leesTempo() === true, 'de tempo-schakelaar leest 
 var ids = SPELLEN.map(function (s) { return s.id; });
 check(ids.filter(function (x, i) { return ids.indexOf(x) === i; }).length === ids.length, 'elk spel heeft een eigen id');
 
+check(Array.isArray(leesDagen('bestaat-niet')) && leesDagen('bestaat-niet').length === 0, 'een kind zonder dagen heeft een lege lijst');
 var alleStickers = [];
 SPELLEN.forEach(function (s) {
   check((STICKERS[s.id] || []).length === s.hoofdstukken.length, s.id + ': precies een sticker per hoofdstuk');

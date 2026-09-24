@@ -1,5 +1,6 @@
 import { shuffle, pad2, $, reduced, hoofdletter } from './gereedschap.js';
 import { SPELLEN } from './spellen/index.js';
+import { datumVan, mengDagen, dagErbij } from './beloning.js';
 
 // an eight-year-old cannot keep going for more than twenty questions
 var AANTALLEN = [10, 15, 20];
@@ -99,7 +100,7 @@ function verwijderProfiel(sleutel) {
 function verwijderProfielEcht(sleutel) {
   var lijst = profielen().filter(function (p) { return p.sleutel !== sleutel; });
   zetProfielen(lijst);
-  ['oefenkampioen-leerjaar', 'oefenkampioen-aantal', 'oefenkampioen-tempo', 'oefenkampioen-beste'].forEach(function (k) {
+  ['oefenkampioen-leerjaar', 'oefenkampioen-aantal', 'oefenkampioen-tempo', 'oefenkampioen-beste', 'oefenkampioen-dagen'].forEach(function (k) {
     try { localStorage.removeItem(k + postfixVoor(sleutel)); } catch (e) { /* may fail */ }
   });
   // the old name would otherwise hand key '' back to whoever types it again
@@ -128,6 +129,16 @@ function exporteerData() {
 function leesBesteVoor(sleutel) {
   try { return JSON.parse(localStorage.getItem('oefenkampioen-beste' + postfixVoor(sleutel)) || '{}') || {}; }
   catch (e) { return {}; }
+}
+function vandaag() { return datumVan(new Date()); }
+// always passed through mengDagen, so a damaged value reads as fewer days, never as garbage
+function leesDagen(sleutel) {
+  try { return mengDagen(JSON.parse(localStorage.getItem('oefenkampioen-dagen' + postfixVoor(sleutel)) || '[]'), []); }
+  catch (e) { return []; }
+}
+function bewaarDag() {
+  try { localStorage.setItem('oefenkampioen-dagen' + postfix(), JSON.stringify(dagErbij(leesDagen(actief()), vandaag()))); }
+  catch (e) { /* may fail */ }
 }
 // keep the better of two best scores per chapter, and only well-formed entries
 function mengBeste(hier, daar) {
@@ -163,6 +174,10 @@ function herstelData(data) {
     var pf = postfixVoor(doel.sleutel);
     schrijf['oefenkampioen-beste' + pf] = JSON.stringify(mengBeste(leesBesteVoor(doel.sleutel),
       typeof beste === 'string' ? JSON.parse(beste) : {}));
+    // days are merged, never replaced: restoring an old file must not erase a day
+    var dagen = data['oefenkampioen-dagen' + bron];
+    schrijf['oefenkampioen-dagen' + pf] = JSON.stringify(mengDagen(leesDagen(doel.sleutel),
+      typeof dagen === 'string' ? JSON.parse(dagen) : []));
     if (!nieuw) return;
     ['leerjaar', 'aantal', 'tempo'].forEach(function (k) {
       if (typeof data['oefenkampioen-' + k + bron] === 'string') schrijf['oefenkampioen-' + k + pf] = data['oefenkampioen-' + k + bron];
@@ -689,6 +704,7 @@ function controleer() {
 function toonResultaat() {
   var s = state.score;
   bewaar(state.spel.id + ':' + state.hfd, s, state.aantal);
+  bewaarDag();
   var deel = s / state.aantal;
   $('stars').textContent = deel >= 0.9 ? '⭐⭐⭐' : deel >= 0.7 ? '⭐⭐' : deel >= 0.5 ? '⭐' : '💪';
   $('resultTitle').textContent = metNaam(deel >= 0.7 ? 'Goed gedaan%!' : 'Volgende keer beter%!');
@@ -783,4 +799,4 @@ toonStart();
 // the self-check is for the developer, so it is only loaded with #test
 if (location.hash === '#test') import('./zelfcheck.js');
 
-export { SPELLEN, AANTALLEN, jasjesVoor, LEERJAREN, TEMPO, LOF, MOED, state, schoonNaam, schoonProfielen, mengBeste, naam, metNaam, leesTempo, secondenVoor, jarenVan, planVoor, bouwToets, maakVraag, toonStart };
+export { leesDagen, SPELLEN, AANTALLEN, jasjesVoor, LEERJAREN, TEMPO, LOF, MOED, state, schoonNaam, schoonProfielen, mengBeste, naam, metNaam, leesTempo, secondenVoor, jarenVan, planVoor, bouwToets, maakVraag, toonStart };
