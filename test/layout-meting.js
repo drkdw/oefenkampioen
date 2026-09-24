@@ -23,6 +23,8 @@ export async function meet() {
     hfd.click();
     return true;
   }
+  // measure at school year 3, and put the child's own school year back afterwards
+  var eigen = document.querySelector('#leerjaren [aria-pressed="true"]');
   var lj = document.querySelector('#leerjaren [data-lj="3"]');
   if (lj) lj.click();
   if (document.documentElement.scrollWidth > innerWidth + 1) fouten.push('startscherm scrollt horizontaal');
@@ -51,5 +53,6 @@ export async function meet() {
     $('homeBtn').click();
   }
   await wacht(50);
+  if (eigen) document.querySelector('#leerjaren [data-lj="' + eigen.dataset.lj + '"]').click();
   return { ok: fouten.length === 0, fouten: fouten };
 }
