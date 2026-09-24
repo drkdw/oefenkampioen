@@ -1,6 +1,7 @@
 # Oefenkampioen
 
-Oefenspellen voor de lagere school. Geen build, geen dependencies, geen framework.
+Oefenspellen voor de lagere school in Vlaanderen, van het eerste tot het zesde leerjaar. Geen
+build, geen dependencies, geen framework.
 
 ## Spelen
 
@@ -57,7 +58,7 @@ in het eerste 17. Elk hoofdstuk hoort bij het leerjaar waarin het in de klas aan
 | Meetkunde | omtrek, oppervlakte, hoeken, volume, driehoek, ruimtefiguren, hoeken meten |
 | Verhoudingen | procent, schaal, btw en korting, verhoudingstabel, snelheid, gemiddelde, diagrammen |
 
-Elk spel heeft vijf tot zestien hoofdstukken, afhankelijk van hoeveel leerjaren het dekt.
+Elk spel heeft zeven tot dertig hoofdstukken, afhankelijk van hoeveel leerjaren het dekt.
 Een toets telt 10, 15 of 20 vragen, te kiezen op
 het startscherm, en evenveel punten. Twintig is de bovengrens: langer houdt een kind van acht
 niet vol. De verdeling over de vraagtypes schaalt mee met het gekozen aantal.
@@ -82,9 +83,11 @@ niet in een account en niet in de cloud. Wis je de browsergegevens, gebruik je e
 of een ander toestel, dan zijn ze weg, en niets waarschuwt daar vooraf voor. `#admin` geeft ook
 twee bewaarknoppen, om diezelfde reden voor een ouder bedoeld, net als de zelfcheck achter
 `#test`: **Bewaar als bestand** downloadt een klein bestandje met alle profielen en scores,
-**Herstel van bestand** zet dat later terug (voegt enkel toe, verwijdert nooit een profiel dat al
-op het toestel staat). Scores worden op verhouding vergeleken, zodat 12 op 15 beter telt dan 7 op
-10.
+**Herstel van bestand** zet dat later terug. Herstellen voegt enkel toe: profielen worden op naam
+herkend, een profiel dat er al staat houdt zijn instellingen, en een beste score wordt alleen
+vervangen door een betere. Het bestand wordt eerst helemaal gecontroleerd; een kapot of vreemd
+bestand verandert niets en geeft een melding in het paneel. Scores worden op verhouding
+vergeleken, zodat 12 op 15 beter telt dan 7 op 10.
 
 ## Hoe een spel in elkaar zit
 
@@ -104,6 +107,7 @@ een module met `export default` op een object dat deze dingen levert:
 
 | veld | wat het doet |
 | --- | --- |
+| `id`, `ico`, `naam`, `tekst` | hoe het spel heet en op het startscherm staat |
 | `hoofdstukken` | `leerjaar`, titel, moeilijkheid en een `plan`: hoeveel vragen van elk type |
 | `zaadjes(soort, h)` | alle mogelijke vragen van dat type, elk maar een keer per toets |
 | `maak(soort, z, h)` | van een zaadje een vraag maken, met keuzes of invulvakjes |
@@ -114,20 +118,25 @@ een module met `export default` op een object dat deze dingen levert:
 | `kort(v)` | een regel voor de foutenlijst op het eindscherm |
 | `test(check)` | de eigen controles van dat spel |
 
+Optioneel: `top` (de lof bij een bijna foutloze toets), `jasjes(soort, h)` (verschillende
+voorstellingen van dezelfde vraag), `na(v)` (iets doen nadat de vraag op het scherm staat, zoals
+de klok laten draaien) en `reactie(v, ok)` (iets tonen na het antwoord, zoals het monster).
+
 Een vraag heeft ofwel `options` (vier keuzes, precies een juiste) ofwel `typen` (invulvakjes
 met per vakje het verwachte getal). Het chassis regelt de rest.
 
 ## Afleiders
 
-De foute keuzes zijn overal de denkfouten die kinderen echt maken, niet willekeurige getallen.
+De foute keuzes zijn bijna overal de denkfouten die kinderen echt maken, niet willekeurige getallen.
 
 - **Klok**: over en voor verwisselen, bij half het uur pakken dat al geweest is, de minuutwijzer als urenwijzer lezen
 - **Maaltafels**: optellen in plaats van keer, een rij te ver in de tafel, de cijfers van het product omwisselen
 - **Winkel**: de centen laten vallen, een munt dubbel tellen, en bij wisselgeld de euro's aftrekken maar de centen overschrijven
 - **Maten**: een factor tien mis, of omrekenen in de verkeerde richting
-- **Bruggen**: het onthouden vergeten, een tiental te veel, de verkeerde bewerking, en bij de brug tot 20 het tiental gewoon vergeten (12 + 5 = 7 in plaats van 17)
+- **Bruggen**: het onthouden vergeten, een tiental te veel, de verkeerde bewerking, en bij tot 20 zonder brug het tiental gewoon vergeten (12 + 5 = 7 in plaats van 17)
 - **Spiegelen**: een halve slag gedraaid in plaats van gespiegeld, of gewoon opzij geschoven
-- **Breuken**: het aantal stukjes en het aantal gekleurde stukjes verwisselen, de noemer vergeten mee te nemen
+- **Breuken**: bij optellen ook de noemers optellen (1/4 + 2/4 = 3/8), bij ongelijke noemers vergeten om eerst gelijknamig te maken, en tellers net naast het juiste antwoord
+- **Kalender**: hier zijn de foute keuzes gewoon andere dagen of maanden; bij de seizoenen nooit een maand die in twee seizoenen valt
 - **Meetkunde**: enkel twee zijden optellen in plaats van vier, oppervlakte in plaats van omtrek, vergeten door twee te delen bij een driehoek
 - **Verhoudingen**: het verschil nemen in plaats van het deel, de schaal vergeten toe te passen, of de eenheidsprijs verwarren met het gevraagde aantal
 
@@ -135,7 +144,9 @@ De foute keuzes zijn overal de denkfouten die kinderen echt maken, niet willekeu
 
 Een tekening mag helpen, nooit antwoorden. De seizoenkaart staat er alleen bij de omgekeerde
 vraag, het maandblaadje verdwijnt bij "hoeveel dagen heeft oktober", en de sprongen op de
-getallenlijn blijven leeg bij "47 + ? = 55". De zelfcheck controleert dat alle drie.
+getallenlijn blijven leeg bij "47 + ? = 55". De zelfcheck controleert dat alle drie. Op de
+getallenlijn tot 10 en tot 20 staan enkel 0 en het einde met een getal: het kind telt de
+streepjes, de boog landt niet op een gedrukt antwoord.
 
 ## Zelfcheck
 
@@ -143,8 +154,10 @@ Open `index.html#test` en bekijk de console. De check rekent alle volledige toet
 spel, elk hoofdstuk, bij 10, 15 en 20 vragen, vijf rondes per combinatie; dat zijn er vandaag
 1710. Per vraag controleert hij onder meer dat er vier verschillende keuzes zijn met precies een
 juist antwoord, dat een vraag niet vaker voorkomt dan de voorraad toelaat en nooit twee keer na
-elkaar, dat de invulvakjes samen het antwoord vormen, en dat er nergens `undefined` in een
-tekst, tekening of het schermpje sluipt.
+elkaar, dat de invulvakjes samen het antwoord vormen en dat het antwoord in het vakje past, dat
+een kommagetal nooit met een punt verschijnt, en dat er nergens `undefined` in een tekst, tekening
+of het schermpje sluipt. Ook het bewaarbestand wordt getest: namen met markup, kapotte scores en
+dubbele profielen raken er niet door.
 
 Draai je lokaal `#test` en zie je een ander getal dan hierboven: dat is het bewijs dat je een
 gecachete versie van een bestand bekijkt, niet dat de zelfcheck faalt. Open een nieuwe tab,
@@ -152,10 +165,11 @@ gebruik geen bestaande, en zorg dat je server geen `Cache-Control` meestuurt die
 toelaat.
 
 Daarbovenop heeft elk spel zijn eigen controles: dat de twaalf maanden samen 365 dagen tellen,
-dat quotient maal deler het deeltal geeft, dat heen en terug omrekenen weer op het beginpunt
-uitkomt, dat de twee sprongen van een brug samen de hele sprong zijn, dat twee keer spiegelen
-je terugbrengt bij het begin, dat geen twee breuken in het vergelijkspel gelijkwaardig zijn, en
-dat elke gelijkwaardige breuk in sectie 9 ook echt dezelfde waarde heeft als zijn basisbreuk.
+dat heen en terug omrekenen weer op het beginpunt uitkomt, dat tussen kg en g ×1000 staat, dat de
+twee sprongen van een brug samen de hele sprong zijn, dat twee keer spiegelen je terugbrengt bij
+het begin, dat een vorm voor de platte spiegelas in de bovenste helft blijft, dat geen twee
+breuken in het vergelijkspel gelijkwaardig zijn, en dat elke breuk in de tabel `GELIJKWAARDIG`
+ook echt dezelfde waarde heeft als zijn basisbreuk.
 
 ## Licentie
 
