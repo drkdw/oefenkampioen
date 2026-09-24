@@ -636,6 +636,19 @@
   @media (prefers-reduced-motion: reduce) {
     .result .stars .ster, .sticker-groot { animation: none; }
   }
+  /* title, name button and sound button stay on one row, also on a small phone */
+  header { flex-wrap: nowrap; }
+  h1 { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  @media (max-width: 420px) {
+    .profielBtn { max-width: 124px; padding: 7px 10px; font-size: 14px; }
+    h1 { font-size: 22px; }
+  }
+  @media (max-width: 360px) {
+    header { gap: 6px; }
+    header .icon-btn { width: 36px; height: 36px; font-size: 16px; }
+    h1 { font-size: 17px; }
+    .profielBtn { max-width: 116px; font-size: 13px; padding: 7px 8px; }
+  }
 </style>
 
 <div class="wrap">
