@@ -61,7 +61,7 @@ hoofdstuk dat je nog nooit speelde, en elke dag begint het zoeken bij een ander 
 
 Elk hoofdstuk heeft 0 tot 3 sterren volgens je beste score: 1 vanaf 50%, 2 vanaf 70%, 3 vanaf
 90%. Drie sterren geeft een sticker in **Mijn stickers**, een vast figuurtje per hoofdstuk. De
-tellers tellen enkel tot je eigen leerjaar. Per kind telt de app op hoeveel dagen er deze maand
+teller telt de hoofdstukken tot je eigen leerjaar, plus elke sticker die je hoger al haalde. Per kind telt de app op hoeveel dagen er deze maand
 geoefend is; er is geen reeks die breekt als je een dag overslaat.
 
 Tijdens een toets past alles op het scherm, ook op een kleine gsm en liggend. Na een juist

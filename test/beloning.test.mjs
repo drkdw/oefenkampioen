@@ -1,5 +1,5 @@
 import { SPELLEN } from '../spellen/index.js';
-import { STICKERS, sterrenVoor, stickerVoor, datumVan, mengDagen, dagErbij, dagenDezeMaand, dagNummer, voorstelVoor }
+import { STICKERS, sterrenVoor, stickerVoor, datumVan, mengDagen, dagErbij, dagenDezeMaand, dagNummer, voorstelVoor, boekVoor }
   from '../beloning.js';
 
 export function beloningTests(check) {
@@ -14,6 +14,11 @@ export function beloningTests(check) {
     SPELLEN.map(function (s) { return s.hoofdstukken.map(function (h) { return h.ico; }); })));
   check(alle.every(function (e) { return !iconen.has(e); }), 'geen sticker is ook een icoon: ' + alle.filter(function (e) { return iconen.has(e); }).join(' '));
   check(alle.every(function (e) { return typeof e === 'string' && e.length > 0; }), 'geen lege sticker');
+  // a sticker earned in a higher school year stays in the book after switching back
+  var nep = { id: 'x', hoofdstukken: [{ leerjaar: 1 }, { leerjaar: 3 }, { leerjaar: 3 }] };
+  var boek = boekVoor(nep, { 'x:1': { score: 10, van: 10 }, 'x:2': { score: 8, van: 10 } }, 1);
+  check(boek.map(function (r) { return r.i; }).join() === '0,1', 'stickerboek: eigen leerjaar plus verdiende extra');
+  check(boekVoor(nep, {}, 3).length === 3, 'stickerboek: alles tot het leerjaar');
   check(stickerVoor('klok', 1) === STICKERS.klok[1] && stickerVoor('nietbestaand', 0) === '', 'stickerVoor');
 
   [[4, 10, 0], [5, 10, 1], [6, 10, 1], [7, 10, 2], [8, 10, 2], [9, 10, 3], [10, 10, 3],
