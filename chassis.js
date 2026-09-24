@@ -661,6 +661,8 @@ function startHoofdstuk(i) {
   state.fouten = [];
   bouwToets();
   $('hfdTitel').textContent = state.spel.hoofdstukken[i].titel;
+  $('spelNaam').textContent = naam();
+  $('spelNaam').hidden = !naam();
   stopVerder();
   toonScherm('game');
   volgendeVraag();
