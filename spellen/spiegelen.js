@@ -190,9 +190,9 @@ export default {
       var gedraaid = !gelijk(draai(vorm), juist);
       var getoond = z.echt ? juist : (gedraaid ? draai(vorm) : schuif(vorm));
       // one exact answer per case: mirrored, turned, or shifted
-      var juisteTekst = z.echt ? 'ja, gespiegeld' : gedraaid ? 'nee, gedraaid' : 'nee, verschoven';
+      var juisteTekst = z.echt ? 'gespiegeld' : gedraaid ? 'gedraaid' : 'verschoven';
       return { soort: soort, sleutel: sl, vorm: vorm, getoond: getoond, kleur: kleur, as: as, ans: juisteTekst,
-        options: shuffle(['ja, gespiegeld', 'nee, gedraaid', 'nee, verschoven', 'nee, er ontbreekt een vakje']
+        options: shuffle(['gespiegeld', 'gedraaid', 'verschoven', 'een vakje weg']
           .map(function (t) { return { text: t, ok: t === juisteTekst }; })) };
     }
     // half: four grids as choices, but those do not fit in a button, so the choice is by letter
@@ -252,7 +252,7 @@ export default {
         sub: 'De helft staat er. De andere helft is de spiegeling.' };
     }
     if (v.soort === 'klopt') {
-      return { titel: kop + 'is de rechtse figuur de spiegeling van de linkse?',
+      return { titel: kop + 'wat is er met de linkse figuur gebeurd?',
         sub: 'Let op: gedraaid is niet hetzelfde als gespiegeld.' };
     }
     return { titel: kop + 'welke helft hoort aan de andere kant van de stippellijn?',
@@ -265,8 +265,8 @@ export default {
       return 'De helft heeft ' + v.half + ' vakjes, en de spiegeling nog eens ' + v.half + ': samen ' + (v.half * 2) + '.';
     }
     if (v.soort === 'klopt') {
-      if (v.ans === 'ja, gespiegeld') return 'Elk vakje staat even ver van de as, maar aan de andere kant.';
-      return v.ans === 'nee, gedraaid'
+      if (v.ans === 'gespiegeld') return 'Elk vakje staat even ver van de as, maar aan de andere kant.';
+      return v.ans === 'gedraaid'
         ? 'Bij spiegelen blijft boven ook boven. Hier staat de figuur op zijn kop: dat is draaien.'
         : 'De figuur is gewoon opgeschoven, niet omgekeerd. Dat is geen spiegeling.';
     }
@@ -277,7 +277,7 @@ export default {
     if (v.soort === 'vorm') return 'Welke vorm is dit?';
     if (v.soort === 'positie') return 'Waar staat de ' + v.dier.naam + '?';
     if (v.soort === 'tellen') return 'Een halve vorm met ' + v.half + ' vakjes';
-    if (v.soort === 'klopt') return 'Gespiegeld of niet?';
+    if (v.soort === 'klopt') return 'Wat is er gebeurd?';
     return 'De spiegeling over de ' + v.as + 'e as';
   },
   test: function (check) {
