@@ -615,6 +615,27 @@
   .hfd-rechts { flex: none; display: flex; align-items: center; gap: 8px; }
   .sterren { color: var(--gold); font-size: 16px; letter-spacing: 1px; }
   .hfd-sticker { font-size: 24px; }
+  #stickerScherm { display: flex; flex-direction: column; gap: 14px; }
+  .boekspel h3 { font-family: Fredoka, sans-serif; font-size: 17px; margin: 4px 0 8px; color: var(--ink); }
+  .boek { display: grid; grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)); gap: 8px; }
+  .vak {
+    aspect-ratio: 1; border-radius: 16px; background: var(--card); border: 3px solid var(--line);
+    display: flex; align-items: center; justify-content: center; font-size: 30px;
+  }
+  .vak.leeg { background: none; border-style: dashed; color: var(--line); font-family: Fredoka, sans-serif; font-size: 20px; }
+  .result .stars .ster { display: inline-block; color: var(--line); animation: sterIn .35s ease-out both; }
+  .result .stars .ster.aan { color: var(--gold); }
+  @keyframes sterIn { from { transform: scale(.2); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .nieuwe-sticker { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .sticker-groot {
+    width: 96px; height: 96px; border-radius: 24px; background: #fff; box-shadow: 0 0 0 5px var(--gold);
+    display: flex; align-items: center; justify-content: center; font-size: 56px;
+    animation: plak .5s 1.1s ease-out both;
+  }
+  @keyframes plak { from { transform: scale(1.6) rotate(-20deg); opacity: 0; } to { transform: scale(1) rotate(-6deg); opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) {
+    .result .stars .ster, .sticker-groot { animation: none; }
+  }
 </style>
 
 <div class="wrap">
@@ -672,6 +693,16 @@
     <div class="menu" id="menu"></div>
   </div>
 
+  <div id="stickerScherm" hidden>
+    <div class="scorebar">
+      <button class="icon-btn" id="stickerTerugBtn" aria-label="Terug naar de spellen">&#127968;</button>
+      <span class="titel">📒 Mijn stickers</span>
+      <span class="score-badge" id="stickerTeller"></span>
+    </div>
+    <p class="lead">Haal 3 sterren in een hoofdstuk en je krijgt zijn sticker.</p>
+    <div id="stickerBoek"></div>
+  </div>
+
   <div id="game" hidden>
     <div class="scorebar">
       <button class="icon-btn" id="homeBtn" aria-label="Terug naar de hoofdstukken">&#127968;</button>
@@ -710,10 +741,15 @@
   </div>
 
   <div class="result" id="result" hidden>
-    <div class="stars" id="stars">&#11088;</div>
+    <div class="stars" id="stars" aria-live="polite"></div>
     <h2 id="resultTitle">Goed gedaan!</h2>
     <div class="big-score" id="resultScore">0 / 10</div>
     <p id="resultMsg"></p>
+    <div class="nieuwe-sticker" id="nieuweSticker" hidden>
+      <span class="sticker-groot" id="stickerGroot" aria-hidden="true"></span>
+      <span>Nieuwe sticker! Hij zit in je stickerboek.</span>
+      <button class="big-btn stil" id="naarBoekBtn">📒 Naar mijn stickerboek</button>
+    </div>
     <div class="review" id="review" hidden></div>
     <button class="big-btn" id="againBtn">&#128257; Nog een toets</button>
     <button class="big-btn stil" id="menuBtn">&#127968; Naar de hoofdstukken</button>
