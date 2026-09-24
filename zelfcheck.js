@@ -4,6 +4,7 @@ import {
   SPELLEN, AANTALLEN, LEERJAREN, TEMPO, LOF, MOED, state, schoonNaam, schoonProfielen, mengBeste, naam, metNaam,
   leesTempo, secondenVoor, jarenVan, jasjesVoor, planVoor, bouwToets, maakVraag, toonStart
 } from './chassis.js';
+import { STICKERS, sterrenVoor, voorstelVoor } from './beloning.js';
 
 var fouten = 0;
 var check = function (ok, wat) { if (!ok) { fouten++; console.error('FOUT: ' + wat); } };
@@ -35,6 +36,17 @@ check(leesTempo() === false || leesTempo() === true, 'de tempo-schakelaar leest 
 var ids = SPELLEN.map(function (s) { return s.id; });
 check(ids.filter(function (x, i) { return ids.indexOf(x) === i; }).length === ids.length, 'elk spel heeft een eigen id');
 
+var alleStickers = [];
+SPELLEN.forEach(function (s) {
+  check((STICKERS[s.id] || []).length === s.hoofdstukken.length, s.id + ': precies een sticker per hoofdstuk');
+  alleStickers = alleStickers.concat(STICKERS[s.id] || []);
+});
+check(new Set(alleStickers).size === alleStickers.length, 'elke sticker is anders');
+check(sterrenVoor({ score: 9, van: 10 }) === 3 && sterrenVoor({ score: 13, van: 20 }) === 1 && sterrenVoor() === 0, 'sterrengrenzen');
+LEERJAREN.forEach(function (lj) {
+  var v = voorstelVoor(SPELLEN, {}, lj, lj);
+  check(v.reden === 'nieuw' && v.spel.hoofdstukken[v.index].leerjaar <= lj, 'voorstel binnen leerjaar ' + lj);
+});
 var toetsen = 0;
 var bewaardAantal = state.aantal, bewaardSpel = state.spel, bewaardHfd = state.hfd;
 SPELLEN.forEach(function (spel) {
