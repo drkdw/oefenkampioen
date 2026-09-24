@@ -576,6 +576,45 @@
     @keyframes opschuivenRechts { from { transform: translateY(100%); } to { transform: translateY(0); } }
   }
   @media (prefers-reduced-motion: reduce) { .blad { animation: none; } }
+  /* the start screen and the sticker book are wider, so four tiles fit on a laptop */
+  body[data-scherm="start"] .wrap, body[data-scherm="stickers"] .wrap { max-width: 900px; }
+  #startScherm { gap: 12px; }
+  .voorjou {
+    display: flex; flex-direction: column; gap: 3px; text-align: left; cursor: pointer;
+    background: var(--card); color: var(--ink); border: 3px solid var(--accent);
+    border-radius: 22px; padding: 14px 16px; box-shadow: var(--shadow);
+    font-family: Nunito, sans-serif; font-size: 15px;
+  }
+  .voorjou .vj-kop { font-family: Fredoka, sans-serif; font-size: 14px; color: var(--accent); }
+  .voorjou .vj-titel { font-family: Fredoka, sans-serif; font-size: 19px; }
+  .voorjou .vj-tekst { color: var(--ink-soft); }
+  .voorjou .vj-dagen { font-size: 13px; color: var(--good); }
+  .voorjou:active { transform: translateY(4px); box-shadow: none; }
+  .instelregel {
+    display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+    background: var(--card); color: var(--ink-soft); border: 3px solid var(--line);
+    border-radius: 18px; padding: 10px 16px; font-family: Fredoka, sans-serif; font-size: 15px;
+  }
+  .instellingen { display: flex; flex-direction: column; gap: 10px; }
+  .tegels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  @media (min-width: 600px) { .tegels { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (min-width: 860px), (orientation: landscape) and (max-height: 500px) {
+    .tegels { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+  .tegel {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    min-height: 118px; padding: 12px 8px; cursor: pointer; text-align: center;
+    background: var(--card); color: var(--ink); border: 3px solid var(--line);
+    border-radius: 22px; box-shadow: var(--shadow); transition: transform .1s;
+    font-family: Fredoka, sans-serif; font-size: 16px;
+  }
+  .tegel:active { transform: translateY(4px); box-shadow: none; }
+  .tegel .tegel-ico { font-size: 38px; line-height: 1.1; }
+  .tegel .tegel-sterren { font-size: 14px; color: var(--gold); font-variant-numeric: tabular-nums; }
+  .tegel.stickers { border-color: var(--gold); }
+  .hfd-rechts { flex: none; display: flex; align-items: center; gap: 8px; }
+  .sterren { color: var(--gold); font-size: 16px; letter-spacing: 1px; }
+  .hfd-sticker { font-size: 24px; }
 </style>
 
 <div class="wrap">
@@ -604,20 +643,24 @@
   </div>
 
   <div id="startScherm">
-    <div class="naamkaart" role="group" aria-label="Leerjaar">
-      <span class="kaartlabel">Welk leerjaar?</span>
-      <span class="aantallen" id="leerjaren"></span>
-    </div>
-    <div class="naamkaart" role="group" aria-label="Aantal vragen per toets">
-      <span class="kaartlabel">Hoeveel vragen?</span>
-      <span class="aantallen" id="aantallen"></span>
-    </div>
-    <div class="naamkaart" role="group" aria-label="Oefenen op tempo">
-      <span class="kaartlabel">Op tempo?</span>
-      <span class="aantallen" id="tempoKnop"></span>
+    <button class="voorjou" id="voorJou"></button>
+    <button class="instelregel" id="instelRegel" aria-expanded="false" aria-controls="instellingen"></button>
+    <div class="instellingen" id="instellingen" hidden>
+      <div class="naamkaart" role="group" aria-label="Leerjaar">
+        <span class="kaartlabel">Welk leerjaar?</span>
+        <span class="aantallen" id="leerjaren"></span>
+      </div>
+      <div class="naamkaart" role="group" aria-label="Aantal vragen per toets">
+        <span class="kaartlabel">Hoeveel vragen?</span>
+        <span class="aantallen" id="aantallen"></span>
+      </div>
+      <div class="naamkaart" role="group" aria-label="Oefenen op tempo">
+        <span class="kaartlabel">Op tempo?</span>
+        <span class="aantallen" id="tempoKnop"></span>
+      </div>
     </div>
     <p class="lead" id="lead"></p>
-    <div class="menu" id="spellen"></div>
+    <div class="tegels" id="spellen"></div>
   </div>
 
   <div id="menuScherm" hidden>

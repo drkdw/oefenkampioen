@@ -1,6 +1,6 @@
 import { shuffle, pad2, $, reduced, hoofdletter } from './gereedschap.js';
 import { SPELLEN } from './spellen/index.js';
-import { datumVan, mengDagen, dagErbij } from './beloning.js';
+import { datumVan, mengDagen, dagErbij, sterrenVoor, stickerVoor, voorstelVoor, dagenDezeMaand, dagNummer } from './beloning.js';
 
 // an eight-year-old cannot keep going for more than twenty questions
 var AANTALLEN = [10, 15, 20];
@@ -223,11 +223,6 @@ function hoofdstukkenVoor(spel) {
   return spel.hoofdstukken.map(function (h, i) { return { h: h, i: i }; })
     .filter(function (r) { return r.h.leerjaar <= state.leerjaar; });
 }
-// only called for games already filtered on having something for this school year
-function dekkingTekst(spel) {
-  var n = hoofdstukkenVoor(spel).length;
-  return n + (n === 1 ? ' hoofdstuk' : ' hoofdstukken');
-}
 function leesAantal() {
   var a;
   try { a = parseInt(localStorage.getItem('oefenkampioen-aantal' + postfix()), 10); } catch (e) { a = NaN; }
@@ -279,7 +274,7 @@ function bewaar(sleutel, score, van) {
 /* ==================== state ==================== */
 var state = {
   spel: null, hfd: 0, leerjaar: 3, aantal: 10, q: 0, score: 0, results: [], fouten: [],
-  current: null, answered: false, sound: true, tempo: false, klok: null, verder: null,
+  current: null, answered: false, sound: true, tempo: false, klok: null, verder: null, instellingenOpen: false,
   plan: [], decks: {}, jassen: {}, vorigJasje: null, vorigeSleutel: null
 };
 var ac = null;
@@ -407,15 +402,52 @@ function zetGeluidKnoppen() {
 }
 function lead() {
   var n = naam();
-  return (n ? 'Hoi ' + n + '! ' : '') + 'Kies een spel. Elke toets telt ' +
-    state.aantal + ' vragen en ' + state.aantal + ' punten.' +
+  return (n ? 'Hoi ' + n + '! ' : '') + 'Kies een spel.' +
     (state.tempo ? ' De klok loopt mee: te traag telt als fout.' : '');
 }
-function kaart(ico, nr, titel, tekst, beste, badge) {
-  var b = beste && Number(beste.van) > 0 ? '<span class="beste">beste ' + Number(beste.score) + '/' + Number(beste.van) + '</span>' : '';
+var MAANDEN = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus',
+  'september', 'oktober', 'november', 'december'];
+function sterrenTekst(n) { return '★★★'.slice(0, n) + '☆☆☆'.slice(n); }
+function sterrenVanSpel(spel, beste) {
+  var lijst = hoofdstukkenVoor(spel), verdiend = 0;
+  lijst.forEach(function (r) { verdiend += sterrenVoor(beste[spel.id + ':' + r.i]); });
+  return { verdiend: verdiend, max: lijst.length * 3 };
+}
+// counts only chapters up to the chosen school year, so the goal stays within reach
+function stickersVoorLeerjaar(beste) {
+  var n = 0, totaal = 0;
+  SPELLEN.forEach(function (s) {
+    hoofdstukkenVoor(s).forEach(function (r) {
+      totaal++;
+      if (sterrenVoor(beste[s.id + ':' + r.i]) === 3) n++;
+    });
+  });
+  return { n: n, totaal: totaal };
+}
+function voorJouHtml(v) {
+  var kop = '<span class="vj-kop">⭐ Voor jou vandaag</span>';
+  var dagen = dagenDezeMaand(leesDagen(actief()), vandaag());
+  var regel = dagen ? '<span class="vj-dagen">Al ' + dagen + (dagen === 1 ? ' dag' : ' dagen') + ' geoefend in ' +
+    MAANDEN[Number(vandaag().slice(5, 7)) - 1] + '</span>' : '';
+  if (v.reden === 'alles') {
+    return kop + '<span class="vj-titel">Alles 3 sterren!</span><span class="vj-tekst">' +
+      (state.leerjaar < 6 ? 'Probeer eens het ' + jaarNaam(state.leerjaar + 1) + '.' : 'Kies gerust een hoofdstuk om te herhalen.') +
+      '</span>' + regel;
+  }
+  var h = v.spel.hoofdstukken[v.index];
+  var tekst = v.reden === 'verbeter'
+    ? 'Je had ' + Number(v.beste.score) + ' op ' + Number(v.beste.van) + '. Haal je er 3 sterren?'
+    : 'Iets nieuws om te proberen.';
+  return kop + '<span class="vj-titel">' + v.spel.ico + ' ' + v.spel.naam + ': ' + h.titel + '</span>' +
+    '<span class="vj-tekst">' + tekst + '</span>' + regel;
+}
+function kaart(ico, nr, titel, tekst, beste, badge, sticker) {
+  var n = sterrenVoor(beste);
   return '<span class="ico">' + ico + '</span>' +
     '<span class="tekst"><h2>' + (nr ? nr + '. ' : '') + titel + '</h2><p>' + tekst + '</p></span>' +
-    b + (badge ? '<span class="badge ' + badge + '">' + badge + '</span>' : '');
+    '<span class="hfd-rechts">' + (sticker && n === 3 ? '<span class="hfd-sticker" aria-hidden="true">' + sticker + '</span>' : '') +
+    '<span class="sterren" aria-label="' + n + ' van 3 sterren">' + sterrenTekst(n) + '</span>' +
+    (badge ? '<span class="badge ' + badge + '">' + badge + '</span>' : '') + '</span>';
 }
 function toonStart() {
   // a running tempo timer would otherwise fire a fail beep on the start screen
@@ -425,19 +457,28 @@ function toonStart() {
   // open a game first to find out it is empty there
   var rijen = SPELLEN.map(function (s, i) { return { s: s, i: i }; })
     .filter(function (r) { return hoofdstukkenVoor(r.s).length > 0; });
+  var st = stickersVoorLeerjaar(beste);
   $('spellen').innerHTML = rijen.map(function (r) {
-    // the game card shows the best chapter result of that game
-    var top = null;
-    r.s.hoofdstukken.forEach(function (h, k) {
-      var b = beste[r.s.id + ':' + k];
-      if (b && b.van && (!top || b.score / b.van > top.score / top.van)) top = b;
-    });
-    var tekst = r.s.tekst + '<span class="dekking">' + dekkingTekst(r.s) + '</span>';
-    return '<button class="hfd" data-i="' + r.i + '">' + kaart(r.s.ico, 0, r.s.naam, tekst, top, '') + '</button>';
-  }).join('');
-  Array.prototype.forEach.call($('spellen').children, function (b) {
+    var sv = sterrenVanSpel(r.s, beste);
+    return '<button class="tegel" data-i="' + r.i + '"><span class="tegel-ico" aria-hidden="true">' + r.s.ico + '</span>' +
+      '<span class="tegel-naam">' + r.s.naam + '</span>' +
+      '<span class="tegel-sterren" aria-label="' + sv.verdiend + ' van ' + sv.max + ' sterren">★ ' + sv.verdiend + ' / ' + sv.max + '</span></button>';
+  }).join('') + '<button class="tegel stickers" id="stickerTegel"><span class="tegel-ico" aria-hidden="true">📒</span>' +
+    '<span class="tegel-naam">Mijn stickers</span><span class="tegel-sterren">' + st.n + ' / ' + st.totaal + '</span></button>';
+  Array.prototype.forEach.call($('spellen').querySelectorAll('.tegel[data-i]'), function (b) {
     b.onclick = function () { toonMenu(SPELLEN[Number(b.dataset.i)]); };
   });
+  var voorstel = voorstelVoor(SPELLEN, beste, state.leerjaar, dagNummer(vandaag()));
+  $('voorJou').innerHTML = voorJouHtml(voorstel);
+  $('voorJou').onclick = function () {
+    if (voorstel.reden === 'alles') { zetInstellingen(true); return; }
+    state.spel = voorstel.spel;
+    startHoofdstuk(voorstel.index);
+  };
+  $('instelRegel').innerHTML = '<span>' + jaarNaam(state.leerjaar) + ' · ' + state.aantal + ' vragen · ' +
+    (state.tempo ? 'met klok' : 'rustig') + '</span><span aria-hidden="true">' + (state.instellingenOpen ? '✕' : '⚙') + '</span>';
+  $('instelRegel').setAttribute('aria-expanded', String(state.instellingenOpen));
+  $('instellingen').hidden = !state.instellingenOpen;
   $('profielBtn').innerHTML = (naam() || 'Wie speelt er?') + ' <span class="chev">&#9662;</span>';
   $('leerjaren').innerHTML = LEERJAREN.map(function (lj) {
     return '<button class="aantal" data-lj="' + lj + '" aria-pressed="' + (lj === state.leerjaar) +
@@ -463,6 +504,11 @@ function toonStart() {
   $('kop').innerHTML = 'Oefen<span class="tick">kampioen</span>';
   stopVerder();
   toonScherm('start');
+}
+function zetInstellingen(open) {
+  state.instellingenOpen = open;
+  toonStart();
+  if (open) $('leerjaren').querySelector('[aria-pressed="true"]').focus();
 }
 /* ==================== profiles panel ==================== */
 function toonProfielPaneel() {
@@ -559,7 +605,7 @@ function toonMenu(spel) {
     }
     nr++;
     html += '<button class="hfd" data-i="' + r.i + '">' +
-      kaart(r.h.ico, nr, r.h.titel, r.h.tekst, beste[spel.id + ':' + r.i], r.h.badge) + '</button>';
+      kaart(r.h.ico, nr, r.h.titel, r.h.tekst, beste[spel.id + ':' + r.i], r.h.badge, stickerVoor(spel.id, r.i)) + '</button>';
   });
   $('menu').innerHTML = html;
   Array.prototype.forEach.call($('menu').querySelectorAll('.hfd'), function (b) {
@@ -769,6 +815,7 @@ $('againBtn').onclick = function () { startHoofdstuk(state.hfd); };
 $('menuBtn').onclick = function () { toonMenu(state.spel); };
 $('homeBtn').onclick = function () { toonMenu(state.spel); };
 $('terugBtn').onclick = toonStart;
+$('instelRegel').onclick = function () { zetInstellingen(!state.instellingenOpen); };
 // no blur handler on purpose: blur rebuilt the list between mousedown and click, which swallowed
 // a tap on another profile and could end a running test
 function bevestigNieuwProfiel() {
