@@ -378,7 +378,7 @@ function toonScherm(naam) {
   Object.keys(SCHERMEN).forEach(function (k) { $(SCHERMEN[k]).hidden = k !== naam; });
   document.body.dataset.scherm = naam;
 }
-var VERDER_MS = 2500;
+var VERDER_MS = 3500;
 function stopVerder() {
   if (state.verder) clearTimeout(state.verder);
   state.verder = null;
