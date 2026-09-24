@@ -1,6 +1,6 @@
 import { shuffle, pad2, $, reduced, hoofdletter } from './gereedschap.js';
 import { SPELLEN } from './spellen/index.js';
-import { datumVan, mengDagen, dagErbij, sterrenVoor, stickerVoor, voorstelVoor, dagenDezeMaand, dagNummer } from './beloning.js';
+import { datumVan, mengDagen, dagErbij, sterrenVoor, stickerVoor, voorstelVoor, dagenDezeMaand, dagNummer, boekVoor } from './beloning.js';
 
 // an eight-year-old cannot keep going for more than twenty questions
 var AANTALLEN = [10, 15, 20];
@@ -417,7 +417,7 @@ function sterrenVanSpel(spel, beste) {
 function stickersVoorLeerjaar(beste) {
   var n = 0, totaal = 0;
   SPELLEN.forEach(function (s) {
-    hoofdstukkenVoor(s).forEach(function (r) {
+    boekVoor(s, beste, state.leerjaar).forEach(function (r) {
       totaal++;
       if (sterrenVoor(beste[s.id + ':' + r.i]) === 3) n++;
     });
@@ -515,7 +515,7 @@ function toonStickerboek() {
   var beste = lees(), st = stickersVoorLeerjaar(beste);
   $('stickerTeller').textContent = st.n + ' / ' + st.totaal;
   $('stickerBoek').innerHTML = SPELLEN.map(function (s) {
-    var lijst = hoofdstukkenVoor(s);
+    var lijst = boekVoor(s, beste, state.leerjaar);
     if (!lijst.length) return '';
     var verdiend = lijst.filter(function (r) { return sterrenVoor(beste[s.id + ':' + r.i]) === 3; }).length;
     return '<section class="boekspel"><h3>' + s.ico + ' ' + s.naam + ' · ' + verdiend + ' van ' + lijst.length + '</h3>' +

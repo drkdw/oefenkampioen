@@ -29,6 +29,14 @@ export function stickerVoor(spelId, index) {
 }
 
 function twee(n) { return (n < 10 ? '0' : '') + n; }
+// the chapters in the sticker book: those up to the school year, plus every sticker already earned
+// higher up, so switching back to a lower year never hides a sticker
+export function boekVoor(spel, beste, leerjaar) {
+  return spel.hoofdstukken.map(function (h, i) { return { h: h, i: i }; }).filter(function (r) {
+    return r.h.leerjaar <= leerjaar || sterrenVoor(beste[spel.id + ':' + r.i]) === 3;
+  });
+}
+
 export function datumVan(d) {
   return d.getFullYear() + '-' + twee(d.getMonth() + 1) + '-' + twee(d.getDate());
 }
