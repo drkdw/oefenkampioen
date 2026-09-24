@@ -65,7 +65,7 @@ tellers tellen enkel tot je eigen leerjaar. Per kind telt de app op hoeveel dage
 geoefend is; er is geen reeks die breekt als je een dag overslaat.
 
 Tijdens een toets past alles op het scherm, ook op een kleine gsm en liggend. Na een juist
-antwoord gaat het na 2,5 seconden vanzelf verder; na een fout blijft de uitleg staan.
+antwoord gaat het na 3,5 seconden vanzelf verder; na een fout blijft de uitleg staan.
 
 ## De spellen
 
