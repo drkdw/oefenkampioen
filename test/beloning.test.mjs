@@ -9,6 +9,10 @@ export function beloningTests(check) {
     alle = alle.concat(STICKERS[s.id] || []);
   });
   check(new Set(alle).size === alle.length, 'elke sticker is anders');
+  // a sticker is something of its own to collect: never an icon that already means something
+  var iconen = new Set([].concat.apply(SPELLEN.map(function (s) { return s.ico; }),
+    SPELLEN.map(function (s) { return s.hoofdstukken.map(function (h) { return h.ico; }); })));
+  check(alle.every(function (e) { return !iconen.has(e); }), 'geen sticker is ook een icoon: ' + alle.filter(function (e) { return iconen.has(e); }).join(' '));
   check(alle.every(function (e) { return typeof e === 'string' && e.length > 0; }), 'geen lege sticker');
   check(stickerVoor('klok', 1) === STICKERS.klok[1] && stickerVoor('nietbestaand', 0) === '', 'stickerVoor');
 

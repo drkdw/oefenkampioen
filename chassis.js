@@ -372,7 +372,7 @@ function maakVraag(soort) {
 }
 
 /* ==================== screens ==================== */
-var SCHERMEN = { start: 'startScherm', menu: 'menuScherm', game: 'game', result: 'result' };
+var SCHERMEN = { start: 'startScherm', menu: 'menuScherm', game: 'game', result: 'result', stickers: 'stickerScherm' };
 // one place decides what is visible; the body attribute lets CSS hide the big header in a test
 function toonScherm(naam) {
   Object.keys(SCHERMEN).forEach(function (k) { $(SCHERMEN[k]).hidden = k !== naam; });
@@ -468,6 +468,7 @@ function toonStart() {
   Array.prototype.forEach.call($('spellen').querySelectorAll('.tegel[data-i]'), function (b) {
     b.onclick = function () { toonMenu(SPELLEN[Number(b.dataset.i)]); };
   });
+  $('stickerTegel').onclick = toonStickerboek;
   var voorstel = voorstelVoor(SPELLEN, beste, state.leerjaar, dagNummer(vandaag()));
   $('voorJou').innerHTML = voorJouHtml(voorstel);
   $('voorJou').onclick = function () {
@@ -509,6 +510,23 @@ function zetInstellingen(open) {
   state.instellingenOpen = open;
   toonStart();
   if (open) $('leerjaren').querySelector('[aria-pressed="true"]').focus();
+}
+function toonStickerboek() {
+  var beste = lees(), st = stickersVoorLeerjaar(beste);
+  $('stickerTeller').textContent = st.n + ' / ' + st.totaal;
+  $('stickerBoek').innerHTML = SPELLEN.map(function (s) {
+    var lijst = hoofdstukkenVoor(s);
+    if (!lijst.length) return '';
+    var verdiend = lijst.filter(function (r) { return sterrenVoor(beste[s.id + ':' + r.i]) === 3; }).length;
+    return '<section class="boekspel"><h3>' + s.ico + ' ' + s.naam + ' · ' + verdiend + ' van ' + lijst.length + '</h3>' +
+      '<div class="boek">' + lijst.map(function (r) {
+        return sterrenVoor(beste[s.id + ':' + r.i]) === 3
+          ? '<span class="vak" role="img" aria-label="Sticker van ' + r.h.titel + '" title="' + r.h.titel + '">' + stickerVoor(s.id, r.i) + '</span>'
+          : '<span class="vak leeg" role="img" aria-label="' + r.h.titel + ': nog 3 sterren halen" title="' + r.h.titel + '">?</span>';
+      }).join('') + '</div></section>';
+  }).join('');
+  $('kop').innerHTML = 'Oefen<span class="tick">kampioen</span>';
+  toonScherm('stickers');
 }
 /* ==================== profiles panel ==================== */
 function toonProfielPaneel() {
@@ -785,11 +803,19 @@ function controleer() {
 
 /* ==================== result ==================== */
 function toonResultaat() {
-  var s = state.score;
-  bewaar(state.spel.id + ':' + state.hfd, s, state.aantal);
+  var s = state.score, sleutel = state.spel.id + ':' + state.hfd;
+  // compare the stars of the best score before and after, so the sticker appears only once
+  var voor = sterrenVoor(lees()[sleutel]);
+  bewaar(sleutel, s, state.aantal);
   bewaarDag();
-  var deel = s / state.aantal;
-  $('stars').textContent = deel >= 0.9 ? '⭐⭐⭐' : deel >= 0.7 ? '⭐⭐' : deel >= 0.5 ? '⭐' : '💪';
+  var na = sterrenVoor(lees()[sleutel]), deel = s / state.aantal, n = sterrenVoor({ score: s, van: state.aantal });
+  $('stars').innerHTML = n ? [0, 1, 2].map(function (k) {
+    return '<span class="ster' + (k < n ? ' aan' : '') + '" style="animation-delay:' + (k * 0.35) + 's">★</span>';
+  }).join('') : '💪';
+  $('stars').setAttribute('aria-label', n + ' van 3 sterren');
+  var nieuw = voor < 3 && na === 3;
+  $('nieuweSticker').hidden = !nieuw;
+  if (nieuw) $('stickerGroot').textContent = stickerVoor(state.spel.id, state.hfd);
   $('resultTitle').textContent = metNaam(deel >= 0.7 ? 'Goed gedaan%!' : 'Volgende keer beter%!');
   $('resultScore').textContent = s + ' / ' + state.aantal;
   $('resultMsg').textContent = deel >= 0.9 ? (state.spel.top || 'Jij bent een echte kampioen!')
@@ -815,6 +841,8 @@ $('againBtn').onclick = function () { startHoofdstuk(state.hfd); };
 $('menuBtn').onclick = function () { toonMenu(state.spel); };
 $('homeBtn').onclick = function () { toonMenu(state.spel); };
 $('terugBtn').onclick = toonStart;
+$('stickerTerugBtn').onclick = toonStart;
+$('naarBoekBtn').onclick = toonStickerboek;
 $('instelRegel').onclick = function () { zetInstellingen(!state.instellingenOpen); };
 // no blur handler on purpose: blur rebuilt the list between mousedown and click, which swallowed
 // a tap on another profile and could end a running test
