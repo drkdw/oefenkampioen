@@ -531,6 +531,17 @@
   .dot { height: 18px; font-size: 11px; border-radius: 6px; }
   .typhint { margin: 0; min-height: 18px; font-size: 14px; color: var(--bad); text-align: center; }
   .scorebar .geluid { width: 38px; height: 38px; font-size: 17px; }
+  /* who is playing stays in sight during a test, as on the start screen */
+  .naampil {
+    flex: none; max-width: 104px;
+    font-family: Fredoka, sans-serif; font-size: 15px; color: var(--ink-soft);
+    border: 2px solid var(--line); background: var(--card-2); border-radius: 999px; padding: 5px 12px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  @media (max-width: 360px) {
+    #game .scorebar { gap: 6px; }
+    .naampil { max-width: 76px; padding: 5px 8px; font-size: 13px; }
+  }
 
   /* the answer sheet slides up over the choices, which are disabled by then anyway */
   .blad {
@@ -721,6 +732,7 @@
       <button class="icon-btn" id="homeBtn" aria-label="Terug naar de hoofdstukken">&#127968;</button>
       <span class="titel" id="hfdTitel"></span>
       <span class="score-badge" id="scoreBadge">0 / 10</span>
+      <span class="naampil" id="spelNaam" hidden></span>
       <button class="icon-btn geluid" id="soundBtn2" aria-label="Geluid aan of uit">&#128266;</button>
     </div>
     <div class="dots" id="dots" role="list" aria-label="Voortgang van je toets"></div>
