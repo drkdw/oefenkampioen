@@ -5,11 +5,11 @@
 // game, the self-check fails otherwise
 export var STICKERS = {
   klok: ['🦢', '🐨', '🦉', '🐢', '🐇', '🦔', '🐿️', '🦌', '🐝'],
-  maal: ['🐼', '🐸', '🐙', '🦖', '🐉', '🦄', '🐲', '🦕', '🐊', '🦈', '🐳'],
+  maal: ['🐸', '🐙', '🦖', '🐉', '🦄', '🐲', '🦕', '🐊', '🦈', '🐳'],
   winkel: ['🍎', '🍌', '🍓', '🍇', '🍉', '🍒', '🍍', '🥝', '🍑', '🍋', '🥕'],
   maten: ['🐘', '🦒', '🦓', '🦏', '🐪', '🦘', '🐃', '🐄', '🐖', '🐑', '🐐'],
   kalender: ['🌼', '🌻', '🍂', '⛄', '🌈', '❄️', '☀️'],
-  brug: ['🚂', '🚀', '🚁', '⛵', '🚲', '🛴', '🚕', '🚌', '🚜', '🚒', '🚑', '🚓', '🛸', '🎈', '🪁',
+  brug: ['🚂', '🚀', '🚁', '⛵', '🐼', '🚲', '🛴', '🚕', '🚌', '🚜', '🚒', '🚑', '🚓', '🛸', '🎈', '🪁',
     '⚓', '🗼', '🏰', '🎡', '🎢', '🏝️', '🌋', '🗻', '🏕️', '🚢', '🚤', '🛶', '🚠', '🚃', '🛵'],
   spiegel: ['🦎', '🐞', '🐠', '🦜', '🦚', '🦩', '🐬', '🐧'],
   breuken: ['🥧', '🍰', '🧁', '🍩', '🍬', '🍫', '🍭', '🍦', '🥐', '🥨', '🧇', '🥞'],
@@ -35,6 +35,21 @@ export function boekVoor(spel, beste, leerjaar) {
   return spel.hoofdstukken.map(function (h, i) { return { h: h, i: i }; }).filter(function (r) {
     return r.h.leerjaar <= leerjaar || sterrenVoor(beste[spel.id + ':' + r.i]) === 3;
   });
+}
+
+// scores are stored per chapter number. Layout 2 moved Sprongen tellen from the tables (maal:0)
+// to Bruggen bouwen, right after Tellen en rangtelwoorden (brug:4), so both lists shift.
+// ponytail: one step per layout change; a layout 3 adds its own step after this one
+export var INDELING = 2;
+export function naarIndeling2(beste) {
+  var uit = {};
+  Object.keys(beste && typeof beste === 'object' ? beste : {}).forEach(function (k) {
+    var m = /^([a-z]+):(\d+)$/.exec(k), nieuw = k;
+    if (m && m[1] === 'maal') nieuw = m[2] === '0' ? 'brug:4' : 'maal:' + (Number(m[2]) - 1);
+    if (m && m[1] === 'brug' && Number(m[2]) >= 4) nieuw = 'brug:' + (Number(m[2]) + 1);
+    uit[nieuw] = beste[k];
+  });
+  return uit;
 }
 
 export function datumVan(d) {

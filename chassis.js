@@ -1,6 +1,6 @@
 import { shuffle, pad2, $, reduced, hoofdletter } from './gereedschap.js';
 import { SPELLEN } from './spellen/index.js';
-import { datumVan, mengDagen, dagErbij, sterrenVoor, stickerVoor, voorstelVoor, dagenDezeMaand, dagNummer, boekVoor } from './beloning.js';
+import { datumVan, mengDagen, dagErbij, sterrenVoor, stickerVoor, voorstelVoor, dagenDezeMaand, dagNummer, boekVoor, INDELING, naarIndeling2 } from './beloning.js';
 
 // an eight-year-old cannot keep going for more than twenty questions
 var AANTALLEN = [10, 15, 20];
@@ -130,6 +130,18 @@ function leesBesteVoor(sleutel) {
   try { return JSON.parse(localStorage.getItem('oefenkampioen-beste' + postfixVoor(sleutel)) || '{}') || {}; }
   catch (e) { return {}; }
 }
+// once per browser: renumber the stored scores of every profile to the current chapter layout
+function zetIndeling() {
+  try {
+    if (localStorage.getItem('oefenkampioen-indeling') === String(INDELING)) return;
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (k.indexOf('oefenkampioen-beste') === 0) localStorage.setItem(k, JSON.stringify(naarIndeling2(JSON.parse(localStorage.getItem(k) || '{}'))));
+    }
+    localStorage.setItem('oefenkampioen-indeling', String(INDELING));
+  } catch (e) { /* may fail */ }
+}
+zetIndeling();
 function vandaag() { return datumVan(new Date()); }
 // always passed through mengDagen, so a damaged value reads as fewer days, never as garbage
 function leesDagen(sleutel) {
@@ -172,8 +184,10 @@ function herstelData(data) {
       if (huidig.some(function (h) { return h.sleutel === doel.sleutel; })) return;
     }
     var pf = postfixVoor(doel.sleutel);
-    schrijf['oefenkampioen-beste' + pf] = JSON.stringify(mengBeste(leesBesteVoor(doel.sleutel),
-      typeof beste === 'string' ? JSON.parse(beste) : {}));
+    // a file saved before layout 2 still has the old chapter numbers
+    var uitBestand = typeof beste === 'string' ? JSON.parse(beste) : {};
+    if (data['oefenkampioen-indeling'] !== String(INDELING)) uitBestand = naarIndeling2(uitBestand);
+    schrijf['oefenkampioen-beste' + pf] = JSON.stringify(mengBeste(leesBesteVoor(doel.sleutel), uitBestand));
     // days are merged, never replaced: restoring an old file must not erase a day
     var dagen = data['oefenkampioen-dagen' + bron];
     schrijf['oefenkampioen-dagen' + pf] = JSON.stringify(mengDagen(leesDagen(doel.sleutel),

@@ -155,6 +155,15 @@ import { keuzes, vulAan, positief, vulRondom, andere } from '../gereedschap.js';
   }
   function minTeken(n) { return String(n).replace('-', '−'); }
 
+  // grade 1: skip counting in steps of 2, 5 and 10, the run-up to the tables
+  function sprongRij(rij) {
+    return '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">' +
+      rij.concat('?').map(function (n) {
+        return '<div style="width:50px;height:50px;border-radius:14px;background:var(--card-2);' +
+          'display:flex;align-items:center;justify-content:center;font-family:Fredoka,sans-serif;' +
+          'font-size:22px;color:var(--ink)">' + n + '</div>';
+      }).join('') + '</div>';
+  }
   var ORDINALEN = ['eerste', 'tweede', 'derde', 'vierde', 'vijfde', 'zesde'];
   var DIERTJES = ['🐶', '🐱', '🐰', '🐻', '🐸', '🦁'];
   function rijTekening(lengte, plek) {
@@ -184,6 +193,8 @@ export default {
       badge: 'gemiddeld', tot: 20, plan: { vlot: 10 } },
     { leerjaar: 1, ico: '🔁', titel: 'Tellen en rangtelwoorden', tekst: 'Wat komt er na 14? En wie staat op de derde plaats?',
       badge: 'makkelijk', plan: { volgend: 6, rang: 4 } },
+    { leerjaar: 1, ico: '🐾', titel: 'Sprongen tellen', tekst: 'Tellen met stapjes van 2, 5 en 10. Nog geen tafel.',
+      badge: 'makkelijk', plan: { sprongen: 10 } },
     { leerjaar: 1, ico: '🧱', titel: 'Tot 20 erbij, met brug', tekst: '8 + 7. Eerst naar 10, dan verder.',
       badge: 'gemiddeld', tot: 20, plus: true, stap: [2, 9], plan: { som: 10 } },
     { leerjaar: 1, ico: '🧱', titel: 'Tot 20 eraf, met brug', tekst: '15 − 7. Eerst naar 10, dan verder.',
@@ -239,6 +250,13 @@ export default {
   ],
   zaadjes: function (soort, h) {
     var uit = [], a, b;
+    if (soort === 'sprongen') {
+      [2, 5, 10].forEach(function (stap) {
+        var max = stap === 2 ? 20 : stap === 5 ? 50 : 100;
+        for (var k = 0; stap * (k + 3) <= max; k++) uit.push({ stap: stap, k: k });
+      });
+      return uit;
+    }
     if (soort === 'splits') {
       for (var totaal = 3; totaal <= 10; totaal++) {
         for (var deel1 = 1; deel1 < totaal; deel1++) uit.push({ totaal: totaal, deel1: deel1 });
@@ -380,6 +398,14 @@ export default {
     return uit;
   },
   maak: function (soort, z) {
+    if (soort === 'sprongen') {
+      var rij9 = [z.stap * z.k, z.stap * (z.k + 1), z.stap * (z.k + 2)], ans9 = z.stap * (z.k + 3);
+      var kern = [ans9 - z.stap, ans9 + z.stap, ans9 - 1, ans9 + 1, ans9 - 2 * z.stap, ans9 + 2 * z.stap];
+      var fout9 = [];
+      vulAan(fout9, ans9, kern, positief);
+      return { soort: soort, sleutel: 'sprongen|' + z.stap + ':' + z.k, rij: rij9, stap: z.stap, ans: String(ans9),
+        options: keuzes(ans9, fout9.slice(0, 3)) };
+    }
     if (soort === 'splits') {
       var deel2 = z.totaal - z.deel1, sl2 = 'splits|' + z.totaal + ':' + z.deel1;
       return { soort: soort, sleutel: sl2, totaal: z.totaal, deel1: z.deel1, ans: String(deel2),
@@ -534,6 +560,7 @@ export default {
     if (v.soort === 'volgend' || v.soort === 'tientallen' || v.soort === 'eenheden' || v.soort === 'dubbel' ||
         v.soort === 'helft') return getalTegel(v.n);
     if (v.soort === 'rang') return rijTekening(v.lengte, v.plek);
+    if (v.soort === 'sprongen') return sprongRij(v.rij);
     if (v.soort === 'duizendtal' || v.soort === 'honderdtal') return getalTegel(v.n);
     if (v.soort === 'cijferPlus') return kolom(v.a, v.b, '+');
     if (v.soort === 'cijferMin') return kolom(v.a, v.b, '−');
@@ -551,7 +578,7 @@ export default {
     if (v.soort === 'omgekeerd') {
       return v.vraagTotaal ? '? = ' + v.a + ' + ' + v.b : v.uit + ' = ' + v.a + ' + ?';
     }
-    if (v.soort === 'volgend' || v.soort === 'rang' || v.soort === 'tientallen' ||
+    if (v.soort === 'volgend' || v.soort === 'rang' || v.soort === 'sprongen' || v.soort === 'tientallen' ||
         v.soort === 'eenheden' || v.soort === 'dubbel' || v.soort === 'helft' || v.soort === 'paar' ||
         v.soort === 'duizendtal' || v.soort === 'honderdtal' || v.soort === 'cijferPlus' ||
         v.soort === 'cijferMin' || v.soort === 'cijferKeer' || v.soort === 'cijferDelen' ||
@@ -567,6 +594,7 @@ export default {
       return { titel: kop + 'welk getal komt ' + v.richting + ' ' + v.n + '?',
         sub: v.richting === 'na' ? 'Eén getal verder tellen.' : 'Eén getal terug tellen.' };
     }
+    if (v.soort === 'sprongen') return { titel: kop + 'welk getal komt hierna?', sub: 'Je telt in sprongen van ' + v.stap + '.' };
     if (v.soort === 'rang') return { titel: kop + 'op welke plaats staat het dier met het randje?', sub: 'Tel van links naar rechts.' };
     if (v.soort === 'tientallen') return { titel: kop + 'hoeveel tientallen zitten er in ' + v.n + '?', sub: v.n + ' = ? tientallen en ' + v.eenh + ' eenheden.' };
     if (v.soort === 'eenheden') return { titel: kop + 'hoeveel eenheden zitten er in ' + v.n + '?', sub: v.n + ' = ' + v.tal + ' tientallen en ? eenheden.' };
@@ -596,6 +624,7 @@ export default {
     if (v.soort === 'volgend') {
       return v.richting === 'na' ? 'Na ' + v.n + ' komt ' + (v.n + 1) + '.' : 'Voor ' + v.n + ' komt ' + (v.n - 1) + '.';
     }
+    if (v.soort === 'sprongen') return 'Je telt in sprongen van ' + v.stap + ': na ' + v.rij[2] + ' komt ' + v.ans + '.';
     if (v.soort === 'rang') return 'Het dier met het randje staat op de ' + v.ans + ' plaats.';
     if (v.soort === 'duizendtal' || v.soort === 'honderdtal') return v.n + ' bestaat uit ' + v.duiz + ' duizendtallen, ' + v.hond + ' honderdtallen en de rest.';
     if (v.soort === 'cijferPlus') return v.a + ' + ' + v.b + ' = ' + (v.a + v.b) + '.';
@@ -631,6 +660,7 @@ export default {
   kort: function (v) {
     if (v.soort === 'splits') return v.deel1 + ' + ? = ' + v.totaal;
     if (v.soort === 'volgend') return 'Wat komt ' + v.richting + ' ' + v.n + '?';
+    if (v.soort === 'sprongen') return 'Tellen in sprongen van ' + v.stap;
     if (v.soort === 'rang') return 'Welke plaats heeft het gemarkeerde dier?';
     if (v.soort === 'duizendtal') return 'Duizendtallen in ' + v.n;
     if (v.soort === 'honderdtal') return 'Honderdtallen in ' + v.n;

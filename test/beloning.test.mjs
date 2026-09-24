@@ -1,5 +1,5 @@
 import { SPELLEN } from '../spellen/index.js';
-import { STICKERS, sterrenVoor, stickerVoor, datumVan, mengDagen, dagErbij, dagenDezeMaand, dagNummer, voorstelVoor, boekVoor }
+import { STICKERS, sterrenVoor, stickerVoor, datumVan, mengDagen, dagErbij, dagenDezeMaand, dagNummer, voorstelVoor, boekVoor, naarIndeling2 }
   from '../beloning.js';
 
 export function beloningTests(check) {
@@ -14,6 +14,13 @@ export function beloningTests(check) {
     SPELLEN.map(function (s) { return s.hoofdstukken.map(function (h) { return h.ico; }); })));
   check(alle.every(function (e) { return !iconen.has(e); }), 'geen sticker is ook een icoon: ' + alle.filter(function (e) { return iconen.has(e); }).join(' '));
   check(alle.every(function (e) { return typeof e === 'string' && e.length > 0; }), 'geen lege sticker');
+  // layout 2: Sprongen tellen moved from maal:0 to brug:4, nothing is lost or overwritten
+  var oud = { 'maal:0': 1, 'maal:1': 2, 'maal:10': 3, 'brug:3': 4, 'brug:4': 5, 'brug:29': 6, 'klok:0': 7 };
+  var nieuw = naarIndeling2(oud);
+  check(JSON.stringify(nieuw) === JSON.stringify({ 'brug:4': 1, 'maal:0': 2, 'maal:9': 3, 'brug:3': 4, 'brug:5': 5, 'brug:30': 6, 'klok:0': 7 }),
+    'indeling 2 zet de scores om: ' + JSON.stringify(nieuw));
+  var sprongen = SPELLEN.filter(function (s) { return s.id === 'brug'; })[0].hoofdstukken[4];
+  check(sprongen.titel === 'Sprongen tellen' && stickerVoor('brug', 4) === '🐼', 'Sprongen tellen staat op brug:4 met zijn eigen sticker');
   // a sticker earned in a higher school year stays in the book after switching back
   var nep = { id: 'x', hoofdstukken: [{ leerjaar: 1 }, { leerjaar: 3 }, { leerjaar: 3 }] };
   var boek = boekVoor(nep, { 'x:1': { score: 10, van: 10 }, 'x:2': { score: 8, van: 10 } }, 1);

@@ -6,15 +6,6 @@ import { keuzes, vulAan, positief, reduced } from '../gereedschap.js';
   // the tables of second grade; the rest comes in third grade
   var KLEINE_TAFELS = [1, 2, 3, 4, 5, 10];
 
-  /* grade 1: preparatory skip counting, no tables yet */
-  function sprongRij(rij) {
-    return '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">' +
-      rij.concat('?').map(function (n) {
-        return '<div style="width:50px;height:50px;border-radius:14px;background:var(--card-2);' +
-          'display:flex;align-items:center;justify-content:center;font-family:Fredoka,sans-serif;' +
-          'font-size:22px;color:var(--ink)">' + n + '</div>';
-      }).join('') + '</div>';
-  }
   function omgekeerd(p) { return Number(String(p).split('').reverse().join('')); }
   // Flemish order: in the table of 3 it is 7 × 3, the table number comes last (a is the table)
   function som(v) {
@@ -81,8 +72,6 @@ export default {
   tekst: 'Vang monsters met de maaltafels, delen en de ontbrekende factor.',
   top: 'Jij bent een echte monstervanger!',
   hoofdstukken: [
-    { leerjaar: 1, ico: '🐾', titel: 'Sprongen tellen', tekst: 'Tellen met stapjes van 2, 5 en 10. Nog geen tafel.',
-      badge: 'makkelijk', plan: { sprong: 10 } },
     { leerjaar: 2, ico: '🐣', titel: 'Tafels van 2, 5 en 10', tekst: 'Verdubbelen en tellen met vijf.',
       badge: 'makkelijk', tafels: [2, 5, 10], plan: { keer: 10 } },
     { leerjaar: 2, ico: '🐥', titel: 'Tafels van 3 en 4', tekst: 'Drie en vier erbij.',
@@ -106,27 +95,12 @@ export default {
   ],
   zaadjes: function (soort, h) {
     var out = [];
-    if (soort === 'sprong') {
-      [2, 5, 10].forEach(function (stap) {
-        var max = stap === 2 ? 20 : stap === 5 ? 50 : 100;
-        for (var k = 0; stap * (k + 3) <= max; k++) out.push({ stap: stap, k: k });
-      });
-      return out;
-    }
     h.tafels.forEach(function (a) {
       for (var b = 1; b <= MAX; b++) out.push({ a: a, b: b });
     });
     return out;
   },
   maak: function (soort, z) {
-    if (soort === 'sprong') {
-      var rij = [z.stap * z.k, z.stap * (z.k + 1), z.stap * (z.k + 2)], ans2 = z.stap * (z.k + 3);
-      var kern = [ans2 - z.stap, ans2 + z.stap, ans2 - 1, ans2 + 1, ans2 - 2 * z.stap, ans2 + 2 * z.stap];
-      var fout2 = [];
-      vulAan(fout2, ans2, kern, positief);
-      return { soort: soort, sleutel: 'sprong|' + z.stap + ':' + z.k, rij: rij, stap: z.stap, ans: String(ans2),
-        options: keuzes(ans2, fout2.slice(0, 3)) };
-    }
     var a = z.a, b = z.b, p = a * b, sl = soort + '|' + a + 'x' + b;
     if (soort === 'keer') {
       return { soort: soort, sleutel: sl, a: a, b: b, p: p, ans: String(p),
@@ -147,7 +121,7 @@ export default {
     return { soort: 'delen', sleutel: sl, a: a, b: b, p: p, ans: String(b),
       options: keuzes(b, afleidersFactor(b, a)) };
   },
-  teken: function (v) { return v.soort === 'sprong' ? sprongRij(v.rij) : monster(v.a * 7 + v.b); },
+  teken: function (v) { return monster(v.a * 7 + v.b); },
   reactie: function (v, ok) {
     var m = document.getElementById('monster');
     if (!m) return;
@@ -157,24 +131,20 @@ export default {
       if (m.isConnected) m.parentNode.innerHTML = '<span class="stempel">👾 in de kooi!</span>';
     }, reduced ? 0 : 650);
   },
-  scherm: function (v) { return v.soort === 'sprong' ? null : som(v); },
+  scherm: function (v) { return som(v); },
   vraag: function (v, nr) {
     var kop = 'Monster ' + nr + ': ';
-    if (v.soort === 'sprong') {
-      return { titel: kop + 'welk getal komt hierna?', sub: 'Je telt in sprongen van ' + v.stap + '.' };
-    }
     if (v.soort === 'ontbreekt') return { titel: kop + 'welk getal ontbreekt?', sub: 'Zoek het getal dat het vraagteken vervangt.' };
     if (v.soort === 'delen') return { titel: kop + 'hoeveel is ' + v.p + ' gedeeld door ' + v.a + '?', sub: 'Denk aan de tafel van ' + v.a + '.' };
     if (v.soort === 'typ') return { titel: kop + 'hoeveel is ' + v.b + ' keer ' + v.a + '?', sub: 'Typ zelf het antwoord in.' };
     return { titel: kop + 'hoeveel is ' + v.b + ' keer ' + v.a + '?' };
   },
   uitleg: function (v) {
-    if (v.soort === 'sprong') return 'Je telt in sprongen van ' + v.stap + ': na ' + v.rij[2] + ' komt ' + v.ans + '.';
     if (v.soort === 'delen') return v.p + ' : ' + v.a + ' = ' + v.b + ', want ' + v.b + ' × ' + v.a + ' = ' + v.p + '.';
     if (v.soort === 'ontbreekt') return v.b + ' × ' + v.a + ' = ' + v.p + '.';
     return v.b + ' keer ' + v.a + ' is ' + v.p + '. En ' + v.a + ' × ' + v.b + ' geeft evenveel.';
   },
-  kort: function (v) { return v.soort === 'sprong' ? 'Tellen in sprongen van ' + v.stap : som(v); },
+  kort: function (v) { return som(v); },
   test: function (check) {
     check(omgekeerd(42) === 24 && omgekeerd(40) === 4, 'cijfers omwisselen');
     var proef = function (a, b, moet) {
