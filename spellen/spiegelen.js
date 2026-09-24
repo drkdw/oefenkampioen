@@ -1,22 +1,22 @@
 import { shuffle, keuzes, vulAan, positief, andere } from '../gereedschap.js';
 
-  var N = 6;            // het rooster is zes bij zes
+  var N = 6;            // the grid is six by six
   var CEL = 26;
 
-  /* een vorm is een lijst van [rij, kolom] */
+  /* a shape is a list of [row, column] */
   function sleutelVan(vorm) {
     return vorm.map(function (c) { return c[0] + ',' + c[1]; }).sort().join(' ');
   }
-  function spiegelH(vorm) {   // over een verticale as: links en rechts wisselen
+  function spiegelH(vorm) {   // across a vertical axis: left and right swap
     return vorm.map(function (c) { return [c[0], N - 1 - c[1]]; });
   }
-  function spiegelV(vorm) {   // over een horizontale as: boven en onder wisselen
+  function spiegelV(vorm) {   // across a horizontal axis: top and bottom swap
     return vorm.map(function (c) { return [N - 1 - c[0], c[1]]; });
   }
-  function draai(vorm) {      // een halve slag: de klassieke verwarring met spiegelen
+  function draai(vorm) {      // a half turn: the classic mix-up with mirroring
     return vorm.map(function (c) { return [N - 1 - c[0], N - 1 - c[1]]; });
   }
-  function schuif(vorm) {     // gewoon opzij geschoven, niet gespiegeld
+  function schuif(vorm) {     // simply shifted sideways, not mirrored
     return vorm.map(function (c) { return [c[0], (c[1] + 1) % N]; });
   }
   function gelijk(a, b) { return sleutelVan(a) === sleutelVan(b); }
@@ -30,7 +30,7 @@ import { shuffle, keuzes, vulAan, positief, andere } from '../gereedschap.js';
     return gelijk(vorm, vorm.map(function (c) { return [c[0], som - c[1]]; }));
   }
 
-  /* de vormen: telkens een halve figuur in de linkerhelft van het rooster */
+  /* the shapes: each one is half a figure in the left half of the grid */
   var VORMEN = [
     [[0, 1], [1, 1], [1, 2], [2, 0], [2, 1], [3, 1], [4, 0], [4, 2]],
     [[0, 0], [1, 1], [2, 1], [2, 2], [3, 0], [3, 1], [4, 1]],
@@ -55,7 +55,7 @@ import { shuffle, keuzes, vulAan, positief, andere } from '../gereedschap.js';
   ];
   var KLEUREN = ['#FF7A45', '#7C5CFF', '#12A06B', '#FF5D8F', '#35B8E0', '#9B5DE5'];
 
-  /* --------- leerjaar 1: vormen en richtingen, los van het spiegelraster --------- */
+  /* --------- year 1: shapes and directions, separate from the mirror grid --------- */
 
   var VORMNAMEN = ['cirkel', 'vierkant', 'driehoek', 'rechthoek', 'ovaal'];
   // a square is also a rectangle, so those two never stand together as choices
@@ -76,7 +76,7 @@ import { shuffle, keuzes, vulAan, positief, andere } from '../gereedschap.js';
   var POSITIES = ['links', 'rechts', 'boven', 'onder'];
   var DIERTJES2 = [{ ico: '⚽', naam: 'bal' }, { ico: '🐈', naam: 'kat' }, { ico: '🌟', naam: 'ster' },
     { ico: '🚗', naam: 'auto' }, { ico: '🎈', naam: 'ballon' }, { ico: '🐟', naam: 'vis' }];
-  // een huisje in het midden, het diertje op een van de vier zijden ernaast
+  // a little house in the middle, the animal on one of the four sides next to it
   function positieTekening(ico, positie) {
     var cel = { boven: 1, links: 3, rechts: 5, onder: 7 }[positie];
     var p = '';
@@ -89,7 +89,7 @@ import { shuffle, keuzes, vulAan, positief, andere } from '../gereedschap.js';
       'role="img" aria-label="Een huisje met een diertje ' + positie + ' ervan">' + p + '</div>';
   }
 
-  /* een rooster tekenen, met of zonder spiegelas */
+  /* draw a grid, with or without a mirror axis */
   function rooster(vakjes, kleur, as, breed) {
     var maat = breed || N * CEL;
     var schaal = maat / (N * CEL);
@@ -154,7 +154,7 @@ export default {
     VORMEN.forEach(function (vorm, i) {
       if (soort === 'klopt' && zelfSymmetrisch(vorm)) return;
       if (soort === 'klopt') {
-        // hier is de echte en de valse spiegeling elk een eigen vraag
+        // here the real and the fake mirror image are each a question of their own
         uit.push({ i: i, as: h.as, echt: true });
         uit.push({ i: i, as: h.as, echt: false });
       } else {
@@ -178,7 +178,7 @@ export default {
     var sl = soort + '|' + z.i + as + (z.echt ? 'e' : 'n');
 
     if (soort === 'tellen') {
-      // de hele figuur is de helft plus de spiegeling: altijd het dubbele
+      // the whole figure is the half plus its mirror image: always double
       var totaal = vorm.length * 2;
       var fout = [];
       vulAan(fout, totaal, [vorm.length, totaal + 1, totaal - 1, totaal + 2], positief);
@@ -186,7 +186,7 @@ export default {
         ans: String(totaal), options: keuzes(totaal, fout) };
     }
     if (soort === 'klopt') {
-      // een halve slag draaien lijkt op spiegelen, maar is het niet
+      // a half turn looks like mirroring, but it is not
       var gedraaid = !gelijk(draai(vorm), juist);
       var getoond = z.echt ? juist : (gedraaid ? draai(vorm) : schuif(vorm));
       // one exact answer per case: mirrored, turned, or shifted
@@ -195,12 +195,12 @@ export default {
         options: shuffle(['ja, gespiegeld', 'nee, gedraaid', 'nee, verschoven', 'ja, maar de as ligt verkeerd']
           .map(function (t) { return { text: t, ok: t === juisteTekst }; })) };
     }
-    // helft: vier roosters als keuze, maar dat past niet in een knop, dus we kiezen op letter
+    // half: four grids as choices, but those do not fit in a button, so the choice is by letter
     var kandidaten = [{ v: juist, ok: true, waarom: 'de echte spiegeling' },
       { v: draai(vorm), ok: false, waarom: 'een halve slag gedraaid' },
       { v: schuif(vorm), ok: false, waarom: 'gewoon opzij geschoven' },
       { v: as === 'horizontaal' ? spiegelH(vorm) : spiegelV(vorm), ok: false, waarom: 'over de verkeerde as gespiegeld' }];
-    // dubbels weg: bij een symmetrische vorm valt een gedraaide soms samen met de spiegeling
+    // drop duplicates: with a symmetric shape a turned one sometimes matches the mirror image
     var gezien = {}, uniek = [];
     kandidaten.forEach(function (k) {
       var key = sleutelVan(k.v);
@@ -230,7 +230,7 @@ export default {
       return rooster(v.vorm, v.kleur, null, 130) + '<span class="pijl">\u27A1\uFE0F</span>' +
         rooster(v.getoond, v.kleur, null, 130);
     }
-    // de vier kandidaten met hun letter eronder
+    // the four candidates with their letter below
     return '<div style="display:flex;flex-direction:column;gap:10px;align-items:center;width:100%">' +
       rooster(v.vorm, v.kleur, v.as, 140) +
       '<div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center">' +
@@ -287,15 +287,15 @@ export default {
         check(c[0] >= 0 && c[0] < N && c[1] >= 0 && c[1] < N, 'vorm ' + i + ' past in het rooster');
         check(c[1] < N / 2, 'vorm ' + i + ' blijft in de linkerhelft, anders overlapt de spiegeling');
       });
-      // twee keer spiegelen brengt je terug bij het begin
+      // mirroring twice brings you back to the start
       check(gelijk(spiegelH(spiegelH(vorm)), vorm), 'twee keer horizontaal spiegelen bij vorm ' + i);
       check(gelijk(spiegelV(spiegelV(vorm)), vorm), 'twee keer verticaal spiegelen bij vorm ' + i);
       check(gelijk(draai(draai(vorm)), vorm), 'twee halve slagen bij vorm ' + i);
-      // spiegelen is niet hetzelfde als draaien of schuiven
+      // mirroring is not the same as turning or shifting
       check(!gelijk(spiegelH(vorm), draai(vorm)), 'spiegelen verschilt van draaien bij vorm ' + i);
       check(!gelijk(spiegelH(vorm), schuif(vorm)), 'spiegelen verschilt van schuiven bij vorm ' + i);
       check(!gelijk(spiegelH(vorm), vorm), 'de spiegeling is niet de vorm zelf bij vorm ' + i);
-      // elk vakje staat na spiegelen even ver van de as
+      // after mirroring, every square is just as far from the axis
       spiegelH(vorm).forEach(function (c, k) {
         check(c[0] === vorm[k][0], 'spiegelen over een verticale as laat de rij staan');
         check(c[1] + vorm[k][1] === N - 1, 'elk vakje staat even ver van de as');

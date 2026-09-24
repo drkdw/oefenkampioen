@@ -1,6 +1,6 @@
 import { keuzes, vulAan, vulRondom, positief, andere, shuffle } from '../gereedschap.js';
 
-  // vier procenten die netjes als breuk te schrijven zijn, zodat "getal" altijd deelbaar is
+  // four percentages that write neatly as a fraction, so "getal" is always divisible
   var PROCENT = { 10: { teller: 1, noemer: 10 }, 25: { teller: 1, noemer: 4 },
     50: { teller: 1, noemer: 2 }, 75: { teller: 3, noemer: 4 } };
 
@@ -11,7 +11,7 @@ import { keuzes, vulAan, vulRondom, positief, andere, shuffle } from '../gereeds
       '</div>';
   }
 
-  /* --------- leerjaar 6 --------- */
+  /* --------- year 6 --------- */
 
   // btw and interest are the same operation (add a percentage), only the story differs. The
   // percentages are the real Belgian ones: btw 21% or 6%, a savings rate of a few percent, and
@@ -178,7 +178,7 @@ export default {
         ans: String(gem), options: keuzes(gem, foutG.slice(0, 3)) };
     }
     if (soort === 'diagram') {
-      // vaste, deterministische waarden per zaadje: geen twee zaadjes leveren dezelfde reeks
+      // fixed, deterministic values per seed: no two seeds produce the same series
       var waarden = DAGEN5.map(function (d, i) { return 2 + (z.seed * 3 + i * 5) % 9; });
       var vraagIndex = z.seed % DAGEN5.length, juistD = waarden[vraagIndex];
       var restD = waarden.filter(function (w, i) { return i !== vraagIndex; });
@@ -187,9 +187,9 @@ export default {
           : restD.slice(0, 3)) };
     }
     var deel = z.getal / PROCENT[z.perc].noemer * PROCENT[z.perc].teller, fout = [];
-    // veelgemaakte fout: de rest nemen in plaats van het deel, of het dubbele. Enkel gehele
-    // getallen: getal / 4 geeft niet altijd een rond getal, en dan komt er een punt in plaats
-    // van een komma te staan
+    // common mistake: taking the rest instead of the part, or double it. Whole numbers
+    // only: getal / 4 does not always give a round number, and then a point shows up
+    // instead of a comma
     vulAan(fout, deel, [z.getal - deel, deel * 2, z.getal - deel * 2, deel + 1, deel - 1], positief);
     vulRondom(fout, deel, 1, positief);
     return { soort: soort, sleutel: 'procent|' + z.perc + ':' + z.getal, perc: z.perc, getal: z.getal,

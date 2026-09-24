@@ -9,5 +9,5 @@ import breuken from './breuken.js';
 import meetkunde from './meetkunde.js';
 import verhoudingen from './verhoudingen.js';
 
-// deze volgorde is de volgorde op het startscherm
+// this order is the order on the start screen
 export var SPELLEN = [klok, maaltafels, winkel, maten, kalender, rekenen, spiegelen, breuken, meetkunde, verhoudingen];

@@ -3,7 +3,7 @@ import { shuffle, keuzes, vulAan, positief, andere, hoofdletter } from '../geree
   var DAGEN = ['maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag', 'zondag'];
   var MAANDEN = ['januari', 'februari', 'maart', 'april', 'mei', 'juni',
                  'juli', 'augustus', 'september', 'oktober', 'november', 'december'];
-  // februari staat op 28: schrikkeljaren komen apart aan bod
+  // February is set to 28: leap years are covered separately
   var LENGTE = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
   // Flemish schools teach the astronomical seasons (spring starts around 21 March), so March,
   // June, September and December each belong to two seasons. Those four months are never asked
@@ -24,7 +24,7 @@ import { shuffle, keuzes, vulAan, positief, andere, hoofdletter } from '../geree
     }
   }
 
-  /* een maandblaadje met een dag omcirkeld */
+  /* a month sheet with one day circled */
   function blaadje(maand, dag, eersteDag) {
     var cellen = [], i;
     for (i = 0; i < eersteDag; i++) cellen.push('<div></div>');
@@ -47,12 +47,12 @@ import { shuffle, keuzes, vulAan, positief, andere, hoofdletter } from '../geree
   }
 
   function tekenVraag(v) {
-    // bij "in welk seizoen valt maart" mag het seizoen er niet bij staan: dat is het antwoord.
-    // bij de omgekeerde vraag mag het net wel, daar is de maand gevraagd
+    // for "in welk seizoen valt maart" the season must not be shown: that is the answer.
+    // for the reverse question it is allowed, since there the month is asked
     if (v.soort === 'seizoen') return v.vorm === 'omgekeerd' ? seizoenkaart(v.s) : blaadje(v.m, 0, 0);
-    // bij de typvraag is het blaadje steun om verder te tellen, daar mag het
+    // for the typing question the sheet helps with counting on, so it is allowed there
     if (v.soort === 'typ') return blaadje(v.m, v.dag, 0);
-    // bij "hoeveel dagen heeft oktober" niet: dan tel je het gewoon af van het blaadje
+    // not for "hoeveel dagen heeft oktober": then you would just count it off the sheet
     return '';
   }
 
@@ -133,7 +133,7 @@ export default {
     if (soort === 'seizoen') {
       var s3 = seizoenVan(z.m);
       if (z.omgekeerd) {
-        // welke maand hoort bij dit seizoen: de afleiders komen uit de andere seizoenen
+        // which month belongs to this season: the distractors come from the other seasons
         var jmn = MAANDEN[z.m];
         var fmn = shuffle(MAANDEN.filter(function (m, k) { return heelInSeizoen(k) && seizoenVan(k).naam !== s3.naam; })).slice(0, 3);
         return { soort: soort, sleutel: 'seizoenom|' + z.m, vorm: 'omgekeerd', m: z.m, s: s3, ans: jmn,
@@ -146,7 +146,7 @@ export default {
     }
     if (soort === 'lengte') {
       if (z.kort) {
-        // welke maand heeft er 30 dagen: kies er een uit vier
+        // which month has 30 days: pick one out of four
         var doel = LENGTE[z.m];
         var juiste = MAANDEN[z.m];
         var rest = shuffle(MAANDEN.filter(function (m, k) { return LENGTE[k] !== doel; })).slice(0, 3);
@@ -164,7 +164,7 @@ export default {
       return { soort: soort, sleutel: 'verder|' + z.d + '+' + z.stap, d: z.d, stap: z.stap, ans: ju,
         options: keuzes(ju, fu) };
     }
-    // typ: de datum een aantal dagen later, binnen dezelfde maand
+    // typ: the date a number of days later, within the same month
     var nieuw = z.dag + z.stap;
     return { soort: 'typ', sleutel: 'typ|' + z.m + '/' + z.dag + '+' + z.stap, m: z.m, dag: z.dag,
       stap: z.stap, nieuw: nieuw, ans: String(nieuw),
@@ -259,7 +259,7 @@ export default {
     check(tekenVraag(vg).indexOf(seizoenVan(2).ico) === -1, 'de tekening verklapt het seizoen niet');
     check(tekenVraag({ soort: 'seizoen', vorm: 'omgekeerd', m: 2, s: seizoenVan(2) }).indexOf(seizoenVan(2).ico) > -1,
       'bij de omgekeerde vraag staat het seizoen er wel bij');
-    // een maandblaadje verklapt zowel de naam als het aantal dagen
+    // a month sheet gives away both the name and the number of days
     check(tekenVraag({ soort: 'lengte', vorm: 'hoeveel', m: 9, dagen: 31 }) === '', 'geen blaadje bij het aantal dagen');
     check(tekenVraag({ soort: 'lengte', vorm: 'welke', m: 9, dagen: 31 }) === '', 'geen blaadje bij welke maand');
     check(tekenVraag({ soort: 'typ', m: 9, dag: 4 }).indexOf('Oktober') > -1, 'bij de typvraag helpt het blaadje wel');

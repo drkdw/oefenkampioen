@@ -1,25 +1,25 @@
 import { shuffle, pad2, $, reduced, hoofdletter } from './gereedschap.js';
 import { SPELLEN } from './spellen/index.js';
 
-// meer dan twintig vragen houdt een kind van acht niet vol
+// an eight-year-old cannot keep going for more than twenty questions
 var AANTALLEN = [10, 15, 20];
-// verwijderen van een profiel kan enkel achter #admin: een kind mag zijn eigen profiel niet
-// kunnen laten verdwijnen, ook niet de onschuldige variant die de scores bewaart
+// removing a profile is only possible behind #admin: a child must not be able to make its own
+// profile disappear, not even the harmless variant that keeps the scores
 var adminModus = false;
 
-/* ==================== naam, aantal en opslag ==================== */
+/* ==================== name, count and storage ==================== */
 // letters of any script, spaces, hyphens and apostrophes only, so a name is safe inside markup
 function schoonNaam(t) {
   return String(t || '').slice(0, 40).replace(/[^\p{L}\p{M} '-]/gu, '').trim().slice(0, 16);
 }
-// elk kind is een profiel: sleutel = naam plat en klein, zodat "Emma" en "emma " hetzelfde
-// kind zijn. Sleutel '' is het profiel van vóór profielen bestonden: de oude vlakke sleutels
-// (hieronder, zonder ':sleutel') blijven zo automatisch zijn data, geen migratiecode nodig.
+// every child is a profile: key = name flattened and lowercased, so "Emma" and "emma " are the
+// same child. Key '' is the profile from before profiles existed: the old flat keys (below,
+// without ':sleutel') automatically stay its data, no migration code needed.
 function sleutelVan(t) { return schoonNaam(t).toLowerCase(); }
 function postfixVoor(sleutel) { return sleutel ? ':' + sleutel : ''; }
 function postfix() { return postfixVoor(actief()); }
-// voor het profielenpaneel: het leerjaar en de voortgang van een kind opzoeken zonder erheen
-// te wisselen, zodat je in de lijst kan zien wat iedereen al gedaan heeft
+// for the profiles panel: look up a child's school year and progress without switching to it,
+// so the list shows what everyone has already done
 function leerjaarVoor(sleutel) {
   var n;
   try { n = parseInt(localStorage.getItem('oefenkampioen-leerjaar' + postfixVoor(sleutel)), 10); } catch (e) { n = NaN; }
@@ -33,7 +33,7 @@ function actief() {
   try { return localStorage.getItem('oefenkampioen-actief') || ''; } catch (e) { return ''; }
 }
 function zetActief(sleutel) {
-  try { localStorage.setItem('oefenkampioen-actief', sleutel); } catch (e) { /* mag mislukken */ }
+  try { localStorage.setItem('oefenkampioen-actief', sleutel); } catch (e) { /* may fail */ }
 }
 function wisselProfiel(sleutel) {
   zetActief(sleutel);
@@ -88,14 +88,14 @@ function nieuwProfiel(t) {
   wisselProfiel(bestaand.sleutel);
 }
 function verwijderProfiel(sleutel) {
-  // haalt enkel het knopje weg: de data onder die sleutel blijft staan, dus komt de naam terug
-  // dan staan de scores er nog
+  // only removes the button: the data under that key stays, so if the name comes back
+  // the scores are still there
   var lijst = profielen().filter(function (p) { return p.sleutel !== sleutel; });
   zetProfielen(lijst);
   if (actief() === sleutel) wisselProfiel(lijst.length ? lijst[0].sleutel : '');
 }
-// enkel achter #admin: wist ook de onderliggende data, onomkeerbaar. Anders dan verwijderProfiel
-// hierboven, dat enkel het knopje uit de lijst haalt
+// only behind #admin: also wipes the underlying data, irreversibly. Unlike verwijderProfiel
+// above, which only takes the button out of the list
 function verwijderProfielEcht(sleutel) {
   var lijst = profielen().filter(function (p) { return p.sleutel !== sleutel; });
   zetProfielen(lijst);
@@ -178,7 +178,7 @@ function herstelData(data) {
   }
   return backup.length;
 }
-// de %-plaats wordt de naam met komma, of niets als er geen naam ingevuld is
+// the % spot becomes the name with a comma, or nothing if no name was filled in
 function metNaam(sjabloon) {
   var n = naam();
   return sjabloon.replace('%', n ? ', ' + n : '');
@@ -194,7 +194,7 @@ function leesLeerjaar() {
 }
 function zetLeerjaar(lj) {
   state.leerjaar = lj;
-  try { localStorage.setItem('oefenkampioen-leerjaar' + postfix(), String(lj)); } catch (e) { /* mag mislukken */ }
+  try { localStorage.setItem('oefenkampioen-leerjaar' + postfix(), String(lj)); } catch (e) { /* may fail */ }
 }
 function jaarNaam(lj) { return (lj === 1 ? '1ste' : lj + 'de') + ' leerjaar'; }
 function jarenVan(spel) {
@@ -202,13 +202,13 @@ function jarenVan(spel) {
   spel.hoofdstukken.forEach(function (h) { if (uit.indexOf(h.leerjaar) === -1) uit.push(h.leerjaar); });
   return uit.sort(function (a, b) { return a - b; });
 }
-// een leerjaar is cumulatief: wie in het derde zit moet de kwartieren van het tweede nog kunnen
-// oefenen, dus alles tot en met het gekozen jaar hoort erbij
+// a school year is cumulative: a child in third year must still be able to practise the quarter
+// hours of the second, so everything up to and including the chosen year is included
 function hoofdstukkenVoor(spel) {
   return spel.hoofdstukken.map(function (h, i) { return { h: h, i: i }; })
     .filter(function (r) { return r.h.leerjaar <= state.leerjaar; });
 }
-// alleen aangeroepen voor spellen die al gefilterd zijn op iets hebben voor dit leerjaar
+// only called for games already filtered on having something for this school year
 function dekkingTekst(spel) {
   var n = hoofdstukkenVoor(spel).length;
   return n + (n === 1 ? ' hoofdstuk' : ' hoofdstukken');
@@ -218,8 +218,8 @@ function leesAantal() {
   try { a = parseInt(localStorage.getItem('oefenkampioen-aantal' + postfix()), 10); } catch (e) { a = NaN; }
   return AANTALLEN.indexOf(a) > -1 ? a : AANTALLEN[0];
 }
-// hoeveel seconden een vraag mag duren als het op tempo staat. Tafels moeten er het snelst
-// uit: automatiseren betekent niet uitrekenen. De andere spellen vragen eerst lezen en kijken.
+// how many seconds a question may take when tempo is on. Times tables have to come out fastest:
+// automating means not calculating. The other games need reading and looking first.
 var TEMPO = { maal: 8, klok: 25, winkel: 30, maten: 25, kalender: 20, brug: 25, spiegel: 35, breuken: 30, meetkunde: 30, verhoudingen: 30 };
 function secondenVoor(spel) { return TEMPO[spel.id] || 25; }
 function leesTempo() {
@@ -227,7 +227,7 @@ function leesTempo() {
 }
 function zetTempo(aan) {
   state.tempo = aan;
-  try { localStorage.setItem('oefenkampioen-tempo' + postfix(), aan ? 'aan' : 'uit'); } catch (e) { /* mag mislukken */ }
+  try { localStorage.setItem('oefenkampioen-tempo' + postfix(), aan ? 'aan' : 'uit'); } catch (e) { /* may fail */ }
 }
 function stopKlok() {
   if (state.klok) clearTimeout(state.klok);
@@ -238,7 +238,7 @@ function startKlok() {
   if (!state.tempo) return;
   var sec = secondenVoor(state.spel), balk = $('tempovulling');
   $('tempobalk').hidden = false;
-  // de animatie opnieuw laten beginnen lukt alleen door ze eerst weg te halen
+  // restarting the animation only works by removing it first
   balk.style.animation = 'none';
   void balk.offsetWidth;
   balk.style.animation = 'leeglopen ' + sec + 's linear forwards';
@@ -247,21 +247,21 @@ function startKlok() {
 
 function zetAantal(a) {
   state.aantal = a;
-  try { localStorage.setItem('oefenkampioen-aantal' + postfix(), String(a)); } catch (e) { /* mag mislukken */ }
+  try { localStorage.setItem('oefenkampioen-aantal' + postfix(), String(a)); } catch (e) { /* may fail */ }
 }
 function lees() { return leesBesteVoor(actief()); }
 function bewaar(sleutel, score, van) {
   try {
     var b = lees(), oud = b[sleutel];
-    // vergelijken op verhouding, want een toets kan 10, 15 of 20 vragen tellen
+    // compare by ratio, because a test can have 10, 15 or 20 questions
     if (!oud || !oud.van || score / van > oud.score / oud.van) {
       b[sleutel] = { score: score, van: van };
       localStorage.setItem('oefenkampioen-beste' + postfix(), JSON.stringify(b));
     }
-  } catch (e) { /* zonder opslag werkt de app gewoon verder */ }
+  } catch (e) { /* without storage the app simply keeps working */ }
 }
 
-/* ==================== toestand ==================== */
+/* ==================== state ==================== */
 var state = {
   spel: null, hfd: 0, leerjaar: 3, aantal: 10, q: 0, score: 0, results: [], fouten: [],
   current: null, answered: false, sound: true, tempo: false, klok: null,
@@ -269,7 +269,7 @@ var state = {
 };
 var ac = null;
 
-/* ==================== geluid en confetti ==================== */
+/* ==================== sound and confetti ==================== */
 function tone(freq, start, dur) {
   var o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime + start;
   o.type = 'sine';
@@ -285,7 +285,7 @@ function beep(ok) {
   try {
     ac = ac || new (window.AudioContext || window.webkitAudioContext)();
     if (ok) { tone(660, 0, 0.15); tone(990, 0.12, 0.25); } else { tone(196, 0, 0.3); }
-  } catch (e) { /* geluid is extra, nooit blokkerend */ }
+  } catch (e) { /* sound is extra, never blocking */ }
 }
 function party() {
   if (reduced) return;
@@ -301,8 +301,8 @@ function party() {
   }
 }
 
-/* ==================== de toets ==================== */
-// het plan van een hoofdstuk staat op tien vragen; schaal het naar het gekozen aantal
+/* ==================== the test ==================== */
+// a chapter's plan is set for ten questions; scale it to the chosen count
 function planVoor(h, n) {
   var soorten = Object.keys(h.plan), uit = {}, som = 0;
   soorten.forEach(function (soort) {
@@ -313,8 +313,8 @@ function planVoor(h, n) {
   uit[grootste] += n - som;
   return uit;
 }
-// het jasje is de voorstelling van een vraag, niet de vraag zelf: een jasje mag het antwoord
-// nooit veranderen. Levert een spel geen jasjes, dan is er maar een.
+// the jasje is the presentation of a question, not the question itself: a jasje may never
+// change the answer. If a game provides no jasjes, there is only one.
 function jasjesVoor(soort, h) {
   var j = state.spel.jasjes ? state.spel.jasjes(soort, h) : null;
   return j && j.length ? j.slice() : ['standaard'];
@@ -336,12 +336,12 @@ function bouwToets() {
 }
 function maakVraag(soort) {
   var h = state.spel.hoofdstukken[state.hfd];
-  // is de voorraad op, dan begint een volgende ronde: opnieuw geschud, en in andere jasjes. Zo
-  // liggen twee verschijningen van hetzelfde zaadje zo ver mogelijk uit elkaar.
+  // when the supply runs out, a next round starts: reshuffled, and in other jasjes. That way two
+  // appearances of the same zaadje are as far apart as possible.
   if (!state.decks[soort].length) state.decks[soort] = shuffle(state.spel.zaadjes(soort, h));
   if (!state.jassen[soort].length) state.jassen[soort] = shuffle(jasjesVoor(soort, h));
   var jasje = state.jassen[soort].pop();
-  // twee keer na elkaar hetzelfde jasje maakt een toets eentonig
+  // the same jasje twice in a row makes a test monotonous
   if (jasje === state.vorigJasje && state.jassen[soort].length) {
     var ruilJ = state.jassen[soort].pop();
     state.jassen[soort].push(jasje);
@@ -349,7 +349,7 @@ function maakVraag(soort) {
   }
   var z = state.decks[soort].pop();
   var v = state.spel.maak(soort, z, h, jasje);
-  // op een rondegrens kan hetzelfde zaadje meteen terugkomen; dat voelt als een fout in het spel
+  // at a round boundary the same zaadje can come back right away; that feels like a bug in the game
   if (v.sleutel === state.vorigeSleutel && state.decks[soort].length) {
     var ruilZ = state.decks[soort].pop();
     state.decks[soort].push(z);
@@ -361,7 +361,7 @@ function maakVraag(soort) {
   return v;
 }
 
-/* ==================== schermen ==================== */
+/* ==================== screens ==================== */
 function lead() {
   var n = naam();
   return (n ? 'Hoi ' + n + '! ' : '') + 'Kies een spel. Elke toets telt ' +
@@ -378,12 +378,12 @@ function toonStart() {
   // a running tempo timer would otherwise fire a fail beep on the start screen
   stopKlok();
   var beste = lees();
-  // een spel zonder iets voor het gekozen leerjaar staat hier niet: een kind moet niet eerst
-  // een spel openklikken om te ontdekken dat het daar leeg is
+  // a game with nothing for the chosen school year is not listed: a child should not have to
+  // open a game first to find out it is empty there
   var rijen = SPELLEN.map(function (s, i) { return { s: s, i: i }; })
     .filter(function (r) { return hoofdstukkenVoor(r.s).length > 0; });
   $('spellen').innerHTML = rijen.map(function (r) {
-    // op de spelkaart staat het beste hoofdstukresultaat van dat spel
+    // the game card shows the best chapter result of that game
     var top = null;
     r.s.hoofdstukken.forEach(function (h, k) {
       var b = beste[r.s.id + ':' + k];
@@ -423,7 +423,7 @@ function toonStart() {
   $('game').hidden = true;
   $('result').hidden = true;
 }
-/* ==================== profielenpaneel ==================== */
+/* ==================== profiles panel ==================== */
 function toonProfielPaneel() {
   var actiefSleutel = actief();
   $('profielLijst').innerHTML = profielen().map(function (p) {
@@ -440,9 +440,9 @@ function toonProfielPaneel() {
   Array.prototype.forEach.call($('profielLijst').querySelectorAll('.profielkies'), function (b) {
     b.onclick = function () { wisselProfiel(b.dataset.sleutel); sluitProfielPaneel(); toonStart(); };
   });
-  // verwijderen kan enkel achter #admin, niet in de gewone weergave waar een kind ook in zit.
-  // window.confirm() wordt door sommige browsers (waaronder test-browsers) onderdrukt en levert
-  // dan altijd "nee" op, zonder dat er iets te zien is: de vraag wordt daarom hier zelf gebouwd
+  // removing is only possible behind #admin, not in the normal view a child also uses.
+  // window.confirm() is suppressed by some browsers (test browsers among them) and then always
+  // returns "no" without anything showing: so the question is built here by hand
   Array.prototype.forEach.call($('profielLijst').querySelectorAll('.profielx'), function (b) {
     b.onclick = function (e) {
       e.stopPropagation();
@@ -484,8 +484,8 @@ function toonMelding(tekst) {
   $('paneelmelding').hidden = !tekst;
 }
 function opentProfielPaneel() {
-  // hier gecheckt, niet enkel bij het opstarten: #admin achteraf toevoegen in de adresbalk ververst
-  // de pagina niet, dus een controle bij het opstarten alleen zou het nooit oppikken
+  // checked here, not only at startup: adding #admin to the address bar later does not reload
+  // the page, so a check at startup alone would never pick it up
   adminModus = location.hash === '#admin';
   $('paneelacties').hidden = !adminModus;
   toonMelding('');
@@ -506,9 +506,9 @@ function toonMenu(spel) {
   stopKlok();
   state.spel = spel;
   var beste = lees();
-  // een vlakke lijst: het leerjaar is al gekozen op het startscherm, dus niet nog een keer hier.
-  // maar staan er hoofdstukken van meerdere leerjaren in, dan komt er een kopje tussen: bij tien
-  // hoofdstukken op een rij verliest een kind van acht anders het overzicht welke bij elkaar horen
+  // a flat list: the school year is already chosen on the start screen, so not once more here.
+  // but if it holds chapters from several school years, a heading goes in between: with ten
+  // chapters in a row an eight-year-old otherwise loses track of which ones belong together
   var lijst = hoofdstukkenVoor(spel);
   var html = '', huidigJaar = null, nr = 0;
   lijst.forEach(function (r) {
@@ -561,7 +561,7 @@ function drawDots() {
     html += '<span role="listitem" class="' + cls + '" title="Vraag ' + (i + 1) + ': ' + stand +
       '" aria-label="Vraag ' + (i + 1) + ': ' + stand + '">' + (i + 1) + '</span>';
   }
-  // tot tien vragen op een rij, daarboven twee even lange rijen
+  // up to ten questions in one row, above that two rows of equal length
   var kolommen = state.aantal <= 10 ? state.aantal : Math.ceil(state.aantal / 2);
   $('dots').style.gridTemplateColumns = 'repeat(' + kolommen + ', 1fr)';
   $('dots').innerHTML = html;
@@ -685,7 +685,7 @@ function controleer() {
   antwoord(null, getypt, goed);
 }
 
-/* ==================== resultaat ==================== */
+/* ==================== result ==================== */
 function toonResultaat() {
   var s = state.score;
   bewaar(state.spel.id + ':' + state.hfd, s, state.aantal);
@@ -710,7 +710,7 @@ function toonResultaat() {
   $('result').hidden = false;
 }
 
-/* ==================== knoppen ==================== */
+/* ==================== buttons ==================== */
 $('nextBtn').onclick = function () {
   if (state.q >= state.aantal) toonResultaat(); else volgendeVraag();
 };
@@ -746,8 +746,8 @@ function vraagBlijvendeOpslag() {
 $('bewaarBtn').onclick = function () {
   vraagBlijvendeOpslag();
   exporteerData();
-  // de browser bewaart het bestandje stil, zonder eigen melding: zonder dit tekstje lijkt het
-  // net of er niets gebeurt
+  // the browser saves the file silently, without its own notice: without this text it looks
+  // as if nothing happens
   $('bewaarBtn').textContent = 'Bewaard ✓';
   clearTimeout($('bewaarBtn').timer);
   $('bewaarBtn').timer = setTimeout(function () { $('bewaarBtn').textContent = 'Bewaar als bestand'; }, 2500);
@@ -780,7 +780,7 @@ state.aantal = leesAantal();
 state.tempo = leesTempo();
 toonStart();
 
-// de zelfcheck is er voor de ontwikkelaar, dus hij komt pas binnen bij #test
+// the self-check is for the developer, so it is only loaded with #test
 if (location.hash === '#test') import('./zelfcheck.js');
 
 export { SPELLEN, AANTALLEN, jasjesVoor, LEERJAREN, TEMPO, LOF, MOED, state, schoonNaam, schoonProfielen, mengBeste, naam, metNaam, leesTempo, secondenVoor, jarenVan, planVoor, bouwToets, maakVraag, toonStart };
