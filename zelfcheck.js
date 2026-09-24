@@ -1,7 +1,7 @@
 // de eigen controles: open index.html#test en bekijk de console
 import { pad2 } from './gereedschap.js';
 import {
-  SPELLEN, AANTALLEN, LEERJAREN, TEMPO, LOF, MOED, state, schoonNaam, naam, metNaam,
+  SPELLEN, AANTALLEN, LEERJAREN, TEMPO, LOF, MOED, state, schoonNaam, schoonProfielen, mengBeste, naam, metNaam,
   leesTempo, secondenVoor, jarenVan, jasjesVoor, planVoor, bouwToets, maakVraag, toonStart
 } from './chassis.js';
 
@@ -12,6 +12,18 @@ check(schoonNaam('  Sam  ') === 'Sam', 'naam wordt opgekuist');
 check(schoonNaam('<img src=x>') === 'img srcx', 'tekens die markup maken verdwijnen uit de naam');
 check(schoonNaam('Jean-Luc') === 'Jean-Luc', 'koppeltekens blijven');
 check(schoonNaam('abcdefghijklmnopqrstuvwxyz').length === 16, 'de naam wordt afgekapt');
+check(schoonNaam('Zoë') === 'Zoë' && schoonNaam('李明') === '李明', 'namen in elk schrift blijven heel');
+// an imported file is untrusted: every profile is rebuilt, markup and junk never get through
+var schoon = schoonProfielen([{ sleutel: 'k"><img src=z onerror=alert(1)>', naam: '<b>Lars</b>' }, null, { naam: 5 },
+  { sleutel: 'emma', naam: 'emma' }, { sleutel: 'emma', naam: 'Emma dubbel' }, { sleutel: '', naam: '' }]);
+check(schoon.length === 2, 'een importlijst houdt enkel geldige, unieke profielen over (nu ' + schoon.length + ')');
+check(JSON.stringify(schoon).indexOf('<') === -1 && JSON.stringify(schoon).indexOf('"k"') === -1, 'geen markup in een geïmporteerd profiel');
+check(!schoonProfielen({ sleutel: 'x', naam: 'X' }).length && !schoonProfielen('onzin').length, 'geen lijst betekent geen profielen');
+var beste = mengBeste({ 'klok:0': { score: 9, van: 10 } }, { 'klok:0': { score: 3, van: 10 }, 'klok:1': { score: 15, van: 20 },
+  'x"><img': { score: 1, van: 2 }, 'maal:2': { score: '<img>', van: 10 }, 'maal:3': { score: 12, van: 10 } });
+check(beste['klok:0'].score === 9, 'herstellen overschrijft een betere score niet');
+check(beste['klok:1'] && beste['klok:1'].score === 15, 'herstellen voegt een nieuwe score toe');
+check(Object.keys(beste).length === 2, 'kapotte of verzonnen scores gaan niet mee (nu ' + Object.keys(beste).join(', ') + ')');
 check(metNaam('Bijna%!') === 'Bijna!' || naam() !== '', 'zonder naam blijft het bericht kloppen');
 LOF.concat(MOED).forEach(function (t) {
   check(t.indexOf('%') > -1, 'elk bericht heeft een plaats voor de naam: ' + t);
@@ -102,6 +114,10 @@ SPELLEN.forEach(function (spel) {
           check(t && t.titel && t.titel.indexOf('undefined') === -1, spel.id + ': elke vraag heeft een tekst');
           check(spel.uitleg(v).indexOf('undefined') === -1, spel.id + ': elke uitleg is volledig');
           check(spel.kort(v).indexOf('undefined') === -1, spel.id + ': elke korte tekst is volledig');
+          // Flemish notation: a comma decimal, never a period or a float artefact like 0.30000000000000004
+          var alleTekst = [t.titel, t.sub || '', spel.uitleg(v), spel.kort(v), v.ans].concat(
+            v.options ? v.options.map(function (o) { return o.text; }) : []).join(' | ');
+          check(!/\d\.\d/.test(alleTekst), spel.id + ' hoofdstuk ' + (i + 1) + ': een punt als komma in "' + alleTekst.slice(0, 80) + '"');
 
           if (v.options) {
             check(v.options.length === 4, spel.id + ': vier keuzes');
@@ -114,6 +130,9 @@ SPELLEN.forEach(function (spel) {
             check(v.typen.velden.length >= 1, spel.id + ': minstens een invulvakje');
             var getypt = v.typen.velden.map(function (f) {
               check(typeof f.ant === 'number' && f.ant >= 0, spel.id + ': elk vakje heeft een antwoord');
+              // the check button refuses anything longer than the field, so the answer must fit
+              check(f.ant < Math.pow(10, f.max || 2), spel.id + ' hoofdstuk ' + (i + 1) + ': het antwoord ' + f.ant +
+                ' past niet in een vakje van ' + (f.max || 2) + ' cijfers');
               return f.pad ? pad2(f.ant) : String(f.ant);
             }).join(v.typen.scheider);
             check(getypt === v.ans, spel.id + ': de vakjes samen geven het antwoord (' + getypt + ' vs ' + v.ans + ')');

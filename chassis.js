@@ -8,14 +8,9 @@ var AANTALLEN = [10, 15, 20];
 var adminModus = false;
 
 /* ==================== naam, aantal en opslag ==================== */
-// alleen letters, spaties, koppeltekens en apostrofs, zodat de naam veilig in een bericht past
+// letters of any script, spaces, hyphens and apostrophes only, so a name is safe inside markup
 function schoonNaam(t) {
-  var uit = '';
-  String(t || '').slice(0, 40).split('').forEach(function (c) {
-    var isLetter = c.toLowerCase() !== c.toUpperCase();
-    if (isLetter || c === ' ' || c === "'" || c === '-') uit += c;
-  });
-  return uit.trim().slice(0, 16);
+  return String(t || '').slice(0, 40).replace(/[^\p{L}\p{M} '-]/gu, '').trim().slice(0, 16);
 }
 // elk kind is een profiel: sleutel = naam plat en klein, zodat "Emma" en "emma " hetzelfde
 // kind zijn. Sleutel '' is het profiel van vóór profielen bestonden: de oude vlakke sleutels
@@ -46,26 +41,51 @@ function wisselProfiel(sleutel) {
   state.aantal = leesAantal();
   state.tempo = leesTempo();
 }
+function oudeNaam() {
+  try { return schoonNaam(localStorage.getItem('oefenkampioen-naam')); } catch (e) { return ''; }
+}
 function migreer() {
-  var oud = schoonNaam(localStorage.getItem('oefenkampioen-naam'));
+  var oud = oudeNaam();
   var lijst = oud ? [{ sleutel: '', naam: oud }] : [];
   zetProfielen(lijst);
   return lijst;
 }
+// rebuild every entry from scratch: a stored or imported list is never trusted as it is
+function schoonProfielen(lijst) {
+  var uit = [];
+  (Array.isArray(lijst) ? lijst : []).forEach(function (p) {
+    if (!p || typeof p.naam !== 'string' || typeof p.sleutel !== 'string') return;
+    var naam = hoofdletter(schoonNaam(p.naam)), sleutel = p.sleutel === '' ? '' : sleutelVan(p.sleutel);
+    if (!naam || (p.sleutel !== '' && !sleutel)) return;
+    if (uit.some(function (q) { return q.sleutel === sleutel; })) return;
+    uit.push({ sleutel: sleutel, naam: naam });
+  });
+  return uit;
+}
 function profielen() {
-  try { return JSON.parse(localStorage.getItem('oefenkampioen-profielen')) || migreer(); }
-  catch (e) { return migreer(); }
+  var ruw;
+  try { ruw = JSON.parse(localStorage.getItem('oefenkampioen-profielen')); } catch (e) { ruw = null; }
+  return ruw === null ? migreer() : schoonProfielen(ruw);
 }
 function zetProfielen(lijst) {
-  try { localStorage.setItem('oefenkampioen-profielen', JSON.stringify(lijst)); } catch (e) { /* mag mislukken */ }
+  try { localStorage.setItem('oefenkampioen-profielen', JSON.stringify(lijst)); } catch (e) { /* may fail */ }
 }
 function nieuwProfiel(t) {
-  var sleutel = sleutelVan(t);
+  var sleutel = sleutelVan(t), weergave = hoofdletter(schoonNaam(t));
   if (!sleutel) return;
-  var lijst = profielen(), bestaand = lijst.filter(function (p) { return p.sleutel === sleutel; })[0];
-  if (bestaand) bestaand.naam = hoofdletter(schoonNaam(t)); else lijst.push({ sleutel: sleutel, naam: hoofdletter(schoonNaam(t)) });
+  var lijst = profielen();
+  var bestaand = lijst.filter(function (p) { return p.sleutel === sleutel || sleutelVan(p.naam) === sleutel; })[0];
+  // the data from before profiles existed lives under key '': retyping that old name brings it
+  // back, and the first child on a device without a name before inherits the nameless scores
+  var erfOud = !bestaand && !lijst.some(function (p) { return p.sleutel === ''; }) &&
+    (sleutelVan(oudeNaam()) === sleutel || (!lijst.length && !oudeNaam()));
+  if (!bestaand) {
+    bestaand = { sleutel: erfOud ? '' : sleutel, naam: weergave };
+    lijst.push(bestaand);
+  }
+  bestaand.naam = weergave;
   zetProfielen(lijst);
-  wisselProfiel(sleutel);
+  wisselProfiel(bestaand.sleutel);
 }
 function verwijderProfiel(sleutel) {
   // haalt enkel het knopje weg: de data onder die sleutel blijft staan, dus komt de naam terug
@@ -80,17 +100,18 @@ function verwijderProfielEcht(sleutel) {
   var lijst = profielen().filter(function (p) { return p.sleutel !== sleutel; });
   zetProfielen(lijst);
   ['oefenkampioen-leerjaar', 'oefenkampioen-aantal', 'oefenkampioen-tempo', 'oefenkampioen-beste'].forEach(function (k) {
-    try { localStorage.removeItem(k + postfixVoor(sleutel)); } catch (e) { /* mag mislukken */ }
+    try { localStorage.removeItem(k + postfixVoor(sleutel)); } catch (e) { /* may fail */ }
   });
+  // the old name would otherwise hand key '' back to whoever types it again
+  if (sleutel === '') try { localStorage.removeItem('oefenkampioen-naam'); } catch (e) { /* may fail */ }
   if (actief() === sleutel) wisselProfiel(lijst.length ? lijst[0].sleutel : '');
 }
 function naam() {
   var p = profielen().filter(function (p) { return p.sleutel === actief(); })[0];
   return p ? p.naam : '';
 }
-// bewaren/herstellen: geen account of cloud, dus dit bestandje is de enige weg terug als de
-// browsergegevens gewist worden. Herstellen voegt toe, het verwijdert nooit een profiel dat
-// hier al staat maar niet in het bestand zit
+// backup and restore: there is no account or cloud, so this file is the only way back after the
+// browser data is wiped
 function exporteerData() {
   var data = {};
   for (var i = 0; i < localStorage.length; i++) {
@@ -101,20 +122,61 @@ function exporteerData() {
   a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
   a.download = 'oefenkampioen-bewaard.json';
   a.click();
-  URL.revokeObjectURL(a.href);
+  // revoking right away can cancel the download in older Safari and Firefox
+  setTimeout(function () { URL.revokeObjectURL(a.href); }, 10000);
 }
+function leesBesteVoor(sleutel) {
+  try { return JSON.parse(localStorage.getItem('oefenkampioen-beste' + postfixVoor(sleutel)) || '{}') || {}; }
+  catch (e) { return {}; }
+}
+// keep the better of two best scores per chapter, and only well-formed entries
+function mengBeste(hier, daar) {
+  var uit = {};
+  [hier, daar].forEach(function (bron) {
+    Object.keys(bron && typeof bron === 'object' ? bron : {}).forEach(function (k) {
+      var s = Number(bron[k] && bron[k].score), v = Number(bron[k] && bron[k].van), oud = uit[k];
+      if (!/^[a-z]+:\d+$/.test(k) || !(v > 0) || !(s >= 0) || s > v || s % 1 || v % 1) return;
+      if (!oud || s / v > oud.score / oud.van) uit[k] = { score: s, van: v };
+    });
+  });
+  return uit;
+}
+// validate the whole file first and write afterwards, so a broken file never leaves half an
+// import. Restoring only adds: profiles already here keep their settings, and a best score is
+// only ever replaced by a better one. Returns the number of profiles in the file.
 function herstelData(data) {
-  Object.keys(data).forEach(function (k) {
-    if (k === 'oefenkampioen-profielen' || k.indexOf('oefenkampioen-') !== 0) return;
-    try { localStorage.setItem(k, data[k]); } catch (e) { /* mag mislukken */ }
-  });
-  if (!data['oefenkampioen-profielen']) return;
-  var backup = JSON.parse(data['oefenkampioen-profielen']);
-  var huidig = profielen();
+  if (!data || typeof data !== 'object' || typeof data['oefenkampioen-profielen'] !== 'string') throw new Error('geen bewaarbestand');
+  var backup = schoonProfielen(JSON.parse(data['oefenkampioen-profielen']));
+  if (!backup.length) throw new Error('geen profielen');
+  var huidig = profielen(), schrijf = {};
   backup.forEach(function (p) {
-    if (!huidig.some(function (h) { return h.sleutel === p.sleutel; })) huidig.push(p);
+    // match on the name, not the key: key '' means "the old data on this device", so on another
+    // device it can belong to a different child
+    var bron = postfixVoor(p.sleutel), beste = data['oefenkampioen-beste' + bron];
+    var doel = huidig.filter(function (h) { return sleutelVan(h.naam) === sleutelVan(p.naam); })[0];
+    var nieuw = !doel;
+    if (nieuw) {
+      var bezet = huidig.some(function (h) { return h.sleutel === p.sleutel; });
+      doel = { sleutel: bezet ? sleutelVan(p.naam) : p.sleutel, naam: p.naam };
+      if (huidig.some(function (h) { return h.sleutel === doel.sleutel; })) return;
+    }
+    var pf = postfixVoor(doel.sleutel);
+    schrijf['oefenkampioen-beste' + pf] = JSON.stringify(mengBeste(leesBesteVoor(doel.sleutel),
+      typeof beste === 'string' ? JSON.parse(beste) : {}));
+    if (!nieuw) return;
+    ['leerjaar', 'aantal', 'tempo'].forEach(function (k) {
+      if (typeof data['oefenkampioen-' + k + bron] === 'string') schrijf['oefenkampioen-' + k + pf] = data['oefenkampioen-' + k + bron];
+    });
+    huidig.push(doel);
   });
+  Object.keys(schrijf).forEach(function (k) { localStorage.setItem(k, schrijf[k]); });
   zetProfielen(huidig);
+  // on a fresh device nobody is active yet: start with the first restored child
+  if (!huidig.some(function (h) { return h.sleutel === actief(); })) {
+    var eerste = huidig.filter(function (h) { return sleutelVan(h.naam) === sleutelVan(backup[0].naam); })[0] || huidig[0];
+    if (eerste) wisselProfiel(eerste.sleutel);
+  }
+  return backup.length;
 }
 // de %-plaats wordt de naam met komma, of niets als er geen naam ingevuld is
 function metNaam(sjabloon) {
@@ -127,7 +189,7 @@ var LEERJAREN = [1, 2, 3, 4, 5, 6];
 function leesLeerjaar() {
   var n;
   try { n = parseInt(localStorage.getItem('oefenkampioen-leerjaar' + postfix()), 10); } catch (e) { n = NaN; }
-  // zolang de andere leerjaren nog leeg zijn begint het spel bij het derde: daar staat alles
+  // a new child starts in the third year, the grade the app was first built for
   return LEERJAREN.indexOf(n) > -1 ? n : 3;
 }
 function zetLeerjaar(lj) {
@@ -187,9 +249,7 @@ function zetAantal(a) {
   state.aantal = a;
   try { localStorage.setItem('oefenkampioen-aantal' + postfix(), String(a)); } catch (e) { /* mag mislukken */ }
 }
-function lees() {
-  try { return JSON.parse(localStorage.getItem('oefenkampioen-beste' + postfix()) || '{}'); } catch (e) { return {}; }
-}
+function lees() { return leesBesteVoor(actief()); }
 function bewaar(sleutel, score, van) {
   try {
     var b = lees(), oud = b[sleutel];
@@ -309,12 +369,14 @@ function lead() {
     (state.tempo ? ' De klok loopt mee: te traag telt als fout.' : '');
 }
 function kaart(ico, nr, titel, tekst, beste, badge) {
-  var b = beste && beste.van ? '<span class="beste">beste ' + beste.score + '/' + beste.van + '</span>' : '';
+  var b = beste && Number(beste.van) > 0 ? '<span class="beste">beste ' + Number(beste.score) + '/' + Number(beste.van) + '</span>' : '';
   return '<span class="ico">' + ico + '</span>' +
     '<span class="tekst"><h2>' + (nr ? nr + '. ' : '') + titel + '</h2><p>' + tekst + '</p></span>' +
     b + (badge ? '<span class="badge ' + badge + '">' + badge + '</span>' : '');
 }
 function toonStart() {
+  // a running tempo timer would otherwise fire a fail beep on the start screen
+  stopKlok();
   var beste = lees();
   // een spel zonder iets voor het gekozen leerjaar staat hier niet: een kind moet niet eerst
   // een spel openklikken om te ontdekken dat het daar leeg is
@@ -368,7 +430,7 @@ function toonProfielPaneel() {
     var n = geoefendVoor(p.sleutel);
     return '<div class="profielrij' + (p.sleutel === actiefSleutel ? ' actief' : '') + '">' +
       '<button class="profielkies" data-sleutel="' + p.sleutel + '">' +
-      '<span class="avatar">' + p.naam.charAt(0).toUpperCase() + '</span>' +
+      '<span class="avatar" aria-hidden="true">' + p.naam.charAt(0).toUpperCase() + '</span>' +
       '<span class="profielinfo"><span>' + p.naam + '</span>' +
       '<span class="profielvoortgang">' + jaarNaam(leerjaarVoor(p.sleutel)) + ' · ' + n +
       (n === 1 ? ' hoofdstuk' : ' hoofdstukken') + ' geoefend</span></span></button>' +
@@ -393,36 +455,52 @@ function toonProfielPaneel() {
       rij.querySelector('.profiellijst').onclick = function (e) {
         e.stopPropagation();
         verwijderProfiel(sleutel);
-        toonProfielPaneel();
         toonStart();
+        toonProfielPaneel();
+        focusPaneel();
       };
       rij.querySelector('.profielja').onclick = function (e) {
         e.stopPropagation();
         verwijderProfielEcht(sleutel);
-        toonProfielPaneel();
         toonStart();
+        toonProfielPaneel();
+        focusPaneel();
       };
       rij.querySelector('.profielnee').onclick = function (e) {
         e.stopPropagation();
         toonProfielPaneel();
+        focusPaneel();
       };
+      // the button that had focus is gone now; the safe answer takes it over
+      rij.querySelector('.profielnee').focus();
     };
   });
+}
+function focusPaneel() {
+  ($('profielLijst').querySelector('.profielkies') || $('naam')).focus();
+}
+function toonMelding(tekst) {
+  $('paneelmelding').textContent = tekst;
+  $('paneelmelding').hidden = !tekst;
 }
 function opentProfielPaneel() {
   // hier gecheckt, niet enkel bij het opstarten: #admin achteraf toevoegen in de adresbalk ververst
   // de pagina niet, dus een controle bij het opstarten alleen zou het nooit oppikken
   adminModus = location.hash === '#admin';
   $('paneelacties').hidden = !adminModus;
+  toonMelding('');
   toonProfielPaneel();
   $('profielPaneel').hidden = false;
   $('profielBackdrop').hidden = false;
   $('profielBtn').setAttribute('aria-expanded', 'true');
+  focusPaneel();
 }
 function sluitProfielPaneel() {
+  var wasOpen = !$('profielPaneel').hidden;
   $('profielPaneel').hidden = true;
   $('profielBackdrop').hidden = true;
   $('profielBtn').setAttribute('aria-expanded', 'false');
+  if (wasOpen) $('profielBtn').focus();
 }
 function toonMenu(spel) {
   stopKlok();
@@ -480,7 +558,8 @@ function drawDots() {
     else if (state.results[i] === false) cls += ' bad';
     else if (i === state.q) cls += ' now';
     var stand = state.results[i] === true ? 'juist' : state.results[i] === false ? 'fout' : i === state.q ? 'bezig' : 'nog te doen';
-    html += '<span class="' + cls + '" title="Vraag ' + (i + 1) + ': ' + stand + '">' + (i + 1) + '</span>';
+    html += '<span role="listitem" class="' + cls + '" title="Vraag ' + (i + 1) + ': ' + stand +
+      '" aria-label="Vraag ' + (i + 1) + ': ' + stand + '">' + (i + 1) + '</span>';
   }
   // tot tien vragen op een rij, daarboven twee even lange rijen
   var kolommen = state.aantal <= 10 ? state.aantal : Math.ceil(state.aantal / 2);
@@ -522,7 +601,7 @@ function volgendeVraag() {
     $('veld').innerHTML = v.typen.velden.map(function (f, i) {
       return (i ? '<span>' + v.typen.scheider + '</span>' : '') +
         '<input id="in' + i + '" type="text" inputmode="numeric" maxlength="' + (f.max || 2) +
-        '" placeholder="' + f.ph + '" aria-label="' + f.aria + '">';
+        '" style="width:' + ((f.max || 2) + 0.6) + 'ch" placeholder="' + f.ph + '" aria-label="' + f.aria + '">';
     }).join('');
     v.typen.velden.forEach(function (f, i) {
       var el = $('in' + i);
@@ -541,6 +620,8 @@ function volgendeVraag() {
   $('nextBtn').disabled = true;
   $('nextBtn').textContent = v.typen ? 'Typ eerst een antwoord' : 'Kies eerst een antwoord';
   drawDots();
+  // the previous focus was the now disabled next button; land on the new question instead
+  (v.typen ? $('in0') : $('question')).focus();
 }
 
 function antwoord(btn, tekst, ok) {
@@ -579,6 +660,7 @@ function antwoord(btn, tekst, ok) {
   drawDots();
   $('nextBtn').disabled = false;
   $('nextBtn').textContent = state.q >= state.aantal ? '🏁 Bekijk je punten' : 'Volgende vraag';
+  $('nextBtn').focus();
 }
 
 function controleer() {
@@ -586,7 +668,7 @@ function controleer() {
   var v = state.current, waarden = [], goed = true;
   for (var i = 0; i < v.typen.velden.length; i++) {
     var n = parseInt($('in' + i).value, 10);
-    if (isNaN(n) || n < 0 || n > 9999) {
+    if (isNaN(n) || n < 0 || n >= Math.pow(10, v.typen.velden[i].max || 2)) {
       $('feedback').className = 'feedback bad';
       $('feedback').textContent = v.typen.hulp || 'Vul elk vakje in met een getal.';
       return;
@@ -637,19 +719,32 @@ $('againBtn').onclick = function () { startHoofdstuk(state.hfd); };
 $('menuBtn').onclick = function () { toonMenu(state.spel); };
 $('homeBtn').onclick = function () { toonMenu(state.spel); };
 $('terugBtn').onclick = toonStart;
+// no blur handler on purpose: blur rebuilt the list between mousedown and click, which swallowed
+// a tap on another profile and could end a running test
 function bevestigNieuwProfiel() {
-  if ($('naam').value.trim()) nieuwProfiel($('naam').value);
+  if (!sleutelVan($('naam').value)) return;
+  nieuwProfiel($('naam').value);
   $('naam').value = '';
-  toonProfielPaneel();
   toonStart();
+  toonProfielPaneel();
+  focusPaneel();
 }
-$('naam').onblur = bevestigNieuwProfiel;
 $('naam').addEventListener('keydown', function (e) { if (e.key === 'Enter') bevestigNieuwProfiel(); });
+$('naamOk').onclick = bevestigNieuwProfiel;
 $('profielBtn').onclick = function () {
   if ($('profielPaneel').hidden) opentProfielPaneel(); else sluitProfielPaneel();
 };
 $('profielBackdrop').onclick = sluitProfielPaneel;
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape' && !$('profielPaneel').hidden) sluitProfielPaneel();
+});
+// asked only here, from the admin buttons: some browsers show a permission prompt, and that
+// should not pop up in front of a child on page load
+function vraagBlijvendeOpslag() {
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
+}
 $('bewaarBtn').onclick = function () {
+  vraagBlijvendeOpslag();
   exporteerData();
   // de browser bewaart het bestandje stil, zonder eigen melding: zonder dit tekstje lijkt het
   // net of er niets gebeurt
@@ -661,14 +756,20 @@ $('herstelBtn').onclick = function () { $('herstelInput').click(); };
 $('herstelInput').onchange = function () {
   var bestand = $('herstelInput').files[0];
   if (!bestand) return;
+  $('herstelInput').value = '';
+  vraagBlijvendeOpslag();
   bestand.text().then(function (tekst) {
-    try { herstelData(JSON.parse(tekst)); } catch (e) { alert('Dat bestand kon niet gelezen worden.'); return; }
-    $('herstelInput').value = '';
-    toonProfielPaneel();
+    var n;
+    // alert() is suppressed in the same browsers that suppress confirm(), so the message stays in the panel
+    try { n = herstelData(JSON.parse(tekst)); } catch (e) {
+      toonMelding('Dat bestand kon niet gelezen worden. Kies een bestand dat met "Bewaar als bestand" gemaakt is.');
+      return;
+    }
     toonStart();
+    toonProfielPaneel();
+    toonMelding('Teruggezet: ' + n + (n === 1 ? ' profiel.' : ' profielen.'));
   });
 };
-if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
 $('soundBtn').onclick = function () {
   state.sound = !state.sound;
   $('soundBtn').textContent = state.sound ? '🔊' : '🔇';
@@ -682,4 +783,4 @@ toonStart();
 // de zelfcheck is er voor de ontwikkelaar, dus hij komt pas binnen bij #test
 if (location.hash === '#test') import('./zelfcheck.js');
 
-export { SPELLEN, AANTALLEN, jasjesVoor, LEERJAREN, TEMPO, LOF, MOED, state, schoonNaam, naam, metNaam, leesTempo, secondenVoor, jarenVan, planVoor, bouwToets, maakVraag, toonStart };
+export { SPELLEN, AANTALLEN, jasjesVoor, LEERJAREN, TEMPO, LOF, MOED, state, schoonNaam, schoonProfielen, mengBeste, naam, metNaam, leesTempo, secondenVoor, jarenVan, planVoor, bouwToets, maakVraag, toonStart };

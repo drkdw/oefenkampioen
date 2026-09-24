@@ -159,10 +159,14 @@ export default {
     if (soort === 'breukPlus' || soort === 'breukMin') {
       var uitTeller = soort === 'breukPlus' ? z.t1 + z.t2 : z.t1 - z.t2;
       var juist3 = uitTeller + '/' + z.noemer;
-      // eerst andere tellers bij dezelfde noemer; bij een kleine noemer zijn dat er te weinig,
-      // dan vult een andere noemer met dezelfde teller aan (de fout die de noemer vergeet)
-      var kern2 = [];
-      for (var tt = 1; tt < z.noemer; tt++) if (tt !== uitTeller) kern2.push(tt + '/' + z.noemer);
+      // the real mistake first (adding the denominators too, or the wrong operation), then
+      // numerators right around the answer, so the answer is not always the largest choice.
+      // Only as a last resort the same numerator over another denominator.
+      var kern2 = [soort === 'breukPlus' ? uitTeller + '/' + (z.noemer * 2) : (z.t1 + z.t2) + '/' + z.noemer];
+      shuffle([1, -1, 2, -2]).concat([3, -3]).forEach(function (d) {
+        var tt = uitTeller + d;
+        if (tt >= 1 && tt <= z.noemer) kern2.push(tt + '/' + z.noemer);
+      });
       [3, 4, 5, 6, 8].forEach(function (nm) {
         if (nm !== z.noemer && uitTeller > 0 && uitTeller < nm) kern2.push(uitTeller + '/' + nm);
       });
@@ -182,8 +186,12 @@ export default {
     }
     if (soort === 'breukPlusOngelijk') {
       var factor2 = z.groot / z.klein, uitTeller2 = z.tk * factor2 + z.tg, juist4 = uitTeller2 + '/' + z.groot;
-      var kern3 = [];
-      for (var tt2 = 1; tt2 < z.groot; tt2++) if (tt2 !== uitTeller2) kern3.push(tt2 + '/' + z.groot);
+      // forgetting to convert the small denominator first is the typical mistake
+      var kern3 = [(z.tk + z.tg) + '/' + z.groot];
+      shuffle([1, -1, 2, -2]).concat([3, -3]).forEach(function (d) {
+        var tt2 = uitTeller2 + d;
+        if (tt2 >= 1 && tt2 <= z.groot) kern3.push(tt2 + '/' + z.groot);
+      });
       kern3.push(z.tk + '/' + z.klein);
       var fout8 = [];
       vulAan(fout8, juist4, kern3);

@@ -52,6 +52,7 @@ import { shuffle, pad2, keuzes, vulAan, vulRondom, positief, andere, reduced } f
   };
   var ALLE_MIN = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
 
+  function minTekst(n) { return n + (n === 1 ? ' minuut' : ' minuten'); }
   function afleidersTijd(h, m, minuten) {
     var juist = label(h, m);
     // de fouten die kinderen van 7 en 8 echt maken
@@ -200,10 +201,12 @@ export default {
     if (soort === 'seconden') {
       var naarSec = z.richting === 'naarSec', ans5 = naarSec ? z.min * 60 : z.min;
       var basis = naarSec ? z.min * 60 : z.min;
-      var kern8 = [basis + 60, basis - 60, basis + 30, basis - 30];
+      // seconds to minutes gives small numbers, so the neighbours are whole minutes, not ±60
+      var kern8 = naarSec ? [basis + 60, basis - 60, basis + 30, basis - 30, z.min * 100, z.min * 10]
+        : [basis + 1, basis - 1, basis * 60, basis + 2, basis * 10];
       var fout11 = [];
       vulAan(fout11, ans5, kern8, positief);
-      vulRondom(fout11, ans5, 5, positief);
+      vulRondom(fout11, ans5, naarSec ? 5 : 1, positief);
       return { soort: soort, sleutel: 'seconden|' + z.richting + z.min, richting: z.richting, min: z.min,
         ans: String(ans5), options: keuzes(ans5, fout11.slice(0, 3)) };
     }
@@ -244,7 +247,7 @@ export default {
     if (v.soort === 'dagdeel') return { titel: kop + 'in welk deel van de dag valt ' + v.tijd + '?', sub: 'Kies het juiste dagdeel.' };
     if (v.soort === 'seconden') {
       return v.richting === 'naarSec'
-        ? { titel: kop + 'hoeveel seconden zijn er in ' + v.min + ' minuten?', sub: 'Een minuut is 60 seconden.' }
+        ? { titel: kop + 'hoeveel seconden zijn er in ' + minTekst(v.min) + '?', sub: 'Een minuut is 60 seconden.' }
         : { titel: kop + 'hoeveel minuten zijn ' + (v.min * 60) + ' seconden?', sub: 'Deel door 60.' };
     }
     return { titel: kop + 'hoe lang duurt het van ' + label(wijzerUur(v.u), v.m) + ' tot ' + label(wijzerUur(v.eu), v.em) + '?' };
@@ -256,12 +259,13 @@ export default {
       return v.u > 12 ? 'Na de middag tel je 12 bij het uur: ' + v.h + ' + 12 = ' + v.u + '.'
         : v.u === 12 ? 'Om 12 uur ’s middags begin je niet opnieuw te tellen, het uur blijft 12.'
         : v.u === 0 ? '12 uur ’s nachts is 00:00, het begin van de dag.'
-        : 'Voor de middag blijft het uur hetzelfde, je zet er alleen een nul voor.';
+        : v.u < 10 ? 'Voor de middag blijft het uur hetzelfde, je zet er alleen een nul voor.'
+        : 'Voor de middag blijft het uur gewoon hetzelfde.';
     }
     if (v.soort === 'dagdeel') return bereikTekst(v.d);
     if (v.soort === 'seconden') {
       return v.richting === 'naarSec' ? v.min + ' × 60 = ' + (v.min * 60) + ' seconden.'
-        : (v.min * 60) + ' : 60 = ' + v.min + ' minuten.';
+        : (v.min * 60) + ' : 60 = ' + minTekst(v.min) + '.';
     }
     return 'Tel verder vanaf ' + label(wijzerUur(v.u), v.m) + ' tot je bij ' + label(wijzerUur(v.eu), v.em) + ' bent.';
   },
@@ -270,7 +274,7 @@ export default {
     if (v.soort === 'lezen') return 'Op de gsm stond ' + fmt24(v.u, v.m);
     if (v.soort === 'digitaal') return label(v.h, v.m) + ' in de ' + v.d.toLowerCase();
     if (v.soort === 'dagdeel') return 'In welk deel van de dag valt ' + v.tijd + '?';
-    if (v.soort === 'seconden') return v.richting === 'naarSec' ? v.min + ' minuten in seconden' : (v.min * 60) + ' seconden in minuten';
+    if (v.soort === 'seconden') return v.richting === 'naarSec' ? minTekst(v.min) + ' in seconden' : (v.min * 60) + ' seconden in minuten';
     return 'Van ' + label(wijzerUur(v.u), v.m) + ' tot ' + label(wijzerUur(v.eu), v.em);
   },
   test: function (check) {
