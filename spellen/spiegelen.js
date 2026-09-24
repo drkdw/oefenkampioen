@@ -20,6 +20,15 @@ import { shuffle, keuzes, vulAan, positief, andere } from '../gereedschap.js';
     return vorm.map(function (c) { return [c[0], (c[1] + 1) % N]; });
   }
   function gelijk(a, b) { return sleutelVan(a) === sleutelVan(b); }
+  // for a flat axis the half has to lie in the top rows, so the shape is turned on its side:
+  // row becomes column, and it no longer crosses the dashed line
+  function naarBoven(vorm) { return vorm.map(function (c) { return [c[1], c[0]]; }); }
+  // a half that is already symmetric in itself looks the same turned or mirrored, so it cannot
+  // show the difference the "klopt" question asks about
+  function zelfSymmetrisch(vorm) {
+    var kol = vorm.map(function (c) { return c[1]; }), som = Math.min.apply(null, kol) + Math.max.apply(null, kol);
+    return gelijk(vorm, vorm.map(function (c) { return [c[0], som - c[1]]; }));
+  }
 
   /* de vormen: telkens een halve figuur in de linkerhelft van het rooster */
   var VORMEN = [
@@ -48,10 +57,15 @@ import { shuffle, keuzes, vulAan, positief, andere } from '../gereedschap.js';
 
   /* --------- leerjaar 1: vormen en richtingen, los van het spiegelraster --------- */
 
-  var VORMNAMEN = ['cirkel', 'vierkant', 'driehoek', 'rechthoek'];
+  var VORMNAMEN = ['cirkel', 'vierkant', 'driehoek', 'rechthoek', 'ovaal'];
+  // a square is also a rectangle, so those two never stand together as choices
+  function vormKeuzes(naam) {
+    return VORMNAMEN.filter(function (n) { return !(naam === 'vierkant' && n === 'rechthoek') && !(naam === 'rechthoek' && n === 'vierkant'); });
+  }
   function vormTekening(naam, kleur) {
     var svg = {
       cirkel: '<circle cx="60" cy="60" r="48" fill="' + kleur + '"/>',
+      ovaal: '<ellipse cx="60" cy="60" rx="56" ry="34" fill="' + kleur + '"/>',
       vierkant: '<rect x="16" y="16" width="88" height="88" rx="8" fill="' + kleur + '"/>',
       rechthoek: '<rect x="4" y="30" width="112" height="60" rx="8" fill="' + kleur + '"/>',
       driehoek: '<polygon points="60,8 112,106 8,106" fill="' + kleur + '"/>'
@@ -138,6 +152,7 @@ export default {
       return uit;
     }
     VORMEN.forEach(function (vorm, i) {
+      if (soort === 'klopt' && zelfSymmetrisch(vorm)) return;
       if (soort === 'klopt') {
         // hier is de echte en de valse spiegeling elk een eigen vraag
         uit.push({ i: i, as: h.as, echt: true });
@@ -151,13 +166,13 @@ export default {
   maak: function (soort, z, h) {
     if (soort === 'vorm') {
       return { soort: soort, sleutel: 'vorm|' + z.naam + z.kleur, naam: z.naam, kleur: z.kleur, ans: z.naam,
-        options: keuzes(z.naam, andere(VORMNAMEN, z.naam, 3)) };
+        options: keuzes(z.naam, andere(vormKeuzes(z.naam), z.naam, 3)) };
     }
     if (soort === 'positie') {
       return { soort: soort, sleutel: 'positie|' + z.dier.naam + z.positie, dier: z.dier, positie: z.positie,
         ans: z.positie, options: keuzes(z.positie, andere(POSITIES, z.positie, 3)) };
     }
-    var vorm = VORMEN[z.i], as = h.as;
+    var as = h.as, vorm = as === 'horizontaal' ? naarBoven(VORMEN[z.i]) : VORMEN[z.i];
     var kleur = KLEUREN[z.i % KLEUREN.length];
     var juist = as === 'horizontaal' ? spiegelV(vorm) : spiegelH(vorm);
     var sl = soort + '|' + z.i + as + (z.echt ? 'e' : 'n');
@@ -172,12 +187,13 @@ export default {
     }
     if (soort === 'klopt') {
       // een halve slag draaien lijkt op spiegelen, maar is het niet
-      var getoond = z.echt ? juist : (gelijk(draai(vorm), juist) ? schuif(vorm) : draai(vorm));
-      var klopt = gelijk(getoond, juist);
-      return { soort: soort, sleutel: sl, vorm: vorm, getoond: getoond, kleur: kleur, as: as,
-        ans: klopt ? 'ja, gespiegeld' : 'nee, niet gespiegeld',
-        options: shuffle([{ text: 'ja, gespiegeld', ok: klopt }, { text: 'nee, niet gespiegeld', ok: !klopt },
-          { text: 'ja, maar de as ligt verkeerd', ok: false }, { text: 'nee, het is verschoven', ok: false }]) };
+      var gedraaid = !gelijk(draai(vorm), juist);
+      var getoond = z.echt ? juist : (gedraaid ? draai(vorm) : schuif(vorm));
+      // one exact answer per case: mirrored, turned, or shifted
+      var juisteTekst = z.echt ? 'ja, gespiegeld' : gedraaid ? 'nee, gedraaid' : 'nee, verschoven';
+      return { soort: soort, sleutel: sl, vorm: vorm, getoond: getoond, kleur: kleur, as: as, ans: juisteTekst,
+        options: shuffle(['ja, gespiegeld', 'nee, gedraaid', 'nee, verschoven', 'ja, maar de as ligt verkeerd']
+          .map(function (t) { return { text: t, ok: t === juisteTekst }; })) };
     }
     // helft: vier roosters als keuze, maar dat past niet in een knop, dus we kiezen op letter
     var kandidaten = [{ v: juist, ok: true, waarom: 'de echte spiegeling' },
@@ -249,9 +265,10 @@ export default {
       return 'De helft heeft ' + v.half + ' vakjes, en de spiegeling nog eens ' + v.half + ': samen ' + (v.half * 2) + '.';
     }
     if (v.soort === 'klopt') {
-      return v.ans === 'ja, gespiegeld'
-        ? 'Elk vakje staat even ver van de as, maar aan de andere kant.'
-        : 'Bij spiegelen blijft boven ook boven. Hier klopt dat niet.';
+      if (v.ans === 'ja, gespiegeld') return 'Elk vakje staat even ver van de as, maar aan de andere kant.';
+      return v.ans === 'nee, gedraaid'
+        ? 'Bij spiegelen blijft boven ook boven. Hier staat de figuur op zijn kop: dat is draaien.'
+        : 'De figuur is gewoon opgeschoven, niet omgekeerd. Dat is geen spiegeling.';
     }
     var goed = v.kandidaten.filter(function (k) { return k.ok; })[0];
     return 'Rooster ' + goed.text + ' is ' + goed.waarom + ': elk vakje staat even ver van de stippellijn.';
@@ -284,6 +301,9 @@ export default {
         check(c[1] + vorm[k][1] === N - 1, 'elk vakje staat even ver van de as');
       });
       check(rooster(vorm, '#000', 'verticaal', 140).indexOf('<svg') === 0, 'het rooster tekent bij vorm ' + i);
+      naarBoven(vorm).forEach(function (c) {
+        check(c[0] < N / 2, 'vorm ' + i + ' blijft op zijn kant in de bovenste helft, anders overlapt de spiegeling');
+      });
     });
     check(rooster(VORMEN[0], '#000', 'verticaal', 140).indexOf('stroke-dasharray') > -1, 'de spiegelas staat er als stippellijn');
     check(rooster(VORMEN[0], '#000', null, 140).indexOf('stroke-dasharray') === -1, 'zonder as geen stippellijn');

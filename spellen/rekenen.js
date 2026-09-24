@@ -2,7 +2,9 @@ import { keuzes, vulAan, positief, vulRondom, andere } from '../gereedschap.js';
 
   // de brug: van 47 spring je eerst naar 50, dan pas verder
   function sprong(a, b, plus) {
-    var tussen = plus ? Math.ceil((a + 1) / 10) * 10 : Math.floor((a - 1) / 10) * 10;
+    // a jump of whole tens crosses the hundred, not a ten: 115 + 90 goes via 200
+    var rond = b % 10 === 0 ? 100 : 10;
+    var tussen = plus ? Math.ceil((a + 1) / rond) * rond : Math.floor((a - 1) / rond) * rond;
     return { tussen: tussen, eerste: Math.abs(tussen - a), tweede: Math.abs((plus ? a + b : a - b) - tussen) };
   }
 
@@ -90,10 +92,11 @@ import { keuzes, vulAan, positief, vulRondom, andere } from '../gereedschap.js';
     var x = function (n) { return (n / tot * (breed - 20) + 10).toFixed(1); };
     var uit = plus ? a + b : a - b;
     var p = ['<line x1="6" y1="50" x2="' + (breed - 6) + '" y2="50" stroke="var(--line)" stroke-width="4" stroke-linecap="round"/>'];
-    var stap = tot <= 10 ? 1 : 2;
-    for (var n = 0; n <= tot; n += stap) {
+    // every tick, but only 0 and the end get a number: the child counts the ticks, the arc does
+    // not land on a printed answer
+    for (var n = 0; n <= tot; n++) {
       p.push('<line x1="' + x(n) + '" y1="44" x2="' + x(n) + '" y2="56" stroke="var(--ink-soft)" stroke-width="2"/>');
-      p.push('<text x="' + x(n) + '" y="72" text-anchor="middle" font-family="Fredoka, sans-serif" font-size="11" fill="var(--ink-soft)">' + n + '</text>');
+      if (n === 0 || n === tot) p.push('<text x="' + x(n) + '" y="72" text-anchor="middle" font-family="Fredoka, sans-serif" font-size="11" fill="var(--ink-soft)">' + n + '</text>');
     }
     var x1 = Number(x(a)), x2 = Number(x(uit));
     p.push('<path d="M' + x1 + ' 48 Q' + ((x1 + x2) / 2) + ' 20 ' + x2 + ' 48" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>');
@@ -140,10 +143,17 @@ import { keuzes, vulAan, positief, vulRondom, andere } from '../gereedschap.js';
   }
 
   function getalTegel(n) {
+    var tekst = metSpaties(n);
     return '<div style="display:flex;align-items:center;justify-content:center;font-family:Fredoka,sans-serif;' +
-      'font-size:56px;color:var(--ink);background:var(--card-2);border-radius:20px;width:112px;height:112px;margin:0 auto">' +
-      n + '</div>';
+      'font-size:' + (tekst.length > 4 ? 40 : 56) + 'px;color:var(--ink);background:var(--card-2);border-radius:20px;' +
+      'min-width:112px;height:112px;padding:0 18px;width:max-content;margin:0 auto">' + tekst + '</div>';
   }
+  // Flemish notation: a space between thousands from five digits on (45 000), and a real minus sign
+  function metSpaties(n) {
+    var t = String(n);
+    return t.replace(/\D/g, '').length > 4 ? t.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') : t;
+  }
+  function minTeken(n) { return String(n).replace('-', '−'); }
 
   var ORDINALEN = ['eerste', 'tweede', 'derde', 'vierde', 'vijfde', 'zesde'];
   var DIERTJES = ['🐶', '🐱', '🐰', '🐻', '🐸', '🦁'];
@@ -237,11 +247,12 @@ export default {
     }
     if (soort === 'vlot') {
       // tot 10: alle kleine getallen; tot 20: enkel tientallen, en dan zonder het tiental te breken
-      var vanaf = h.tot === 10 ? 0 : 10, totMet = h.tot === 10 ? h.tot : 19;
+      // up to 10 the sum may reach 10 itself (6 + 4); from 10 to 20 it stays inside the ten
+      var vanaf = h.tot === 10 ? 0 : 10, totMet = h.tot === 10 ? 9 : 19, grens = h.tot === 10 ? 10 : 9;
       for (a = vanaf; a <= totMet; a++) {
         for (b = 1; b <= 9; b++) {
-          var eenheid = a % 10;
-          if (eenheid + b <= 9) uit.push({ a: a, b: b, plus: true });
+          var eenheid = h.tot === 10 ? a : a % 10;
+          if (eenheid + b <= grens) uit.push({ a: a, b: b, plus: true });
           if (eenheid - b >= 0) uit.push({ a: a, b: b, plus: false });
         }
       }
@@ -285,7 +296,10 @@ export default {
     }
     if (soort === 'cijferPlus') {
       var uit6 = [];
-      for (var pa = 1000; pa <= 9800; pa += 37) uit6.push({ a: pa, b: 100 + (pa % 800) });
+      for (var pa = 1000; pa <= 9800; pa += 37) {
+        // the chapter is "tot 10 000", so the sum must stay below it
+        if (pa + 100 + (pa % 800) <= 9999) uit6.push({ a: pa, b: 100 + (pa % 800) });
+      }
       return uit6;
     }
     if (soort === 'cijferMin') {
@@ -322,7 +336,8 @@ export default {
     if (soort === 'temp') {
       var uit12 = [];
       for (var start = 0; start <= 10; start++) {
-        for (var val = 4; val <= 15; val += 2) uit12.push({ start: start, val: val });
+        // only drops that end below zero: this chapter is about negative numbers
+        for (var val = 4; val <= 15; val += 2) if (start - val < 0) uit12.push({ start: start, val: val });
       }
       return uit12;
     }
@@ -431,8 +446,10 @@ export default {
       var fout12 = [];
       vulAan(fout12, uitkomst2, kern11);
       vulRondom(fout12, uitkomst2, 1);
+      var opties2 = keuzes(uitkomst2, fout12.slice(0, 3));
+      opties2.forEach(function (o) { o.text = minTeken(o.text); });
       return { soort: soort, sleutel: 'temp|' + z.start + ':' + z.val, start: z.start, val: z.val,
-        ans: String(uitkomst2), options: keuzes(uitkomst2, fout12.slice(0, 3)) };
+        ans: minTeken(uitkomst2), options: opties2 };
     }
     if (soort === 'macht') {
       var machtWaarde = Math.pow(10, z.exp);
@@ -440,8 +457,10 @@ export default {
       var kern12 = [Math.pow(10, z.exp + 1), Math.pow(10, Math.max(0, z.exp - 1)), z.exp * 10, machtWaarde * 2];
       var fout13 = [];
       vulAan(fout13, machtWaarde, kern12, positief);
-      return { soort: soort, sleutel: 'macht|' + z.exp, exp: z.exp, ans: String(machtWaarde),
-        options: keuzes(machtWaarde, fout13.slice(0, 3)) };
+      var opties3 = keuzes(machtWaarde, fout13.slice(0, 3));
+      opties3.forEach(function (o) { o.text = metSpaties(o.text); });
+      return { soort: soort, sleutel: 'macht|' + z.exp, exp: z.exp, ans: metSpaties(machtWaarde),
+        options: opties3 };
     }
     if (soort === 'tientallen' || soort === 'eenheden') {
       var tal = Math.floor(z.n / 10), eenh = z.n % 10, juist2 = soort === 'tientallen' ? tal : eenh;
@@ -561,7 +580,7 @@ export default {
     if (v.soort === 'cijferMin') return { titel: kop + 'hoeveel is ' + v.a + ' min ' + v.b + '?', sub: 'Zet ze onder elkaar.' };
     if (v.soort === 'cijferKeer') return { titel: kop + 'hoeveel is ' + v.a + ' keer ' + v.b + '?', sub: 'Vermenigvuldig cijfer per cijfer.' };
     if (v.soort === 'cijferDelen') return { titel: kop + 'hoeveel is ' + v.deeltal + ' gedeeld door ' + v.deler + '?', sub: 'Zonder rest.' };
-    if (v.soort === 'grootgetal') return { titel: kop + 'hoeveel duizendtallen zitten er in ' + v.n + '?', sub: 'Deel door 1000.' };
+    if (v.soort === 'grootgetal') return { titel: kop + 'hoeveel duizendtallen zitten er in ' + metSpaties(v.n) + '?', sub: 'Deel door 1000.' };
     if (v.soort === 'cijferDelen2') return { titel: kop + 'hoeveel is ' + v.deeltal + ' gedeeld door ' + v.deler + '?', sub: 'De deler heeft nu twee cijfers.' };
     if (v.soort === 'temp') {
       return { titel: kop + 'het is ' + v.start + ' °C, en het koelt ' + v.val + ' graden af.',
@@ -583,10 +602,12 @@ export default {
     if (v.soort === 'cijferMin') return v.a + ' − ' + v.b + ' = ' + (v.a - v.b) + '.';
     if (v.soort === 'cijferKeer') return v.a + ' × ' + v.b + ' = ' + (v.a * v.b) + '.';
     if (v.soort === 'cijferDelen') return v.deeltal + ' : ' + v.deler + ' = ' + v.ans + ', want ' + v.ans + ' × ' + v.deler + ' = ' + v.deeltal + '.';
-    if (v.soort === 'grootgetal') return v.n + ' : 1000 = ' + v.ans + '.';
+    if (v.soort === 'grootgetal') return metSpaties(v.n) + ' : 1000 = ' + v.ans + '.';
     if (v.soort === 'cijferDelen2') return v.deeltal + ' : ' + v.deler + ' = ' + v.ans + ', want ' + v.ans + ' × ' + v.deler + ' = ' + v.deeltal + '.';
-    if (v.soort === 'temp') return v.start + ' − ' + v.val + ' = ' + v.ans + ' °C. Onder nul tel je verder in het negatieve.';
-    if (v.soort === 'macht') return '10 tot de macht ' + v.exp + ' is 10 × zichzelf, ' + v.exp + ' keer: ' + v.ans + '.';
+    if (v.soort === 'temp') return v.start + ' − ' + v.val + ' = ' + v.ans + ' °C. Tot 0 zakt het ' + v.start +
+      ' graden, daarna nog ' + (v.val - v.start) + ' onder nul.';
+    if (v.soort === 'macht') return v.exp === 1 ? '10 tot de macht 1 is gewoon 10.'
+      : Array(v.exp + 1).join('10 × ').slice(0, -3) + ' = ' + v.ans + '.';
     if (v.soort === 'tientallen') return v.n + ' bestaat uit ' + v.tal + ' tientallen en ' + v.eenh + ' eenheden.';
     if (v.soort === 'eenheden') return v.n + ' bestaat uit ' + v.tal + ' tientallen en ' + v.eenh + ' eenheden.';
     if (v.soort === 'dubbel') return 'Het dubbele van ' + v.n + ' is ' + (v.n * 2) + ': ' + v.n + ' + ' + v.n + '.';
@@ -599,7 +620,8 @@ export default {
     }
     if (v.soort === 'vlot') {
       var teken2 = v.plus ? '+' : '−';
-      return v.a + ' ' + teken2 + ' ' + v.b + ' = ' + v.ans + '. Geen brug nodig, het blijft binnen hetzelfde tiental.';
+      return v.a + ' ' + teken2 + ' ' + v.b + ' = ' + v.ans + (v.a >= 10
+        ? '. Geen brug nodig, het blijft binnen hetzelfde tiental.' : '. Tel ' + v.b + ' streepjes ' + (v.plus ? 'verder' : 'terug') + '.');
     }
     var s3 = sprong(v.a, v.b, v.plus);
     var teken = v.plus ? '+' : '−';
@@ -616,7 +638,7 @@ export default {
     if (v.soort === 'cijferMin') return v.a + ' − ' + v.b;
     if (v.soort === 'cijferKeer') return v.a + ' × ' + v.b;
     if (v.soort === 'cijferDelen') return v.deeltal + ' : ' + v.deler;
-    if (v.soort === 'grootgetal') return 'Duizendtallen in ' + v.n;
+    if (v.soort === 'grootgetal') return 'Duizendtallen in ' + metSpaties(v.n);
     if (v.soort === 'cijferDelen2') return v.deeltal + ' : ' + v.deler + ' (twee cijfers)';
     if (v.soort === 'temp') return v.start + ' °C, ' + v.val + ' graden erbij of eraf';
     if (v.soort === 'macht') return '10 tot de macht ' + v.exp;

@@ -16,10 +16,11 @@ import { keuzes, vulAan, positief, reduced } from '../gereedschap.js';
       }).join('') + '</div>';
   }
   function omgekeerd(p) { return Number(String(p).split('').reverse().join('')); }
+  // Flemish order: in the table of 3 it is 7 × 3, the table number comes last (a is the table)
   function som(v) {
     if (v.soort === 'delen') return v.p + ' : ' + v.a;
-    if (v.soort === 'ontbreekt') return v.links ? '? × ' + v.b + ' = ' + v.p : v.a + ' × ? = ' + v.p;
-    return v.a + ' × ' + v.b;
+    if (v.soort === 'ontbreekt') return v.links ? '? × ' + v.a + ' = ' + v.p : v.b + ' × ? = ' + v.p;
+    return v.b + ' × ' + v.a;
   }
   function verderWeg(juist) {
     var uit = [];
@@ -139,7 +140,7 @@ export default {
     if (soort === 'ontbreekt') {
       // soms ontbreekt het linkse getal, soms het rechtse
       var links = Math.random() < 0.5;
-      var juist = links ? a : b, ander = links ? b : a;
+      var juist = links ? b : a, ander = links ? a : b;
       return { soort: soort, sleutel: sl, a: a, b: b, p: p, links: links, ans: String(juist),
         options: keuzes(juist, afleidersFactor(juist, ander)) };
     }
@@ -164,14 +165,14 @@ export default {
     }
     if (v.soort === 'ontbreekt') return { titel: kop + 'welk getal ontbreekt?', sub: 'Zoek het getal dat het vraagteken vervangt.' };
     if (v.soort === 'delen') return { titel: kop + 'hoeveel is ' + v.p + ' gedeeld door ' + v.a + '?', sub: 'Denk aan de tafel van ' + v.a + '.' };
-    if (v.soort === 'typ') return { titel: kop + 'hoeveel is ' + v.a + ' keer ' + v.b + '?', sub: 'Typ zelf het antwoord in.' };
-    return { titel: kop + 'hoeveel is ' + v.a + ' keer ' + v.b + '?' };
+    if (v.soort === 'typ') return { titel: kop + 'hoeveel is ' + v.b + ' keer ' + v.a + '?', sub: 'Typ zelf het antwoord in.' };
+    return { titel: kop + 'hoeveel is ' + v.b + ' keer ' + v.a + '?' };
   },
   uitleg: function (v) {
     if (v.soort === 'sprong') return 'Je telt in sprongen van ' + v.stap + ': na ' + v.rij[2] + ' komt ' + v.ans + '.';
-    if (v.soort === 'delen') return v.p + ' : ' + v.a + ' = ' + v.b + ', want ' + v.a + ' × ' + v.b + ' = ' + v.p + '.';
-    if (v.soort === 'ontbreekt') return v.a + ' × ' + v.b + ' = ' + v.p + '.';
-    return v.a + ' keer ' + v.b + ' is ' + v.p + '. En ' + v.b + ' × ' + v.a + ' geeft evenveel.';
+    if (v.soort === 'delen') return v.p + ' : ' + v.a + ' = ' + v.b + ', want ' + v.b + ' × ' + v.a + ' = ' + v.p + '.';
+    if (v.soort === 'ontbreekt') return v.b + ' × ' + v.a + ' = ' + v.p + '.';
+    return v.b + ' keer ' + v.a + ' is ' + v.p + '. En ' + v.a + ' × ' + v.b + ' geeft evenveel.';
   },
   kort: function (v) { return v.soort === 'sprong' ? 'Tellen in sprongen van ' + v.stap : som(v); },
   test: function (check) {
@@ -195,9 +196,9 @@ export default {
         check(fa.every(function (x) { return x > 0 && x <= MAX + 2; }), 'factorafleiders blijven kleine getallen');
       }
     });
-    check(som({ soort: 'keer', a: 6, b: 7 }) === '6 × 7', 'som van een keervraag');
+    check(som({ soort: 'keer', a: 6, b: 7 }) === '7 × 6', 'som van een keervraag: de tafel staat achteraan');
     check(som({ soort: 'delen', a: 6, b: 7, p: 42 }) === '42 : 6', 'som van een deelvraag');
-    check(som({ soort: 'ontbreekt', a: 6, b: 7, p: 42, links: true }) === '? × 7 = 42', 'gat links');
+    check(som({ soort: 'ontbreekt', a: 6, b: 7, p: 42, links: true }) === '? × 6 = 42', 'gat links');
     for (var mk = 0; mk < 24; mk++) {
       check(monster(mk).indexOf('<svg') === 0 && monster(mk).indexOf('aria-label') > -1, 'monster ' + mk + ' is een geldige tekening');
     }

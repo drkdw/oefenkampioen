@@ -1,8 +1,15 @@
 <!doctype html>
+<html lang="nl-BE">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Oefenkampioen</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
+<meta name="description" content="Gratis oefenspellen voor het lager onderwijs in Vlaanderen, van het eerste tot het zesde leerjaar: rekenen, klokkijken, geld, meten, breuken en meer.">
+<meta property="og:title" content="Oefenkampioen">
+<meta property="og:description" content="Gratis oefenspellen voor het lager onderwijs in Vlaanderen, leerjaar 1 tot 6.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://drkdw.github.io/oefenkampioen/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8F%86%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400&display=swap">
 <style>
   :root {
     --bg: #EDF3FF;
@@ -142,9 +149,9 @@
   #profielBackdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.35); z-index: 10; }
   .paneel {
     position: absolute;
-    top: 56px; right: 0;
+    top: 56px; right: 16px;
     z-index: 11;
-    width: min(300px, calc(100% - 8px));
+    width: min(300px, calc(100% - 32px));
     max-height: 70vh;
     overflow-y: auto;
     background: var(--card);
@@ -192,7 +199,7 @@
   .paneelacties .aantal { font-size: 13px; padding: 7px 12px; }
   .profielx {
     flex: none;
-    width: 26px; height: 26px;
+    width: 32px; height: 32px;
     border-radius: 999px;
     border: 2px solid var(--line);
     background: var(--card-2);
@@ -391,6 +398,7 @@
     text-align: center;
     margin: 0;
   }
+  .question:focus { outline: none; }
   #game { display: flex; flex-direction: column; gap: 20px; }
   .qbox { display: flex; flex-direction: column; gap: 6px; }
   .subq {
@@ -519,7 +527,7 @@
 <div class="wrap">
   <header>
     <h1 id="kop">Oefen<span class="tick">kampioen</span></h1>
-    <button class="aantal profielBtn" id="profielBtn" aria-haspopup="true" aria-expanded="false"></button>
+    <button class="aantal profielBtn" id="profielBtn" aria-haspopup="dialog" aria-expanded="false"></button>
     <button class="icon-btn" id="soundBtn" aria-label="Geluid aan of uit">&#128266;</button>
   </header>
 
@@ -528,15 +536,17 @@
     <div id="profielLijst"></div>
     <div class="naamkaart">
       <label for="naam">Nieuw profiel</label>
-      <input id="naam" type="text" maxlength="16" placeholder="Typ de naam en druk op Enter" autocomplete="off">
+      <input id="naam" type="text" maxlength="16" placeholder="Typ een naam" autocomplete="off">
+      <button class="aantal" id="naamOk">Voeg toe</button>
     </div>
     <p class="paneelnotitie">Staat enkel op dit toestel, in deze browser. Geen account, geen
       cloud: browsergegevens wissen of een ander toestel gebruiken wist ook dit.</p>
     <div class="paneelacties" id="paneelacties" hidden>
       <button class="aantal" id="bewaarBtn">Bewaar als bestand</button>
       <button class="aantal" id="herstelBtn">Herstel van bestand</button>
-      <input type="file" id="herstelInput" accept="application/json" hidden>
+      <input type="file" id="herstelInput" accept=".json,application/json" hidden>
     </div>
+    <p class="paneelnotitie" id="paneelmelding" role="status" hidden></p>
   </div>
 
   <div id="startScherm">
@@ -582,7 +592,7 @@
     <div class="scherm-card" id="schermCard" hidden><span class="scherm" id="scherm"></span></div>
 
     <div class="qbox">
-      <p class="question" id="question"></p>
+      <p class="question" id="question" tabindex="-1"></p>
       <p class="subq" id="subq" hidden></p>
     </div>
 

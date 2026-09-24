@@ -53,7 +53,7 @@ import { keuzes, vulAan, vulRondom, positief, andere } from '../gereedschap.js';
       p.push('<circle cx="' + tx.toFixed(1) + '" cy="' + ty.toFixed(1) + '" r="2" fill="var(--ink-soft)"/>');
     });
     p.push('<circle cx="' + cx + '" cy="' + cy + '" r="4" fill="var(--ink)"/>');
-    return '<svg viewBox="0 0 120 120" width="120" height="120" role="img" ' +
+    return '<svg viewBox="-70 0 190 120" width="190" height="120" role="img" ' +
       'aria-label="Een hoek van ' + graden + ' graden, met streepjes om de dertig graden">' + p.join('') + '</svg>';
   }
 
@@ -64,11 +64,21 @@ import { keuzes, vulAan, vulRondom, positief, andere } from '../gereedschap.js';
     { naam: 'cilinder', ico: '🥫', vlakken: 3, hoekpunten: 0, ribben: 2 },
     { naam: 'bol', ico: '⚽', vlakken: 1, hoekpunten: 0, ribben: 0 },
     { naam: 'kegel', ico: '🍦', vlakken: 2, hoekpunten: 1, ribben: 1 },
-    { naam: 'piramide', ico: '🔺', vlakken: 5, hoekpunten: 5, ribben: 8 }
+    { naam: 'piramide', ico: '', vlakken: 5, hoekpunten: 5, ribben: 8 }
   ];
+  // no emoji shows a square pyramid (the red triangle is flat), so this one is drawn
+  var PIRAMIDE = '<svg viewBox="0 0 120 100" width="120" height="100" role="img" aria-label="Een piramide met een vierkant grondvlak">' +
+    '<polygon points="20,80 80,80 100,65 40,65" fill="var(--card-2)" stroke="var(--ink)" stroke-width="2.5" stroke-linejoin="round"/>' +
+    '<line x1="60" y1="10" x2="20" y2="80" stroke="var(--ink)" stroke-width="2.5"/>' +
+    '<line x1="60" y1="10" x2="80" y2="80" stroke="var(--ink)" stroke-width="2.5"/>' +
+    '<line x1="60" y1="10" x2="100" y2="65" stroke="var(--ink)" stroke-width="2.5"/>' +
+    '<line x1="60" y1="10" x2="40" y2="65" stroke="var(--ink)" stroke-width="2.5" stroke-dasharray="4 4"/></svg>';
   function ruimteTekening(f) {
-    return '<div style="font-size:64px;text-align:center">' + f.ico + '</div>';
+    return '<div style="font-size:64px;text-align:center">' + (f.naam === 'piramide' ? PIRAMIDE : f.ico) + '</div>';
   }
+  // a cube is also a box, so the two are never offered next to each other
+  function verwant(naam) { return naam === 'kubus' ? 'balk' : naam === 'balk' ? 'kubus' : null; }
+  function enkelvoud(prop, n) { return n !== 1 ? prop : { vlakken: 'vlak', hoekpunten: 'hoekpunt', ribben: 'rib' }[prop]; }
 
   var HOEKSOORT = ['scherp', 'recht', 'stomp', 'gestrekt'];
   function classificeer(graden) {
@@ -79,7 +89,7 @@ import { keuzes, vulAan, vulRondom, positief, andere } from '../gereedschap.js';
   function hoekTekening(graden) {
     var cx = 20, cy = 100, lengte = 85, rad = graden * Math.PI / 180;
     var x2 = cx + lengte * Math.cos(rad), y2 = cy - lengte * Math.sin(rad);
-    return '<svg viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="Een hoek van ' + graden + ' graden">' +
+    return '<svg viewBox="-70 0 190 120" width="190" height="120" role="img" aria-label="Een hoek van ' + graden + ' graden">' +
       '<line x1="' + cx + '" y1="' + cy + '" x2="' + (cx + lengte) + '" y2="' + cy +
       '" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/>' +
       '<line x1="' + cx + '" y1="' + cy + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) +
@@ -167,7 +177,11 @@ export default {
         ans: String(vol), options: keuzes(vol, foutV.slice(0, 3)) };
     }
     if (soort === 'herkennen') {
-      var figuur = RUIMTEFIGUREN[z.i], namen = RUIMTEFIGUREN.map(function (f) { return f.naam; });
+      // never both cube and box among the choices: leave out the partner of the answer, or one of
+      // the two when the answer is neither
+      var figuur = RUIMTEFIGUREN[z.i];
+      var weg = verwant(figuur.naam) || (Math.random() < 0.5 ? 'kubus' : 'balk');
+      var namen = RUIMTEFIGUREN.map(function (f) { return f.naam; }).filter(function (n) { return n !== weg; });
       return { soort: soort, sleutel: 'herkennen|' + z.i, figuur: figuur, ans: figuur.naam,
         options: keuzes(figuur.naam, andere(namen, figuur.naam, 3)) };
     }
@@ -238,7 +252,7 @@ export default {
   },
   uitleg: function (v) {
     if (v.soort === 'herkennen') return 'Dit is een ' + v.ans + '.';
-    if (v.soort === 'eigenschap') return 'Een ' + v.figuur.naam + ' heeft ' + v.ans + ' ' + v.prop + '.';
+    if (v.soort === 'eigenschap') return 'Een ' + v.figuur.naam + ' heeft ' + v.ans + ' ' + enkelvoud(v.prop, Number(v.ans)) + '.';
     if (v.soort === 'graden') return 'Deze hoek is ' + v.ans + ' graden.';
     if (v.soort === 'hoek') {
       return v.ans === 'recht' ? 'Een rechte hoek is precies 90 graden.'

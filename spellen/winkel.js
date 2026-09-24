@@ -1,4 +1,4 @@
-import { shuffle, pad2, keuzes, vulAan, positief, vulRondom, andere } from '../gereedschap.js';
+import { shuffle, pad2, keuzes, vulAan, positief, vulRondom, andere, hoofdletter } from '../gereedschap.js';
 
   // alles rekent in centen: met kommagetallen gaat 0,1 + 0,2 mis in elke browser
   var MUNTEN = [1, 2, 5, 10, 20, 50, 100, 200];
@@ -256,8 +256,8 @@ export default {
     return { titel: kop + 'hoeveel geld ligt hier?' };
   },
   uitleg: function (v) {
-    if (v.soort === 'samen') return v.a.naam + ' (€ ' + v.a.eur + ') en ' + v.b.naam + ' (€ ' + v.b.eur + ') samen is € ' + v.ans + '.';
-    if (v.soort === 'gepast') return geld(v.c) + ' is evenveel als ' + v.ans + ' muntjes van 1 euro.';
+    if (v.soort === 'samen') return hoofdletter(v.a.naam) + ' (€ ' + v.a.eur + ') en ' + v.b.naam + ' (€ ' + v.b.eur + ') samen is € ' + v.ans + '.';
+    if (v.soort === 'gepast') return geld(v.c) + ' is evenveel als ' + v.ans + (v.ans === '1' ? ' muntje' : ' muntjes') + ' van 1 euro.';
     if (v.soort === 'herkennen') return 'Dit is ' + v.ans + '.';
     if (v.soort === 'wissel') {
       return geld(v.betaald) + ' min ' + geld(v.prijs) + ' is ' + geld(v.terug) +

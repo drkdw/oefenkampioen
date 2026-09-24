@@ -40,7 +40,7 @@ import { shuffle, keuzes, vulAan, positief, vulRondom, hoofdletter, andere } fro
     { ico: '🍼', naam: 'een flesje voor een baby', stelsel: 'inhoud', maat: 250 },
     { ico: '🪣', naam: 'een emmer', stelsel: 'inhoud', maat: 10000 },
     { ico: '☕', naam: 'een tas koffie', stelsel: 'inhoud', maat: 150 },
-    { ico: '🚢', naam: 'een zwembad', stelsel: 'inhoud', maat: 2000000 }
+    { ico: '🐠', naam: 'een aquarium', stelsel: 'inhoud', maat: 60000 }
   ];
   // alle eenheden samen: een appel van 150 l is ook een geloofwaardige verkeerde keuze
   var ALLE_EENHEDEN = [];
@@ -63,13 +63,22 @@ import { shuffle, keuzes, vulAan, positief, vulRondom, hoofdletter, andere } fro
     return '<svg viewBox="0 0 ' + breed + ' ' + hoog + '" width="100%" style="max-width:320px" role="img" aria-label="Een liniaal die ' +
       cm + ' centimeter aanduidt">' + p.join('') + '</svg>';
   }
-  // richting 0 is groter/langer/zwaarder, richting 1 is kleiner/korter/lichter
-  var VERGELIJK = { lengte: ['langer', 'korter'], gewicht: ['zwaarder', 'lichter'], inhoud: ['meer erin', 'minder erin'] };
+  // direction 0 is bigger/longer/heavier, direction 1 is smaller/shorter/lighter
+  var VERGELIJK = { lengte: ['langer', 'korter'], gewicht: ['zwaarder', 'lichter'], inhoud: ['meer', 'minder'] };
+  // a six-year-old compares without measuring, so only things that differ at least three times
+  // over count: a glass of milk and a baby bottle are too close to call
+  var DUIDELIJK = 3;
   function vergelijkPoel(basis, richting) {
     return DINGEN.filter(function (x) {
       return x.stelsel === basis.stelsel && x !== basis &&
-        (richting === 0 ? x.maat > basis.maat : x.maat < basis.maat);
+        (richting === 0 ? x.maat >= basis.maat * DUIDELIJK : x.maat * DUIDELIJK <= basis.maat);
     });
+  }
+  function vergelijkFout(basis, richting) { return vergelijkPoel(basis, 1 - richting); }
+  function vergelijkZin(basis, richting) {
+    return basis.stelsel === 'inhoud'
+      ? 'waar kan ' + VERGELIJK.inhoud[richting] + ' in dan in ' + basis.naam + '?'
+      : 'wat is ' + VERGELIJK[basis.stelsel][richting] + ' dan ' + basis.naam + '?';
   }
   // een maatbeker, gevuld tot een van tien liter-strepen: dezelfde manier van aflezen als de
   // liniaal, maar dan voor inhoud, en zonder de omrekening naar deciliter die leerjaar 3 doet
@@ -101,9 +110,11 @@ import { shuffle, keuzes, vulAan, positief, vulRondom, hoofdletter, andere } fro
     // de eenheden op een rij, met de stapjes van tien ertussen
     var lijst = STELSELS[stelsel].eenheden;
     return '<div style="display:flex;align-items:flex-end;gap:2px;font-family:Fredoka,sans-serif">' +
-      lijst.slice().reverse().map(function (e, i) {
+      lijst.slice().reverse().map(function (e, i, rij) {
+        // the real step to the next unit: ×10 between cm and mm, but ×1000 between kg and g
+        var volgende = rij[i + 1];
         return '<span style="background:var(--card-2);border:2px solid var(--line);border-radius:10px;padding:6px 10px;font-size:16px">' +
-          e.naam + '</span>' + (i < lijst.length - 1 ? '<span style="color:var(--ink-soft);font-size:13px">×10</span>' : '');
+          e.naam + '</span>' + (volgende ? '<span style="color:var(--ink-soft);font-size:13px">×' + (e.in / volgende.in) + '</span>' : '');
       }).join('') + '</div>';
   }
 
@@ -162,8 +173,7 @@ export default {
         [0, 1].forEach(function (richting) {
           // een zinvolle vraag heeft minstens een juist antwoord en minstens drie foute
           var poel = vergelijkPoel(basis, richting);
-          var rest = DINGEN.filter(function (x) { return x.stelsel === basis.stelsel && x !== basis; }).length - poel.length;
-          if (poel.length >= 1 && rest >= 3) uit2.push({ basis: basis, richting: richting });
+          if (poel.length >= 1 && vergelijkFout(basis, richting).length >= 3) uit2.push({ basis: basis, richting: richting });
         });
       });
       return uit2;
@@ -180,13 +190,17 @@ export default {
     // omrekenen: elk paar met een handvol ronde getallen, in beide richtingen.
     // van klein naar groot vertrekken we van het veelvoud, anders is 30 g geen heel aantal kg
     var GETALLEN = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 25, 30, 50];
+    // keep both numbers inside the number range of the year: up to 100 in the second, up to
+    // 10 000 in the third (the third year counts to 1000, but then kilo and gram would only
+    // ever be 1 kg = 1000 g)
+    var grens = h.leerjaar <= 2 ? 100 : h.leerjaar === 3 ? 10000 : 100000;
     (h.paren || [['m', 'cm']]).forEach(function (paar) {
       var stelsel = eenheid('lengte', paar[0]) ? 'lengte' : eenheid('gewicht', paar[0]) ? 'gewicht' : 'inhoud';
       var a = eenheid(stelsel, paar[0]), b = eenheid(stelsel, paar[1]);
       var groot = a.in > b.in ? a : b, klein = a.in > b.in ? b : a;
       var stap = groot.in / klein.in;
       GETALLEN.forEach(function (n) {
-        if (n * stap > 100000) return;
+        if (n * stap > grens) return;
         uit.push({ stelsel: stelsel, van: groot.naam, naar: klein.naam, n: n });
         uit.push({ stelsel: stelsel, van: klein.naam, naar: groot.naam, n: n * stap });
       });
@@ -203,9 +217,7 @@ export default {
     }
     if (soort === 'vergelijk') {
       var poel2 = vergelijkPoel(z.basis, z.richting), goed = poel2[Math.floor(Math.random() * poel2.length)];
-      var buiten = DINGEN.filter(function (x) {
-        return x.stelsel === z.basis.stelsel && x !== z.basis && poel2.indexOf(x) === -1;
-      }).map(function (x) { return x.naam; });
+      var buiten = vergelijkFout(z.basis, z.richting).map(function (x) { return x.naam; });
       return { soort: soort, sleutel: 'vergelijk|' + z.basis.naam + z.richting, basis: z.basis, richting: z.richting,
         ans: goed.naam, options: keuzes(goed.naam, andere(buiten, null, 3)) };
     }
@@ -221,9 +233,10 @@ export default {
       var d = z.ding, lijst = STELSELS[d.stelsel].eenheden;
       // zoek de eenheid waarin het ding een mooi getal geeft
       var beste = lijst[0], getal = d.maat;
+      // nobody says a child is 13 dm: in everyday speech lengths go in mm, cm or m
       lijst.forEach(function (e) {
         var g = d.maat / e.in;
-        if (g === Math.round(g) && g >= 1 && g < getal) { beste = e; getal = g; }
+        if (e.naam !== 'dm' && g === Math.round(g) && g >= 1 && g < getal) { beste = e; getal = g; }
       });
       var juist = toon(getal, beste.naam), fout = [];
       // eerst de buren uit hetzelfde stelsel, dan de rest: gewicht heeft er maar twee
@@ -266,17 +279,22 @@ export default {
     var kop = 'Vraag ' + nr + ': ';
     if (v.soort === 'liter') return { titel: kop + 'hoeveel liter staat er in de beker?', sub: 'Lees de streep af.' };
     if (v.soort === 'vergelijk') {
-      return { titel: kop + 'wat is ' + VERGELIJK[v.basis.stelsel][v.richting] + ' dan ' + v.basis.naam + '?',
+      return { titel: kop + vergelijkZin(v.basis, v.richting),
         sub: 'Denk aan hoe groot het echt is, je moet niets meten.' };
     }
     if (v.soort === 'liniaal') return { titel: kop + 'hoe lang is de streep?', sub: 'Lees af op de liniaal.' };
-    if (v.soort === 'past') return { titel: kop + 'hoeveel weegt of meet ' + v.ding.naam + '?', sub: 'Kies het getal met de juiste maat erbij.' };
+    if (v.soort === 'past') {
+      var werkwoord = { lengte: 'hoe lang is ', gewicht: 'hoeveel weegt ', inhoud: 'hoeveel kan er in ' }[v.ding.stelsel];
+      return { titel: kop + werkwoord + v.ding.naam + '?', sub: 'Kies het getal met de juiste maat erbij.' };
+    }
     if (v.soort === 'typ') return { titel: kop + 'hoeveel ' + v.naar + ' is ' + v.n + ' ' + v.van + '?', sub: 'Typ alleen het getal.' };
     return { titel: kop + 'hoeveel ' + v.naar + ' is ' + v.n + ' ' + v.van + '?' };
   },
   uitleg: function (v) {
     if (v.soort === 'liter') return 'De beker is gevuld tot ' + v.liter + ' liter.';
-    if (v.soort === 'vergelijk') return hoofdletter(v.ans) + ' is ' + VERGELIJK[v.basis.stelsel][v.richting] + ' dan ' + v.basis.naam + '.';
+    if (v.soort === 'vergelijk') return v.basis.stelsel === 'inhoud'
+      ? 'In ' + v.ans + ' kan ' + VERGELIJK.inhoud[v.richting] + ' dan in ' + v.basis.naam + '.'
+      : hoofdletter(v.ans) + ' is ' + VERGELIJK[v.basis.stelsel][v.richting] + ' dan ' + v.basis.naam + '.';
     if (v.soort === 'liniaal') return 'De streep loopt tot ' + v.cm + ', dus ' + v.cm + ' cm. Dat is ' + v.mm + ' mm.';
     if (v.soort === 'past') return hoofdletter(v.ding.naam) + ' is ongeveer ' + v.getal + ' ' + v.eh + '.';
     var van = eenheid(v.stelsel, v.van), naar = eenheid(v.stelsel, v.naar);
@@ -287,7 +305,7 @@ export default {
   },
   kort: function (v) {
     if (v.soort === 'liter') return 'Hoeveel liter is dit?';
-    if (v.soort === 'vergelijk') return 'Wat is ' + VERGELIJK[v.basis.stelsel][v.richting] + ' dan ' + v.basis.naam + '?';
+    if (v.soort === 'vergelijk') return hoofdletter(vergelijkZin(v.basis, v.richting));
     if (v.soort === 'liniaal') return 'De streep op de liniaal';
     if (v.soort === 'past') return 'Hoeveel is ' + v.ding.naam + '?';
     return v.n + ' ' + v.van + ' in ' + v.naar;
@@ -310,7 +328,8 @@ export default {
       check(liniaal(d.stelsel === 'lengte' ? d.maat : 100).indexOf('<svg') === 0, 'de liniaal tekent');
     });
     check(liniaal(150).indexOf('aria-label') > -1, 'de liniaal heeft een beschrijving');
-    check(trap('lengte').indexOf('mm') > -1 && trap('lengte').indexOf('×10') > -1, 'de maattrap toont de stapjes van tien');
+    check(trap('lengte').indexOf('mm') > -1 && trap('lengte').indexOf('×10<') > -1, 'de maattrap toont de stapjes van tien');
+    check(trap('gewicht').indexOf('×1000<') > -1 && trap('gewicht').indexOf('×10<') === -1, 'tussen kg en g staat ×1000');
     // de afleiders moeten de twee echte fouten bevatten: tien keer mis, of de verkeerde kant op
     var af = afleidersOm(300, eenheid('lengte', 'm'), eenheid('lengte', 'cm'), 3);
     check(af.indexOf(30) > -1 || af.indexOf(3000) > -1, 'een factor tien mis staat erbij (nu ' + af.join(', ') + ')');
