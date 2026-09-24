@@ -322,14 +322,15 @@
     background: var(--card);
     border: 3px solid var(--line);
     border-radius: 28px;
-    padding: 16px;
+    padding: 10px;
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
     overflow: hidden;
-    min-height: 200px;
+    min-height: 0;
+    max-height: var(--doek-max);
   }
   /* what a game draws can consist of several pieces: clock, arrow, clock */
   #doek {
@@ -399,7 +400,7 @@
     margin: 0;
   }
   .question:focus { outline: none; }
-  #game { display: flex; flex-direction: column; gap: 20px; }
+  #game { display: flex; flex-direction: column; gap: 12px; }
   .qbox { display: flex; flex-direction: column; gap: 6px; }
   .subq {
     font-family: Nunito, sans-serif;
@@ -521,7 +522,60 @@
     svg.monster { animation: none; }
     .confetti { display: none; }
   }
-  @media (max-width: 360px) { .options { grid-template-columns: 1fr; } }
+  /* one column on a very narrow screen only when the answers are long, like clock times */
+  @media (max-width: 360px) { .options.lang { grid-template-columns: 1fr; } }
+  /* the whole question fits on the screen: the drawing gets what is left after the rest */
+  #game { --doek-max: clamp(110px, calc(100dvh - 420px), 320px); padding-bottom: 8px; }
+  #game.met-scherm { --doek-max: clamp(90px, calc(100dvh - 470px), 300px); }
+  body[data-scherm="game"] header { display: none; }
+  .dot { height: 18px; font-size: 11px; border-radius: 6px; }
+  .typhint { margin: 0; min-height: 18px; font-size: 14px; color: var(--bad); text-align: center; }
+  .scorebar .geluid { width: 38px; height: 38px; font-size: 17px; }
+
+  /* the answer sheet slides up over the choices, which are disabled by then anyway */
+  .blad {
+    position: fixed; left: 50%; bottom: 0; z-index: 5;
+    width: min(560px, 100%); transform: translateX(-50%);
+    background: var(--card); border: 3px solid var(--line); border-bottom: none;
+    border-radius: 24px 24px 0 0; box-shadow: 0 -6px 24px rgba(0, 0, 0, .18);
+    padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; gap: 10px;
+    animation: opschuiven .22s ease-out;
+  }
+  .blad.goed { border-color: var(--good); }
+  .blad.fout { border-color: var(--bad); }
+  .blad .feedback { min-height: 0; margin: 0; }
+  @keyframes opschuiven { from { transform: translate(-50%, 100%); } to { transform: translate(-50%, 0); } }
+  .verderbalk { height: 6px; border-radius: 999px; background: var(--line); overflow: hidden; }
+  .verderbalk span { display: block; height: 100%; background: var(--good); transform-origin: left center; }
+
+  /* a phone on its side: drawing left, question and choices right */
+  @media (orientation: landscape) and (max-height: 500px) {
+    body[data-scherm="game"] .wrap { max-width: 900px; padding-block: 8px 8px; }
+    #game {
+      display: grid; column-gap: 16px; row-gap: 8px; align-items: start;
+      grid-template-columns: minmax(0, 45fr) minmax(0, 55fr);
+      grid-template-areas: "bar bar" "dots dots" "tempo tempo" "doek scherm" "doek vraag" "doek keuzes";
+      --doek-max: calc(100dvh - 110px);
+    }
+    #game.zonder-doek { grid-template-areas: "bar bar" "dots dots" "tempo tempo" "scherm scherm" "vraag vraag" "keuzes keuzes"; }
+    #game > .scorebar { grid-area: bar; }
+    #dots { grid-area: dots; }
+    #tempobalk { grid-area: tempo; }
+    #doekCard { grid-area: doek; }
+    #schermCard { grid-area: scherm; }
+    #game > .qbox { grid-area: vraag; }
+    #options, #typen { grid-area: keuzes; }
+    .opt { padding: 10px 8px; }
+    /* the right column is short: a smaller answer box, button and little screen */
+    #typen { gap: 6px; }
+    .veld { font-size: 30px; padding: 6px 14px; }
+    #typen .big-btn, .blad .big-btn { padding: 10px; font-size: 18px; }
+    .scherm { font-size: 26px; padding: 8px 16px; }
+    .blad { left: auto; right: 0; width: 55%; transform: none; animation-name: opschuivenRechts; }
+    @keyframes opschuivenRechts { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  }
+  @media (prefers-reduced-motion: reduce) { .blad { animation: none; } }
 </style>
 
 <div class="wrap">
@@ -580,6 +634,7 @@
       <button class="icon-btn" id="homeBtn" aria-label="Terug naar de hoofdstukken">&#127968;</button>
       <span class="titel" id="hfdTitel"></span>
       <span class="score-badge" id="scoreBadge">0 / 10</span>
+      <button class="icon-btn geluid" id="soundBtn2" aria-label="Geluid aan of uit">&#128266;</button>
     </div>
     <div class="dots" id="dots" role="list" aria-label="Voortgang van je toets"></div>
     <div class="tempobalk" id="tempobalk" hidden><span id="tempovulling"></span></div>
@@ -600,11 +655,15 @@
 
     <div class="typen" id="typen" hidden>
       <div class="veld" id="veld"></div>
+      <p class="typhint" id="typhint" aria-live="polite"></p>
       <button class="big-btn" id="checkBtn">Controleer</button>
     </div>
 
-    <p class="feedback" id="feedback" aria-live="polite"></p>
-    <button class="big-btn" id="nextBtn">Volgende vraag</button>
+    <div class="blad" id="blad" hidden>
+      <p class="feedback" id="feedback" aria-live="polite"></p>
+      <div class="verderbalk" id="verderbalk" hidden><span id="verdervulling"></span></div>
+      <button class="big-btn" id="nextBtn">Volgende vraag</button>
+    </div>
   </div>
 
   <div class="result" id="result" hidden>
