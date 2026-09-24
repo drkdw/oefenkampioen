@@ -72,11 +72,11 @@ antwoord gaat het na 3,5 seconden vanzelf verder; na een fout blijft de uitleg s
 | spel | wat |
 | --- | --- |
 | Klokkijken | hele uren, kwartieren, dagdelen, digitale klok, tijdsduur, seconden |
-| Maaltafels | sprongen tellen, maaltafels, delen, de ontbrekende factor |
+| Maaltafels | maaltafels, delen, de ontbrekende factor |
 | Het winkeltje | samen en gepast betalen, munten tellen, wisselgeld |
 | Meten en wegen | vergelijken zonder meten, liniaal lezen, liter aflezen, alle omzettingen door elkaar |
 | De kalender | dagen, maanden, seizoenen, hoeveel dagen, verder tellen |
-| Bruggen bouwen | splitsen, brug tot 20 en tot 1000, cijferend rekenen, negatieve getallen, machten van tien |
+| Bruggen bouwen | splitsen, sprongen tellen, brug tot 20 en tot 1000, cijferend rekenen, negatieve getallen, machten van tien |
 | Spiegelen | vormen, richtingen, spiegelen, symmetrie, gedraaid of gespiegeld |
 | Breuken | deel van een geheel, gelijkwaardig, optellen, breuk maal getal, kommagetallen |
 | Meetkunde | omtrek, oppervlakte, hoeken, volume, driehoek, ruimtefiguren, hoeken meten |
