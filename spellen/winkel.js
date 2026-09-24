@@ -1,6 +1,6 @@
 import { shuffle, pad2, keuzes, vulAan, positief, vulRondom, andere, hoofdletter } from '../gereedschap.js';
 
-  // alles rekent in centen: met kommagetallen gaat 0,1 + 0,2 mis in elke browser
+  // everything is computed in cents: with decimals, 0.1 + 0.2 goes wrong in every browser
   var MUNTEN = [1, 2, 5, 10, 20, 50, 100, 200];
   function geld(c) { return '€ ' + Math.floor(c / 100) + ',' + pad2(c % 100); }
   function muntnaam(c) { return c < 100 ? c + ' cent' : '€ ' + (c / 100); }
@@ -12,7 +12,7 @@ import { shuffle, pad2, keuzes, vulAan, positief, vulRondom, andere, hoofdletter
     { ico: '⚽', naam: 'een bal', max: 1500 }, { ico: '📚', naam: 'een strip', max: 900 }
   ];
 
-  /* munten en biljetten tekenen */
+  /* draw coins and banknotes */
   function munt(c) {
     var koper = c <= 5, goud = c >= 10 && c < 100;
     var r = c < 100 ? 30 : 34;
@@ -37,7 +37,7 @@ import { shuffle, pad2, keuzes, vulAan, positief, vulRondom, andere, hoofdletter
       '</svg>';
   }
   function stuk(c) { return c >= 500 ? biljet(c) : munt(c); }
-  // eerste leerjaar: hele euro's, prijzen die passen bij het gewone rekenen tot 20
+  // first grade: whole euros, prices that fit regular arithmetic up to 20
   var WAREN_KLEIN = [
     { ico: '🍎', naam: 'een appel', eur: 1 }, { ico: '🍌', naam: 'een banaan', eur: 1 },
     { ico: '🧃', naam: 'een pakje sap', eur: 2 }, { ico: '📓', naam: 'een schrift', eur: 2 },
@@ -62,13 +62,13 @@ import { shuffle, pad2, keuzes, vulAan, positief, vulRondom, andere, hoofdletter
   function totaal(lijst) {
     return lijst.reduce(function (a, b) { return a + b; }, 0);
   }
-  // een handvol munten die samen een bedrag vormen, zoals je ze echt in je zak hebt
+  // a handful of coins that together make an amount, like you really have in your pocket
   function greep(bron, hoeveel) {
     var uit = [];
     for (var i = 0; i < hoeveel; i++) uit.push(bron[Math.floor(Math.random() * bron.length)]);
     return uit.sort(function (a, b) { return b - a; });
   }
-  // bouw een voorraad verschillende greepjes, want binnen een toets mag niets terugkeren
+  // build a stock of distinct handfuls, because nothing may repeat within a test
   function greepjes(bron, min, max, hoeveel) {
     var uit = [], gezien = {}, pogingen = 0;
     while (uit.length < hoeveel && pogingen < hoeveel * 40) {
@@ -81,15 +81,15 @@ import { shuffle, pad2, keuzes, vulAan, positief, vulRondom, andere, hoofdletter
     }
     return uit;
   }
-  // de fouten die kinderen bij geld echt maken
+  // the mistakes children really make with money
   function afleidersBedrag(juist, stukken) {
     var lijst = [], kern = [];
     if (stukken && stukken.length) {
-      kern.push(juist - stukken[0]);                    // een muntstuk vergeten te tellen
-      kern.push(juist + stukken[stukken.length - 1]);   // een muntstuk dubbel geteld
+      kern.push(juist - stukken[0]);                    // forgot to count one coin
+      kern.push(juist + stukken[stukken.length - 1]);   // counted one coin twice
     }
     var centen = juist % 100;
-    if (centen) kern.push(juist - centen);              // de centen laten vallen
+    if (centen) kern.push(juist - centen);              // dropped the cents
     kern.push(juist + 100);
     kern.push(juist - 100);
     kern.push(juist + 10);
@@ -102,12 +102,12 @@ import { shuffle, pad2, keuzes, vulAan, positief, vulRondom, andere, hoofdletter
     var juist = betaald - prijs, lijst = [], kern = [];
     var centen = prijs % 100;
     if (centen) {
-      // de klassieker: de euro's aftrekken en de centen gewoon overschrijven
+      // the classic: subtract the euros and just copy the cents over
       kern.push(betaald - Math.floor(prijs / 100) * 100 + centen);
-      // wel een euro geleend, maar de centen toch overgeschreven
+      // borrowed a euro, but still copied the cents over
       kern.push(betaald - Math.ceil(prijs / 100) * 100 + centen);
     }
-    kern.push(prijs);                                    // de prijs teruggeven in plaats van het verschil
+    kern.push(prijs);                                    // giving back the price instead of the difference
     kern.push(juist + 100);
     kern.push(juist - 100);
     vulAan(lijst, juist, kern, function (k) { return k > 0 && k < betaald; });
@@ -156,9 +156,9 @@ export default {
     if (soort === 'gepast') return [100, 200, 500, 1000].map(function (c) { return { c: c }; });
     if (soort === 'herkennen') return h.bron.map(function (c) { return { c: c }; });
     if (soort === 'wissel') {
-      // de prijs hoort bij het voorwerp, en je betaalt met het eerste briefje dat groot genoeg is
-      // elke prijs komt maar een keer voor: hetzelfde bedrag met een ander plaatje is dezelfde som.
-      // de volgorde wisselt, zodat niet altijd hetzelfde voorwerp de goedkope prijzen krijgt
+      // the price belongs to the item, and you pay with the first note that is large enough
+      // each price occurs only once: the same amount with a different picture is the same sum.
+      // the order is shuffled, so the same item does not always get the cheap prices
       var uit = [], gezien = {};
       shuffle(WAREN.slice()).forEach(function (w) {
         for (var c = 50; c <= w.max; c += 5) {
@@ -282,7 +282,7 @@ export default {
     check(geld(1250) === '€ 12,50', 'twaalf euro vijftig');
     check(muntnaam(50) === '50 cent' && muntnaam(200) === '€ 2', 'namen van de stukken');
     check(totaal([200, 50, 20]) === 270, 'optellen in centen');
-    // het klassieke wisselgeldmisverstand moet als afleider aangeboden worden
+    // the classic change mistake must be offered as a distractor
     var af = afleidersWissel(500, 340);
     check(af.indexOf('€ 2,40') > -1, 'de euro-min-euro fout staat erbij (nu ' + af.join(', ') + ')');
     check(af.indexOf('€ 1,60') === -1, 'het juiste antwoord staat niet tussen de afleiders');
@@ -290,7 +290,7 @@ export default {
       check(stuk(c).indexOf('<svg') === 0, 'elk stuk wordt getekend: ' + c);
       check(stuk(c).indexOf('aria-label') > -1, 'elk stuk heeft een beschrijving: ' + c);
     });
-    // elk bedrag van 5 cent tot 50 euro moet drie bruikbare afleiders opleveren
+    // every amount from 5 cents to 50 euros must yield three usable distractors
     for (var b = 5; b <= 5000; b += 5) {
       var lijst = afleidersBedrag(b, [5, 10]);
       check(lijst.length === 3, 'drie afleiders bij ' + geld(b));

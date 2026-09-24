@@ -1,7 +1,7 @@
 import { keuzes, vulAan, vulRondom, positief, andere, shuffle } from '../gereedschap.js';
 
-  // de vijf breuken van leerjaar 3: eenvoudig genoeg om in een balkje te tekenen, en geen twee
-  // ervan zijn gelijkwaardig. Gelijkwaardige breuken (zoals 2/4 naast 1/2) zijn leerjaar 4
+  // the five fractions of year 3: simple enough to draw in a bar, and no two of them
+  // are equivalent. Equivalent fractions (like 2/4 next to 1/2) are year 4
   var BREUKEN = [
     { teller: 1, noemer: 2 }, { teller: 1, noemer: 3 }, { teller: 2, noemer: 3 },
     { teller: 1, noemer: 4 }, { teller: 3, noemer: 4 }
@@ -9,8 +9,8 @@ import { keuzes, vulAan, vulRondom, positief, andere, shuffle } from '../gereeds
   function breukTekst(b) { return b.teller + '/' + b.noemer; }
   function breukWaarde(b) { return b.teller / b.noemer; }
 
-  // een balkje van gelijke stukjes, teller ervan gekleurd. Geen taart: geen trigonometrie nodig,
-  // en een reep chocolade is het gangbare beeld in Vlaamse rekenmethodes
+  // a bar of equal pieces, the numerator of them coloured. No pie: no trigonometry needed,
+  // and a chocolate bar is the usual picture in Flemish maths textbooks
   function breukBalk(b, kleur) {
     var breed = 180, hoog = 56, stap = breed / b.noemer;
     var p = [];
@@ -23,18 +23,18 @@ import { keuzes, vulAan, vulRondom, positief, andere, shuffle } from '../gereeds
   }
   function balkMet(b) { return '<div style="max-width:220px;margin:0 auto">' + breukBalk(b, '#FF7A45') + '</div>'; }
 
-  /* --------- leerjaar 4 --------- */
+  /* --------- year 4 --------- */
 
-  // elke basisbreuk met een paar gelijkwaardige vormen; de eerste is telkens de gekozen vraag
+  // each base fraction with a few equivalent forms; the first is always the chosen question
   var GELIJKWAARDIG = {
     '1/2': ['2/4', '3/6', '4/8'], '1/3': ['2/6', '3/9'], '2/3': ['4/6', '6/9'],
     '1/4': ['2/8', '3/12'], '3/4': ['6/8', '9/12']
   };
   var ALLE_GELIJK = Object.keys(GELIJKWAARDIG).reduce(function (a, k) { return a.concat(GELIJKWAARDIG[k]); }, []);
 
-  /* --------- leerjaar 5 --------- */
+  /* --------- year 5 --------- */
 
-  // een handvol breuken met een nette, niet-repeterende komma-vorm
+  // a handful of fractions with a neat, non-repeating decimal form
   var NAAR_KOMMA = [
     { teller: 1, noemer: 2, komma: '0,5' }, { teller: 1, noemer: 4, komma: '0,25' },
     { teller: 3, noemer: 4, komma: '0,75' }, { teller: 1, noemer: 5, komma: '0,2' },
@@ -77,7 +77,7 @@ export default {
   ],
   zaadjes: function (soort) {
     if (soort === 'vergelijk') {
-      // welke vier van de vijf breuken deze keer, en welke daarvan buiten valt
+      // which four of the five fractions this time, and which of them is left out
       return BREUKEN.map(function (b, i) { return { weg: i }; });
     }
     if (soort === 'gelijk') return Object.keys(GELIJKWAARDIG).map(function (k) { return { basis: k }; });
@@ -170,8 +170,8 @@ export default {
       [3, 4, 5, 6, 8].forEach(function (nm) {
         if (nm !== z.noemer && uitTeller > 0 && uitTeller < nm) kern2.push(uitTeller + '/' + nm);
       });
-      // kern2 bevat al enkel geldige breuktekst, geen extra controle nodig: en positief() op
-      // "1/3" geeft altijd NaN, dus die zou de hele lijst hebben leeggehouden
+      // kern2 already holds only valid fraction text, no extra check needed: and positief() on
+      // "1/3" always gives NaN, so it would have kept the whole list empty
       var fout3 = [];
       vulAan(fout3, juist3, kern2);
       return { soort: soort, sleutel: soort + '|' + z.noemer + ':' + z.t1 + ':' + z.t2, noemer: z.noemer,
@@ -220,8 +220,8 @@ export default {
     if (soort === 'honderdste') {
       var naarKomma = function (x) { return '0,' + (x < 10 ? '0' + x : x); };
       var komma2 = naarKomma(z.h);
-      // eerst de foute getallen bepalen, pas op het einde omzetten naar kommatekst: vulAan zou
-      // "0,02" nooit als positief herkennen, de komma maakt er geen getal meer van
+      // pick the wrong numbers first, convert to decimal text only at the end: vulAan would
+      // never see "0,02" as positive, the comma stops it from being a number
       var foutGetallen = [];
       vulAan(foutGetallen, z.h, [z.h + 1, z.h - 1, z.h + 10, z.h - 10], function (x) { return x >= 1 && x <= 99; });
       vulRondom(foutGetallen, z.h, 1, function (x) { return x >= 1 && x <= 99; });
@@ -243,8 +243,8 @@ export default {
   },
   teken: function (v) {
     if (v.soort === 'vergelijk') {
-      // een raster van twee kolommen, zodat vier repen ook op een smal scherm naast elkaar
-      // staan in plaats van eronder: dat scheelt de helft van de hoogte van deze tekening
+      // a two-column grid, so four bars sit side by side even on a narrow screen
+      // instead of stacked: that saves half the height of this drawing
       return '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-width:280px;margin:0 auto">' +
         v.kandidaten.map(function (k) {
           return '<div style="text-align:center;font-family:Fredoka,sans-serif">' +

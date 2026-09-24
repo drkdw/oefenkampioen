@@ -1,6 +1,6 @@
 import { shuffle, keuzes, vulAan, positief, vulRondom, hoofdletter, andere } from '../gereedschap.js';
 
-  // alles rekent in de kleinste eenheid: mm, g en ml. Zo blijft het hele getallen.
+  // everything is counted in the smallest unit: mm, g and ml. That keeps it to whole numbers.
   var STELSELS = {
     lengte: { ico: '📏', eenheden: [
       { naam: 'mm', in: 1 }, { naam: 'cm', in: 10 }, { naam: 'dm', in: 100 }, { naam: 'm', in: 1000 }] },
@@ -15,7 +15,7 @@ import { shuffle, keuzes, vulAan, positief, vulRondom, hoofdletter, andere } fro
   }
   function toon(getal, naam) { return getal + ' ' + naam; }
 
-  /* de dingen die je in de klas meet, met hun maat in de kleinste eenheid */
+  /* the things you measure in class, with their size in the smallest unit */
   var DINGEN = [
     { ico: '✏️', naam: 'een potlood', stelsel: 'lengte', maat: 170 },
     { ico: '📕', naam: 'een boek', stelsel: 'lengte', maat: 240 },
@@ -42,15 +42,15 @@ import { shuffle, keuzes, vulAan, positief, vulRondom, hoofdletter, andere } fro
     { ico: '☕', naam: 'een tas koffie', stelsel: 'inhoud', maat: 150 },
     { ico: '🐠', naam: 'een aquarium', stelsel: 'inhoud', maat: 60000 }
   ];
-  // alle eenheden samen: een appel van 150 l is ook een geloofwaardige verkeerde keuze
+  // all units together: an apple of 150 l is also a believable wrong choice
   var ALLE_EENHEDEN = [];
   ['lengte', 'gewicht', 'inhoud'].forEach(function (st) {
     STELSELS[st].eenheden.forEach(function (e) { ALLE_EENHEDEN.push(e.naam); });
   });
 
-  /* een liniaal die een lengte in cm toont */
+  /* a ruler that shows a length in cm */
   function liniaal(mm) {
-    // de liniaal is altijd twintig centimeter lang, anders eindigt de streep altijd op het einde
+    // the ruler is always twenty centimetres long, otherwise the bar would always end at the edge
     var cm = Math.round(mm / 10), breed = 320, hoog = 88, MAXCM = 20;
     var schaal = breed / MAXCM;
     var p = ['<rect x="0" y="30" width="' + breed + '" height="40" rx="6" fill="#F3D9A4" stroke="#C9A75F" stroke-width="2"/>'];
@@ -80,8 +80,8 @@ import { shuffle, keuzes, vulAan, positief, vulRondom, hoofdletter, andere } fro
       ? 'waar kan ' + VERGELIJK.inhoud[richting] + ' in dan in ' + basis.naam + '?'
       : 'wat is ' + VERGELIJK[basis.stelsel][richting] + ' dan ' + basis.naam + '?';
   }
-  // een maatbeker, gevuld tot een van tien liter-strepen: dezelfde manier van aflezen als de
-  // liniaal, maar dan voor inhoud, en zonder de omrekening naar deciliter die leerjaar 3 doet
+  // a measuring cup, filled to one of ten litre marks: read the same way as the ruler,
+  // but for volume, and without the conversion to decilitres that year 3 does
   function maatbeker(liter) {
     var MAX = 10, breed = 90, hoog = 150, vulHoogte = (hoog - 20) * (liter / MAX);
     var p = ['<rect x="10" y="10" width="' + (breed - 20) + '" height="' + (hoog - 20) +
@@ -100,14 +100,14 @@ import { shuffle, keuzes, vulAan, positief, vulRondom, hoofdletter, andere } fro
     return '<svg viewBox="0 0 ' + (breed + 24) + ' ' + hoog + '" width="' + (breed + 24) + '" height="' + hoog +
       '" role="img" aria-label="Een maatbeker gevuld tot ' + liter + ' liter">' + p.join('') + '</svg>';
   }
-  /* een weegschaal of maatbeker in het groot */
+  /* a scale or measuring cup, shown large */
   function ding(d) {
     return '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;font-family:Fredoka,sans-serif">' +
       '<span style="font-size:64px">' + d.ico + '</span>' +
       '<span style="font-size:17px;color:var(--ink-soft)">' + d.naam + '</span></div>';
   }
   function trap(stelsel) {
-    // de eenheden op een rij, met de stapjes van tien ertussen
+    // the units in a row, with the steps of ten between them
     var lijst = STELSELS[stelsel].eenheden;
     return '<div style="display:flex;align-items:flex-end;gap:2px;font-family:Fredoka,sans-serif">' +
       lijst.slice().reverse().map(function (e, i, rij) {
@@ -118,7 +118,7 @@ import { shuffle, keuzes, vulAan, positief, vulRondom, hoofdletter, andere } fro
       }).join('') + '</div>';
   }
 
-  // omrekenen gaat mis op twee manieren: de verkeerde kant op, of een stap te ver
+  // converting goes wrong in two ways: in the wrong direction, or one step too far
   function afleidersOm(juist, van, naar, waarde) {
     var lijst = [], omgekeerd = Math.round(waarde * van.in * van.in / naar.in / naar.in);
     vulAan(lijst, juist, [juist * 10, Math.round(juist / 10), omgekeerd, juist * 100, juist + 1], function (k) {
@@ -171,7 +171,7 @@ export default {
       var uit2 = [];
       DINGEN.forEach(function (basis) {
         [0, 1].forEach(function (richting) {
-          // een zinvolle vraag heeft minstens een juist antwoord en minstens drie foute
+          // a sensible question has at least one right answer and at least three wrong ones
           var poel = vergelijkPoel(basis, richting);
           if (poel.length >= 1 && vergelijkFout(basis, richting).length >= 3) uit2.push({ basis: basis, richting: richting });
         });
@@ -179,7 +179,7 @@ export default {
       return uit2;
     }
     if (soort === 'liniaal') {
-      // hele centimeters tot 20, dat is wat er op een schoolliniaal past
+      // whole centimetres up to 20, that is what fits on a school ruler
       for (var cm = 1; cm <= 20; cm++) uit.push({ mm: cm * 10 });
       return uit;
     }
@@ -187,8 +187,8 @@ export default {
       DINGEN.forEach(function (d) { uit.push({ ding: d }); });
       return uit;
     }
-    // omrekenen: elk paar met een handvol ronde getallen, in beide richtingen.
-    // van klein naar groot vertrekken we van het veelvoud, anders is 30 g geen heel aantal kg
+    // converting: each pair with a handful of round numbers, in both directions.
+    // from small to large we start from the multiple, otherwise 30 g is not a whole number of kg
     var GETALLEN = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 25, 30, 50];
     // keep both numbers inside the number range of the year: up to 100 in the second, up to
     // 10 000 in the third (the third year counts to 1000, but then kilo and gram would only
@@ -231,7 +231,7 @@ export default {
     }
     if (soort === 'past') {
       var d = z.ding, lijst = STELSELS[d.stelsel].eenheden;
-      // zoek de eenheid waarin het ding een mooi getal geeft
+      // find the unit in which the thing gives a nice number
       var beste = lijst[0], getal = d.maat;
       // nobody says a child is 13 dm: in everyday speech lengths go in mm, cm or m
       lijst.forEach(function (e) {
@@ -239,7 +239,7 @@ export default {
         if (e.naam !== 'dm' && g === Math.round(g) && g >= 1 && g < getal) { beste = e; getal = g; }
       });
       var juist = toon(getal, beste.naam), fout = [];
-      // eerst de buren uit hetzelfde stelsel, dan de rest: gewicht heeft er maar twee
+      // first the neighbours from the same system, then the rest: weight has only two
       vulAan(fout, juist, shuffle(lijst.filter(function (e) { return e.naam !== beste.naam; }))
         .map(function (e) { return toon(getal, e.naam); }));
       vulAan(fout, juist, shuffle(ALLE_EENHEDEN.slice()).map(function (nm) { return toon(getal, nm); }));
@@ -314,7 +314,7 @@ export default {
     check(eenheid('lengte', 'cm').in === 10, 'een centimeter is tien millimeter');
     check(eenheid('inhoud', 'l').in === 1000, 'een liter is duizend milliliter');
     check(eenheid('gewicht', 'kg').in === 1000, 'een kilo is duizend gram');
-    // elke omrekening moet in beide richtingen kloppen
+    // every conversion must hold in both directions
     ['lengte', 'gewicht', 'inhoud'].forEach(function (st) {
       STELSELS[st].eenheden.forEach(function (a) {
         STELSELS[st].eenheden.forEach(function (b) {
@@ -330,7 +330,7 @@ export default {
     check(liniaal(150).indexOf('aria-label') > -1, 'de liniaal heeft een beschrijving');
     check(trap('lengte').indexOf('mm') > -1 && trap('lengte').indexOf('×10<') > -1, 'de maattrap toont de stapjes van tien');
     check(trap('gewicht').indexOf('×1000<') > -1 && trap('gewicht').indexOf('×10<') === -1, 'tussen kg en g staat ×1000');
-    // de afleiders moeten de twee echte fouten bevatten: tien keer mis, of de verkeerde kant op
+    // the distractors must include the two real mistakes: off by ten, or the wrong direction
     var af = afleidersOm(300, eenheid('lengte', 'm'), eenheid('lengte', 'cm'), 3);
     check(af.indexOf(30) > -1 || af.indexOf(3000) > -1, 'een factor tien mis staat erbij (nu ' + af.join(', ') + ')');
     for (var n = 1; n <= 50; n++) {

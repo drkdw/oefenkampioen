@@ -55,9 +55,9 @@
   }
 
   * { box-sizing: border-box; }
-  /* zonder deze regel verliest het hidden-attribuut van een flex-container zijn werking */
+  /* without this rule the hidden attribute stops working on a flex container */
   [hidden] { display: none !important; }
-  /* niets in dikke letters: dik leest minder makkelijk dan normaal */
+  /* nothing in bold: bold reads less easily than normal */
   h1, h2, h3, b, strong { font-weight: normal; }
   body {
     margin: 0;
@@ -222,7 +222,7 @@
   .profielja { background: var(--bad); color: var(--card); border-color: var(--bad); }
   .profielnee, .profiellijst { background: var(--card-2); color: var(--ink); }
 
-  /* spellen en hoofdstukken delen dezelfde kaart */
+  /* games and chapters share the same card */
   .menu { display: flex; flex-direction: column; gap: 10px; }
   .hfd {
     display: flex;
@@ -251,8 +251,8 @@
   .hfd .tekst { flex: 1 1 auto; min-width: 0; }
   .hfd h2 { font-family: Fredoka, sans-serif; font-size: 18px; margin: 0; }
   .hfd p { margin: 2px 0 0; font-size: 14px; color: var(--ink-soft); }
-  /* kopje tussen de hoofdstukken van twee leerjaren in een vlakke lijst; geen interactie,
-     enkel om de lijst leesbaar te houden zodra ze over meerdere leerjaren loopt */
+  /* heading between the chapters of two school years in a flat list; no interaction,
+     only to keep the list readable once it spans several school years */
   .jaarkop { font-family: Fredoka, sans-serif; font-size: 14px; color: var(--ink-soft); margin: 6px 4px -2px; }
   .jaarkop:first-child { margin-top: 0; }
   .dekking { display: block; margin-top: 3px; font-size: 13px; }
@@ -275,7 +275,7 @@
     white-space: nowrap;
   }
 
-  /* spelscherm */
+  /* game screen */
   .scorebar { display: flex; align-items: center; gap: 10px; }
   .score-badge {
     font-family: Fredoka, sans-serif;
@@ -316,7 +316,7 @@
   .dot.bad  { background: var(--bad);  color: var(--bg); }
   .dot.now  { background: transparent; border-color: var(--accent); color: var(--accent); }
 
-  /* het doek: elk spel tekent hier zijn eigen ding */
+  /* the canvas: each game draws its own thing here */
   .doek {
     position: relative;
     background: var(--card);
@@ -331,7 +331,7 @@
     overflow: hidden;
     min-height: 200px;
   }
-  /* wat een spel tekent kan uit meerdere stukken bestaan: klok, pijl, klok */
+  /* what a game draws can consist of several pieces: clock, arrow, clock */
   #doek {
     display: flex;
     flex-wrap: wrap;
@@ -363,7 +363,7 @@
     display: flex; align-items: center; gap: 8px;
   }
 
-  /* klok */
+  /* clock */
   svg.clock { width: min(280px, 72vw); height: auto; max-width: 100%; display: block; }
   svg.klein { width: min(140px, 34vw); }
   .pijl { font-size: 26px; flex: none; }
@@ -377,7 +377,7 @@
   svg.monster.mis { animation: mis .4s; }
   @keyframes mis { 25% { transform: translateX(-11px); } 75% { transform: translateX(11px); } }
 
-  /* het schermpje: som, digitale tijd, bedrag */
+  /* the little screen: sum, digital time, amount */
   .scherm-card { display: flex; justify-content: center; }
   .scherm {
     font-family: Fredoka, sans-serif;
@@ -429,7 +429,7 @@
   .opt.pick-bad  { background: var(--bad-bg);  border-color: var(--bad);  color: var(--bad); }
   .opt.reveal    { border-color: var(--good); color: var(--good); }
 
-  /* zelf intypen */
+  /* typing it in yourself */
   .typen { display: flex; flex-direction: column; align-items: center; gap: 14px; }
   .veld {
     display: flex; align-items: center; gap: 4px;

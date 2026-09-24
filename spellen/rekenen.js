@@ -1,6 +1,6 @@
 import { keuzes, vulAan, positief, vulRondom, andere } from '../gereedschap.js';
 
-  // de brug: van 47 spring je eerst naar 50, dan pas verder
+  // the bridge: from 47 you first jump to 50, only then further
   function sprong(a, b, plus) {
     // a jump of whole tens crosses the hundred, not a ten: 115 + 90 goes via 200
     var rond = b % 10 === 0 ? 100 : 10;
@@ -8,12 +8,12 @@ import { keuzes, vulAan, positief, vulRondom, andere } from '../gereedschap.js';
     return { tussen: tussen, eerste: Math.abs(tussen - a), tweede: Math.abs((plus ? a + b : a - b) - tussen) };
   }
 
-  /* een getallenlijn met de twee sprongen erop */
+  /* a number line with the two jumps on it */
   function lijn(a, b, plus, labels) {
     var uit = plus ? a + b : a - b;
     var laag = Math.min(a, uit), hoog = Math.max(a, uit);
-    // de lijn begint en eindigt op een rond getal, anders staan er streepjes op 59 en 74
-    // net genoeg lucht rond de sprong, anders wordt het boogje een speldenprik op de lijn
+    // the line starts and ends on a round number, otherwise there are ticks at 59 and 74
+    // just enough room around the jump, otherwise the arc becomes a pinprick on the line
     var marge = Math.max(5, b);
     var van = Math.max(0, Math.floor((laag - marge) / 10) * 10);
     var tot = Math.ceil((hoog + marge) / 10) * 10;
@@ -30,7 +30,7 @@ import { keuzes, vulAan, positief, vulRondom, andere } from '../gereedschap.js';
       p.push('<line x1="' + x(n) + '" y1="56" x2="' + x(n) + '" y2="68" stroke="var(--ink-soft)" stroke-width="2"/>');
       p.push('<text x="' + x(n) + '" y="84" text-anchor="middle" font-family="Fredoka, sans-serif" font-size="11" fill="var(--ink-soft)">' + n + '</text>');
     });
-    // de twee boogjes van de brug
+    // the two arcs of the bridge
     [[a, s2.tussen], [s2.tussen, uit]].forEach(function (paar, i) {
       var x1 = Number(x(paar[0])), x2 = Number(x(paar[1]));
       if (x1 === x2) return;
@@ -46,24 +46,24 @@ import { keuzes, vulAan, positief, vulRondom, andere } from '../gereedschap.js';
       p.join('') + '</svg>';
   }
 
-  // de fouten die kinderen bij bruggetjes echt maken
+  // the mistakes children really make with bridging
   function afleiders(a, b, plus) {
     var juist = plus ? a + b : a - b, lijst = [], kern = [];
-    kern.push(plus ? juist - 10 : juist + 10);   // het onthouden vergeten
-    kern.push(plus ? juist + 10 : juist - 10);   // een tiental te veel
-    kern.push(plus ? a - b : a + b);             // de verkeerde bewerking
+    kern.push(plus ? juist - 10 : juist + 10);   // forgetting the carry
+    kern.push(plus ? juist + 10 : juist - 10);   // one ten too many
+    kern.push(plus ? a - b : a + b);             // the wrong operation
     kern.push(juist - 1);
     kern.push(juist + 1);
-    kern.push(plus ? juist - 100 : juist + 100); // het honderdtal vergeten
+    kern.push(plus ? juist - 100 : juist + 100); // forgetting the hundred
     vulAan(lijst, juist, kern, function (k) { return k > 0 && k < 1000; });
     vulRondom(lijst, juist, 1, function (k) { return k > 0 && k < 1000; });
     return lijst.slice(0, 3);
   }
 
-  /* --------- leerjaar 1: nog geen brug, nog geen honderdtal --------- */
+  /* --------- year 1: no bridging yet, no hundreds yet --------- */
 
-  // een rij van tien vakjes: de gekende kant gekleurd, de andere kant een vraagteken.
-  // vakjes voorbij het totaal blijven leeg, zo blijft "splitsen tot 6" ook echt zes vakjes tonen
+  // a row of ten boxes: the known side coloured, the other side a question mark.
+  // boxes past the total stay empty, so "splitsen tot 6" really shows six boxes
   function tienFrame(totaal, deel1) {
     var p = '';
     for (var i = 0; i < 10; i++) {
@@ -78,7 +78,7 @@ import { keuzes, vulAan, positief, vulRondom, andere } from '../gereedschap.js';
       'role="img" aria-label="' + deel1 + ' van de ' + totaal + ' vakjes zijn gekleurd">' + p + '</div>';
   }
 
-  // fouten die kinderen bij een splitsing echt maken: het andere deel nemen, of ernaast tellen
+  // mistakes children really make when splitting: taking the other part, or counting one off
   function afleidersSplits(deel1, totaal) {
     var deel2 = totaal - deel1, lijst = [];
     vulAan(lijst, deel2, [deel1, deel2 + 1, deel2 - 1, totaal], positief);
@@ -86,7 +86,7 @@ import { keuzes, vulAan, positief, vulRondom, andere } from '../gereedschap.js';
     return lijst.slice(0, 3);
   }
 
-  // een rechte getallenlijn met één sprong: voor tot 10 en tot 20 is er geen brug om te tekenen
+  // a straight number line with one jump: up to 10 and up to 20 there is no bridge to draw
   function lijnRecht(a, b, plus, tot) {
     var breed = 260, hoogte = 78;
     var x = function (n) { return (n / tot * (breed - 20) + 10).toFixed(1); };
@@ -106,8 +106,8 @@ import { keuzes, vulAan, positief, vulRondom, andere } from '../gereedschap.js';
       'aria-label="Een getallenlijn van 0 tot ' + tot + ' met een sprong vanaf ' + a + '">' + p.join('') + '</svg>';
   }
 
-  // geen brug nodig, dus geen "tiental vergeten"; wel de verkeerde bewerking, of net verkeerd.
-  // vanaf de tientallen komt er een derde fout bij: het tiental van 12 + 5 = 17 gewoon vergeten
+  // no bridge needed, so no "forgot the ten"; but the wrong operation, or just off by one.
+  // from the tens on a third mistake appears: simply forgetting the ten of 12 + 5 = 17
   function afleidersVlot(a, b, plus, tot) {
     var juist = plus ? a + b : a - b, lijst = [], kern = [plus ? a - b : a + b, juist + 1, juist - 1];
     if (a >= 10) kern.push(plus ? juist - 10 : juist + 10);
@@ -116,7 +116,7 @@ import { keuzes, vulAan, positief, vulRondom, andere } from '../gereedschap.js';
     return lijst.slice(0, 3);
   }
 
-  // twee getallen op een rij, voor tientallen/eenheden en verdubbelen/halveren
+  // two numbers in a row, for tens/units and doubling/halving
   function getalDuo(a, b) {
     return '<div style="display:flex;gap:14px;justify-content:center;align-items:center">' +
       [a, b].map(function (n) {
@@ -125,10 +125,10 @@ import { keuzes, vulAan, positief, vulRondom, andere } from '../gereedschap.js';
           n + '</div>';
       }).join('<span style="font-size:28px;color:var(--ink-soft);align-self:center">→</span>') + '</div>';
   }
-  /* --------- leerjaar 4: cijferend rekenen tot 10 000 --------- */
+  /* --------- year 4: column arithmetic up to 10 000 --------- */
 
-  // twee getallen in kolomvorm, rechts uitgelijnd zoals op papier. Geen tussenstapjes: die
-  // rekent het kind zelf uit, dit toont enkel de opstelling zoals in het schrift
+  // two numbers in column form, right-aligned as on paper. No intermediate steps: the child
+  // works those out, this only shows the layout as in the exercise book
   function kolom(a, b, teken) {
     return '<div style="font-family:\'Courier New\',monospace;font-size:26px;color:var(--ink);' +
       'background:var(--card-2);border-radius:14px;padding:14px 22px;display:inline-block;text-align:right">' +
@@ -246,7 +246,7 @@ export default {
       return uit;
     }
     if (soort === 'vlot') {
-      // tot 10: alle kleine getallen; tot 20: enkel tientallen, en dan zonder het tiental te breken
+      // up to 10: all small numbers; up to 20: only in the teens, and without breaking the ten
       // up to 10 the sum may reach 10 itself (6 + 4); from 10 to 20 it stays inside the ten
       var vanaf = h.tot === 10 ? 0 : 10, totMet = h.tot === 10 ? 9 : 19, grens = h.tot === 10 ? 10 : 9;
       for (a = vanaf; a <= totMet; a++) {
@@ -358,10 +358,10 @@ export default {
     var ondergrens = h.tot === 20 ? 1 : h.tot === 100 ? 11 : 101;
     for (a = ondergrens; a < h.tot; a += h.tot === 1000 ? 7 : 1) {
       var e = a % 10;
-      if (e === 0) continue;                       // zonder eenheden valt er geen brug te bouwen
+      if (e === 0) continue;                       // without units there is no bridge to build
       for (b = h.stap[0]; b <= h.stap[1]; b++) {
         var plus = h.plus;
-        // alleen echte bruggen: het antwoord moet over het tiental heen
+        // only real bridges: the answer must cross the ten
         if (plus && e + b <= 10) continue;
         if (!plus && e - b >= 0) continue;
         var uitkomst = plus ? a + b : a - b;
@@ -370,7 +370,7 @@ export default {
         if (h.tientallen && b * 10 < 100) {
           var t = b * 10, tu = plus ? a + t : a - t;
           var tien = Math.floor(a / 10) % 10;
-          // ook over het honderdtal springen, met hele tientallen
+          // also jump across the hundred, with whole tens
           if (tu > 0 && tu < h.tot && (plus ? tien + b >= 10 : tien - b < 0)) {
             uit.push({ a: a, b: t, plus: plus });
           }
@@ -453,7 +453,7 @@ export default {
     }
     if (soort === 'macht') {
       var machtWaarde = Math.pow(10, z.exp);
-      // veelgemaakte fout: de exponent met tien vermenigvuldigen in plaats van tien keer zichzelf
+      // common mistake: multiplying the exponent by ten instead of ten times itself
       var kern12 = [Math.pow(10, z.exp + 1), Math.pow(10, Math.max(0, z.exp - 1)), z.exp * 10, machtWaarde * 2];
       var fout13 = [];
       vulAan(fout13, machtWaarde, kern12, positief);
@@ -513,7 +513,7 @@ export default {
         options: keuzes(uitkomst, afleidersVlot(z.a, z.b, z.plus, z.a >= 10 ? 19 : 10)) };
     }
     if (soort === 'gat') {
-      // het ontbrekende getal is de sprong zelf
+      // the missing number is the jump itself
       var fout = [];
       vulAan(fout, z.b, [z.b + 1, z.b - 1, z.b + 10, z.b - 10, z.b + 2], positief);
       return { soort: soort, sleutel: sl, a: z.a, b: z.b, plus: z.plus, uit: uitkomst, ans: String(z.b),
@@ -527,7 +527,7 @@ export default {
     return { soort: 'som', sleutel: sl, a: z.a, b: z.b, plus: z.plus, uit: uitkomst, ans: String(uitkomst),
       options: keuzes(uitkomst, afleiders(z.a, z.b, z.plus)) };
   },
-  // bij "47 + ? = 55" zijn de twee sprongen samen het antwoord, dus die blijven leeg
+  // for "47 + ? = 55" the two jumps together are the answer, so they stay blank
   teken: function (v) {
     if (v.soort === 'splits') return tienFrame(v.totaal, v.deel1);
     if (v.soort === 'vlot') return lijnRecht(v.a, v.b, v.plus, v.a >= 10 ? 19 : 10);
@@ -652,13 +652,13 @@ export default {
     return v.soort === 'gat' ? v.a + teken + '? = ' + v.uit : v.a + teken + v.b;
   },
   test: function (check) {
-    // een splitsing telt weer op tot het totaal, en het gekende deel is nooit het hele totaal
+    // a split adds back up to the total, and the known part is never the whole total
     for (var totaal = 3; totaal <= 10; totaal++) {
       for (var deel1 = 1; deel1 < totaal; deel1++) {
         check(deel1 + (totaal - deel1) === totaal, 'splitsing ' + deel1 + '+? klopt bij totaal ' + totaal);
       }
     }
-    // "zonder brug" mag het tiental nooit breken
+    // "zonder brug" must never break the ten
     for (var a = 0; a <= 19; a++) {
       for (var b = 1; b <= 9; b++) {
         [true, false].forEach(function (plus) {
@@ -670,7 +670,7 @@ export default {
         });
       }
     }
-    // de brug moet altijd op een tiental uitkomen en samen de hele sprong zijn
+    // the bridge must always land on a ten and together make up the whole jump
     [[47, 8, true], [52, 7, false], [346, 8, true], [412, 7, false], [95, 6, true], [103, 5, false]].forEach(function (g) {
       var a = g[0], b = g[1], plus = g[2], s4 = sprong(a, b, plus);
       check(s4.tussen % 10 === 0, 'de tussenstap is een tiental bij ' + a + (plus ? '+' : '-') + b);

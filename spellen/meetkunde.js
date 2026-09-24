@@ -1,6 +1,6 @@
 import { keuzes, vulAan, vulRondom, positief, andere } from '../gereedschap.js';
 
-  // een rechthoek met de zijden erop, breedte boven, hoogte links
+  // a rectangle with its sides labelled, width on top, height on the left
   function rechthoekTekening(breedte, hoogte) {
     var maxZijde = 120, schaal = maxZijde / Math.max(breedte, hoogte, 6);
     var b = breedte * schaal, h = hoogte * schaal, marge = 30;
@@ -15,8 +15,8 @@ import { keuzes, vulAan, vulRondom, positief, andere } from '../gereedschap.js';
       '</svg>';
   }
 
-  // een hoek als twee stralen vanuit een punt; de ene straal ligt altijd horizontaal
-  // drie getallen op een rij, voor lengte, breedte en hoogte van een blok
+  // an angle as two rays from one point; one of the rays is always horizontal
+  // three numbers in a row, for the length, width and height of a block
   function blokTekening(l, b, h) {
     return '<div style="display:flex;gap:10px;justify-content:center;align-items:center;font-family:Fredoka,sans-serif">' +
       [l, b, h].map(function (n, i) {
@@ -25,7 +25,7 @@ import { keuzes, vulAan, vulRondom, positief, andere } from '../gereedschap.js';
           'display:flex;align-items:center;justify-content:center;font-size:26px;color:var(--ink)">' + n + '</div>';
       }).join('') + '</div>';
   }
-  // een rechthoekige driehoek: de basis onderaan, de hoogte als stippellijn opzij
+  // a right triangle: the base at the bottom, the height as a dotted line at the side
   function driehoekTekening(basis, hoogte) {
     var schaal = 100 / Math.max(basis, hoogte, 6), b = basis * schaal, h = hoogte * schaal, marge = 26;
     return '<svg viewBox="0 0 ' + (b + marge * 2) + ' ' + (h + marge * 2) + '" width="100%" style="max-width:200px" ' +
@@ -40,7 +40,7 @@ import { keuzes, vulAan, vulRondom, positief, andere } from '../gereedschap.js';
       'font-family="Fredoka, sans-serif" font-size="15" fill="var(--ink)">' + hoogte + '</text></svg>';
   }
 
-  // dezelfde twee stralen als hoekTekening, nu met een boogje en cijfers om echt af te lezen
+  // the same two rays as hoekTekening, now with a small arc and numbers to actually read off
   function hoekMetGraden(graden) {
     var cx = 20, cy = 100, lengte = 85, boog = 40, rad = graden * Math.PI / 180;
     var x2 = cx + lengte * Math.cos(rad), y2 = cy - lengte * Math.sin(rad);
@@ -57,7 +57,7 @@ import { keuzes, vulAan, vulRondom, positief, andere } from '../gereedschap.js';
       'aria-label="Een hoek van ' + graden + ' graden, met streepjes om de dertig graden">' + p.join('') + '</svg>';
   }
 
-  // de zes ruimtefiguren van het zesde leerjaar, met hun aantal vlakken, hoekpunten en ribben
+  // the six solids of year 6, with their number of faces, vertices and edges
   var RUIMTEFIGUREN = [
     { naam: 'kubus', ico: '🎲', vlakken: 6, hoekpunten: 8, ribben: 12 },
     { naam: 'balk', ico: '📦', vlakken: 6, hoekpunten: 8, ribben: 12 },
@@ -170,7 +170,7 @@ export default {
     }
     if (soort === 'volume') {
       var vol = z.l * z.b * z.h, foutV = [];
-      // veelgemaakte fout: enkel twee zijden, of ze optellen in plaats van vermenigvuldigen
+      // common mistake: only two sides, or adding them instead of multiplying
       vulAan(foutV, vol, [z.l * z.b, z.b * z.h, z.l + z.b + z.h, vol + z.l], positief);
       vulRondom(foutV, vol, 1, positief);
       return { soort: soort, sleutel: 'volume|' + z.l + ':' + z.b + ':' + z.h, l: z.l, b: z.b, h: z.h,
@@ -204,8 +204,8 @@ export default {
     }
     if (soort === 'driehoek') {
       var oppD = z.basis * z.hoogte / 2, foutD = [];
-      // veelgemaakte fout: vergeten te delen door twee, zoals bij een rechthoek. Enkel gehele
-      // getallen als afleider: basis / 2 geeft bij een oneven basis een kommagetal met een punt
+      // common mistake: forgetting to divide by two, as with a rectangle. Only whole numbers
+      // as distractors: base / 2 gives a decimal with a point when the base is odd
       vulAan(foutD, oppD, [z.basis * z.hoogte, oppD + 1, oppD - 1, z.basis + z.hoogte], positief);
       vulRondom(foutD, oppD, 1, positief);
       return { soort: soort, sleutel: 'driehoek|' + z.basis + ':' + z.hoogte, basis: z.basis, hoogte: z.hoogte,
@@ -214,7 +214,7 @@ export default {
     var vierkant = z.breedte === z.hoogte;
     if (soort === 'oppervlakte') {
       var opp = z.breedte * z.hoogte, fout2 = [];
-      // veelgemaakte fout: de omtrek nemen, of maar een keer de breedte
+      // common mistake: taking the perimeter, or the width only once
       vulAan(fout2, opp, [2 * (z.breedte + z.hoogte), z.breedte, z.hoogte, opp + z.breedte], positief);
       vulRondom(fout2, opp, 1, positief);
       return { soort: soort, sleutel: 'oppervlakte|' + z.breedte + 'x' + z.hoogte, breedte: z.breedte, hoogte: z.hoogte,
@@ -222,7 +222,7 @@ export default {
     }
     var omtrek = 2 * (z.breedte + z.hoogte);
     var fout = [];
-    // veelgemaakte fout: enkel twee zijden optellen, of oppervlakte in plaats van omtrek
+    // common mistake: adding only two sides, or area instead of perimeter
     vulAan(fout, omtrek, [z.breedte + z.hoogte, z.breedte * z.hoogte, omtrek + 2, omtrek - 2], positief);
     vulRondom(fout, omtrek, 1, positief);
     return { soort: soort, sleutel: 'omtrek|' + z.breedte + 'x' + z.hoogte, breedte: z.breedte, hoogte: z.hoogte,

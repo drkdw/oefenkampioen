@@ -1,7 +1,7 @@
 import { shuffle, pad2, keuzes, vulAan, vulRondom, positief, andere, reduced } from '../gereedschap.js';
 
-  // "over" is standaardtaal in het hele taalgebied; "na" is in Belgie gebruikelijk maar
-  // Taaladvies noemt de status ervan onduidelijk, dus voor een toets kiezen we "over".
+  // "over" is standard across the whole Dutch language area; "na" is common in Belgium but
+  // Taaladvies calls its status unclear, so for a test we pick "over".
   var WOORD = { 5: 'vijf', 10: 'tien' };
   function nextHour(h) { return h === 12 ? 1 : h + 1; }
   function prevHour(h) { return h === 1 ? 12 : h - 1; }
@@ -18,23 +18,23 @@ import { shuffle, pad2, keuzes, vulAan, vulRondom, positief, andere, reduced } f
   function fmt24(h, m) { return pad2(h) + ':' + pad2(m); }
   function wijzerUur(u) { return u % 12 || 12; }
 
-  // Zes dagdelen zoals ze in Belgie gebruikt worden, volgens Team Taaladvies. Middag stopt
-  // hier op 14 uur zodat middag en namiddag niet overlappen: een toets kan geen twee juiste
-  // antwoorden hebben. GRENZEN is de enige plaats waar de uren staan.
+  // Six parts of the day as used in Belgium, according to Team Taaladvies. Middag stops
+  // here at 14:00 so middag and namiddag do not overlap: a test cannot have two correct
+  // answers. GRENZEN is the only place where the hours are defined.
   var DEELEN = ['Nacht', 'Ochtend', 'Voormiddag', 'Middag', 'Namiddag', 'Avond'];
   var GRENZEN = [0, 6, 9, 12, 14, 18];
   function deelVan(u) {
     for (var i = GRENZEN.length - 1; i >= 0; i--) if (u >= GRENZEN[i]) return DEELEN[i];
   }
-  // Ochtend en voormiddag overlappen in het gewone taalgebruik, net als middag en namiddag.
-  // Die mogen nooit samen als keuze verschijnen.
+  // Ochtend and voormiddag overlap in everyday speech, just like middag and namiddag.
+  // They must never appear together as choices.
   var OVERLAP = { Ochtend: ['Voormiddag'], Voormiddag: ['Ochtend'], Middag: ['Namiddag'], Namiddag: ['Middag'] };
   var DUIDELIJK = {
     Nacht: [1, 2, 3, 4], Ochtend: [7, 8], Voormiddag: [10, 11],
     Middag: [12, 13], Namiddag: [15, 16, 17], Avond: [19, 20, 21]
   };
-  // 's morgens dekt ochtend en voormiddag, 's middags dekt middag en namiddag: de marker pint
-  // het uur vast zonder het gevraagde dagdeel weg te geven.
+  // 's morgens covers ochtend and voormiddag, 's middags covers middag and namiddag: the marker
+  // pins down the hour without giving away the part of the day being asked.
   function dagdeelTekst(u) {
     var marker = u < 6 ? '’s nachts' : u < 12 ? '’s morgens' : u < 18 ? '’s middags' : '’s avonds';
     return wijzerUur(u) + ' uur ' + marker;
@@ -55,12 +55,12 @@ import { shuffle, pad2, keuzes, vulAan, vulRondom, positief, andere, reduced } f
   function minTekst(n) { return n + (n === 1 ? ' minuut' : ' minuten'); }
   function afleidersTijd(h, m, minuten) {
     var juist = label(h, m);
-    // de fouten die kinderen van 7 en 8 echt maken
+    // the mistakes 7 and 8 year olds really make
     var lijst = [];
-    if (m > 0) lijst.push(label(h, 60 - m));                 // over en voor verwisseld
-    lijst.push(m >= 20 ? label(prevHour(h), m)               // bij half het uur pakken dat al geweest is
-                       : label(nextHour(h), m));             // bij kwart over een uur te ver tellen
-    lijst.push(label(m / 5 || 12, 0));                       // de minuutwijzer als urenwijzer lezen
+    if (m > 0) lijst.push(label(h, 60 - m));                 // "over" and "voor" swapped
+    lijst.push(m >= 20 ? label(prevHour(h), m)               // with "half", taking the hour that has already passed
+                       : label(nextHour(h), m));             // with "kwart over", counting one hour too far
+    lijst.push(label(m / 5 || 12, 0));                       // reading the minute hand as the hour hand
     lijst = lijst.filter(function (t, i, a) { return t !== juist && a.indexOf(t) === i; }).slice(0, 3);
 
     var cMin = (h % 12) * 60 + m, buren = [];
@@ -78,7 +78,7 @@ import { shuffle, pad2, keuzes, vulAan, vulRondom, positief, andere, reduced } f
     return lijst.slice(0, 3);
   }
 
-  /* de wijzerplaat */
+  /* the clock face */
   function gezicht() {
     var p = ['<circle cx="100" cy="100" r="96" fill="var(--card-2)" stroke="var(--line)" stroke-width="6"/>'];
     for (var i = 0; i < 60; i++) {
@@ -106,7 +106,7 @@ import { shuffle, pad2, keuzes, vulAan, vulRondom, positief, andere, reduced } f
       '<line x1="100" y1="100" x2="100" y2="32" stroke="var(--hand-min)" stroke-width="6" stroke-linecap="round" transform="rotate(' + md + ' 100 100)"/>' +
       spil() + '</svg>';
   }
-  // de wijzers draaien een hele ronde extra, zodat je ze ziet bewegen
+  // the hands spin one extra full turn, so you can see them move
   var hourDeg = 0, minDeg = 0;
   function setHands(h, m) {
     var targetH = (h % 12) * 30 + m * 0.5, targetM = m * 6;
@@ -147,7 +147,7 @@ export default {
   zaadjes: function (soort, h) {
     var out = [], u, m;
     if (soort === 'tijd') {
-      // een wijzerklok toont 1 tot 12: 3 uur en 15 uur zijn dezelfde vraag
+      // an analogue clock shows 1 to 12: 3:00 and 15:00 are the same question
       for (var hh = 1; hh <= 12; hh++) {
         for (m = 0; m < h.minuten.length; m++) out.push({ h: hh, m: h.minuten[m] });
       }
@@ -235,7 +235,7 @@ export default {
     if (c) c.setAttribute('aria-label', 'Klok met de wijzers op ' + label(v.h, v.m));
   },
   scherm: function (v) { return v.soort === 'lezen' ? fmt24(v.u, v.m) : null; },
-  // seconden heeft geen klok en geen schermpje, enkel de vraagzin zelf
+  // seconden has no clock and no small screen, only the question sentence itself
   vraag: function (v, nr) {
     var kop = 'Vraag ' + nr + ': ';
     if (v.soort === 'tijd') return { titel: kop + 'hoe laat is het?' };
