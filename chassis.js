@@ -1,6 +1,6 @@
 import { shuffle, pad2, $, reduced, hoofdletter } from './gereedschap.js';
 import { SPELLEN } from './spellen/index.js';
-import { datumVan, mengDagen, dagErbij, sterrenVoor, stickerVoor, voorstelVoor, dagenDezeMaand, dagNummer, boekVoor, INDELING, naarIndeling2, opVolgorde } from './beloning.js';
+import { datumVan, mengDagen, sterrenVoor, stickerVoor, voorstelVoor, dagenDezeMaand, dagNummer, boekVoor, INDELING, naarIndeling2, opVolgorde } from './beloning.js';
 
 // an eight-year-old cannot keep going for more than twenty questions
 var AANTALLEN = [10, 15, 20];
@@ -24,12 +24,10 @@ function postfix() { return postfixVoor(actief()); }
 function leerjaarVoor(sleutel) {
   var n;
   try { n = parseInt(localStorage.getItem('oefenkampioen-leerjaar' + postfixVoor(sleutel)), 10); } catch (e) { n = NaN; }
+  // a new child starts in the third year, the grade the app was first built for
   return LEERJAREN.indexOf(n) > -1 ? n : 3;
 }
-function geoefendVoor(sleutel) {
-  try { return Object.keys(JSON.parse(localStorage.getItem('oefenkampioen-beste' + postfixVoor(sleutel)) || '{}')).length; }
-  catch (e) { return 0; }
-}
+function geoefendVoor(sleutel) { return Object.keys(leesBesteVoor(sleutel)).length; }
 function actief() {
   try { return localStorage.getItem('oefenkampioen-actief') || ''; } catch (e) { return ''; }
 }
@@ -149,7 +147,7 @@ function leesDagen(sleutel) {
   catch (e) { return []; }
 }
 function bewaarDag() {
-  try { localStorage.setItem('oefenkampioen-dagen' + postfix(), JSON.stringify(dagErbij(leesDagen(actief()), vandaag()))); }
+  try { localStorage.setItem('oefenkampioen-dagen' + postfix(), JSON.stringify(mengDagen(leesDagen(actief()), [vandaag()]))); }
   catch (e) { /* may fail */ }
 }
 // keep the better of two best scores per chapter, and only well-formed entries
@@ -215,23 +213,12 @@ function metNaam(sjabloon) {
 var LOF = ['Juist%! 🎉', 'Super%! 🌟', 'Knap gedaan%! 👏', 'Helemaal goed%! ✅'];
 var MOED = ['Bijna%!', 'Dat lukt de volgende keer%!', 'Goed geprobeerd%!', 'Kijk nog eens goed%!'];
 var LEERJAREN = [1, 2, 3, 4, 5, 6];
-function leesLeerjaar() {
-  var n;
-  try { n = parseInt(localStorage.getItem('oefenkampioen-leerjaar' + postfix()), 10); } catch (e) { n = NaN; }
-  // a new child starts in the third year, the grade the app was first built for
-  return LEERJAREN.indexOf(n) > -1 ? n : 3;
-}
+function leesLeerjaar() { return leerjaarVoor(actief()); }
 function zetLeerjaar(lj) {
   state.leerjaar = lj;
   try { localStorage.setItem('oefenkampioen-leerjaar' + postfix(), String(lj)); } catch (e) { /* may fail */ }
 }
 function jaarNaam(lj) { return (lj === 1 ? '1ste' : lj + 'de') + ' leerjaar'; }
-// a school year is cumulative: a child in third year must still be able to practise the quarter
-// hours of the second, so everything up to and including the chosen year is included
-function hoofdstukkenVoor(spel) {
-  return spel.hoofdstukken.map(function (h, i) { return { h: h, i: i }; })
-    .filter(function (r) { return r.h.leerjaar <= state.leerjaar; });
-}
 function leesAantal() {
   var a;
   try { a = parseInt(localStorage.getItem('oefenkampioen-aantal' + postfix()), 10); } catch (e) { a = NaN; }
@@ -418,7 +405,7 @@ var MAANDEN = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', '
   'september', 'oktober', 'november', 'december'];
 function sterrenTekst(n) { return '★★★'.slice(0, n) + '☆☆☆'.slice(n); }
 function sterrenVanSpel(spel, beste) {
-  var lijst = hoofdstukkenVoor(spel), verdiend = 0;
+  var lijst = opVolgorde(spel, state.leerjaar), verdiend = 0;
   lijst.forEach(function (r) { verdiend += sterrenVoor(beste[spel.id + ':' + r.i]); });
   return { verdiend: verdiend, max: lijst.length * 3 };
 }
@@ -465,7 +452,7 @@ function toonStart() {
   // a game with nothing for the chosen school year is not listed: a child should not have to
   // open a game first to find out it is empty there
   var rijen = SPELLEN.map(function (s, i) { return { s: s, i: i }; })
-    .filter(function (r) { return hoofdstukkenVoor(r.s).length > 0; });
+    .filter(function (r) { return opVolgorde(r.s, state.leerjaar).length > 0; });
   var st = stickersVoorLeerjaar(beste);
   $('spellen').innerHTML = rijen.map(function (r) {
     var sv = sterrenVanSpel(r.s, beste);

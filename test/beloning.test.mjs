@@ -1,5 +1,5 @@
 import { SPELLEN } from '../spellen/index.js';
-import { STICKERS, sterrenVoor, stickerVoor, datumVan, mengDagen, dagErbij, dagenDezeMaand, dagNummer, voorstelVoor, boekVoor, naarIndeling2, opVolgorde }
+import { STICKERS, sterrenVoor, stickerVoor, datumVan, mengDagen, dagenDezeMaand, dagNummer, voorstelVoor, boekVoor, naarIndeling2, opVolgorde }
   from '../beloning.js';
 
 export function beloningTests(check) {
@@ -44,7 +44,7 @@ export function beloningTests(check) {
   var bewaard = mengDagen(veel, []);
   check(bewaard.length === 60 && bewaard[59] === '2026-03-11' && bewaard[0] === '2026-01-11', 'mengDagen houdt de laatste 60');
   check(mengDagen(['2026-09-01'], ['2026-09-03']).length === 2, 'samenvoegen verliest geen dag');
-  check(dagErbij(['2026-09-01'], '2026-09-01').length === 1, 'dezelfde dag telt maar een keer');
+  check(mengDagen(['2026-09-01'], ['2026-09-01']).length === 1, 'dezelfde dag telt maar een keer');
   check(dagenDezeMaand(['2026-08-30', '2026-09-01', '2026-09-20'], '2026-09-24') === 2, 'dagenDezeMaand telt enkel die maand');
   check(dagNummer('1970-01-02') === 1 && dagNummer('2026-09-25') - dagNummer('2026-09-24') === 1, 'dagNummer');
 

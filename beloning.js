@@ -64,7 +64,6 @@ export function mengDagen(a, b) {
   });
   return uit.sort().slice(-BEWAAR);
 }
-export function dagErbij(lijst, datum) { return mengDagen(lijst, [datum]); }
 export function dagenDezeMaand(lijst, datum) {
   var maand = datum.slice(0, 7);
   return mengDagen(lijst, []).filter(function (d) { return d.slice(0, 7) === maand; }).length;
