@@ -106,12 +106,13 @@ function een(check, soort, z, h) {
       check(zegt && klopt[zegt], 'hoek: uitleg past niet bij een hoek van ' + graden + ' graden: ' + uitleg + ', ' + waar);
     } else {
       juist = String(graden);
-      // the ticks the question text promises: every 30 degrees, from 0 to 180
-      var cx = 20, cy = 100;
-      var streep = [...svg.matchAll(/<circle cx="(-?[\d.]+)" cy="(-?[\d.]+)" r="2"/g)].map(function (x) {
-        return Math.round(Math.atan2(cy - +x[2], +x[1] - cx) * 180 / Math.PI);
-      });
-      check(streep.join() === '0,30,60,90,120,150,180', 'graden: streepjes niet om de dertig graden: ' + streep + ', ' + waar);
+      // the ticks the question text promises: a small one every 10 degrees, a big one every 30
+      var cx = 20, cy = 100, hoek = function (x) { return Math.round(Math.atan2(cy - +x[2], +x[1] - cx) * 180 / Math.PI); };
+      var klein = [...svg.matchAll(/<circle cx="(-?[\d.]+)" cy="(-?[\d.]+)" r="1.5"/g)].map(hoek);
+      var groot = [...svg.matchAll(/<circle cx="(-?[\d.]+)" cy="(-?[\d.]+)" r="3"/g)].map(hoek);
+      check(groot.join() === '0,30,60,90,120,150,180', 'graden: grote stippen niet om de dertig graden: ' + groot + ', ' + waar);
+      check(klein.length === 12 && klein.every(function (g) { return g % 10 === 0 && g % 30 !== 0; }), 'graden: kleine stippen niet om de tien graden: ' + klein + ', ' + waar);
+      check(!/aria-label="[^"]*\d/.test(svg), 'graden: het label verklapt het antwoord, ' + waar);
       m = uitleg.match(/^Deze hoek is (\d+) graden\.$/);
       check(m && m[1] === juist, 'graden: uitleg klopt niet: ' + uitleg + ', ' + waar);
     }

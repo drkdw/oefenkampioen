@@ -183,8 +183,9 @@ export default {
       var totaal2 = z.a.eur + z.b.eur, fout6 = [];
       vulAan(fout6, totaal2, [z.a.eur, z.b.eur, totaal2 + 1, totaal2 - 1], positief);
       vulRondom(fout6, totaal2, 1, positief);
-      return { soort: soort, sleutel: 'samen|' + z.a.naam + z.b.naam, a: z.a, b: z.b, ans: String(totaal2),
-        options: keuzes(totaal2, fout6.slice(0, 3)) };
+      var euro = function (n) { return '€ ' + n; };
+      return { soort: soort, sleutel: 'samen|' + z.a.naam + z.b.naam, a: z.a, b: z.b, ans: euro(totaal2),
+        options: keuzes(euro(totaal2), fout6.slice(0, 3).map(euro)) };
     }
     if (soort === 'gepast') {
       var muntjes = z.c / 100, fout7 = [];
@@ -256,7 +257,7 @@ export default {
     return { titel: kop + 'hoeveel geld ligt hier?' };
   },
   uitleg: function (v) {
-    if (v.soort === 'samen') return hoofdletter(v.a.naam) + ' (€ ' + v.a.eur + ') en ' + v.b.naam + ' (€ ' + v.b.eur + ') samen is € ' + v.ans + '.';
+    if (v.soort === 'samen') return hoofdletter(v.a.naam) + ' (€ ' + v.a.eur + ') en ' + v.b.naam + ' (€ ' + v.b.eur + ') samen is ' + v.ans + '.';
     if (v.soort === 'gepast') return geld(v.c) + ' is evenveel als ' + v.ans + (v.ans === '1' ? ' muntje' : ' muntjes') + ' van 1 euro.';
     if (v.soort === 'herkennen') return 'Dit is ' + v.ans + '.';
     if (v.soort === 'wissel') {

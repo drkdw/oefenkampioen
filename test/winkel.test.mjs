@@ -72,7 +72,8 @@ function een(check, v, waar) {
     juist = prijzen[0] + prijzen[1];
     var um = /\(€ (\d+)\) en .* \(€ (\d+)\) samen is € (\d+)\.$/.exec(uitleg);
     check(um && Number(um[1]) === prijzen[0] && Number(um[2]) === prijzen[1] && Number(um[3]) === juist, 'winkel samen: uitleg klopt niet: ' + uitleg + ', ' + waar);
-    return keuze(check, v, juist, Number, waar);
+    // an amount, so every choice carries the euro sign
+    return keuze(check, v, juist, function (t) { var m = /^€ (\d+)$/.exec(t); return m ? Number(m[1]) : NaN; }, waar);
   }
   if (v.soort === 'gepast') {
     check(getoond.length === 1, 'winkel gepast: een stuk verwacht, ' + waar);

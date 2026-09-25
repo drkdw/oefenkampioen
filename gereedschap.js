@@ -39,5 +39,9 @@ export function vulRondom(lijst, juist, stap, geldig) {
 export function andere(lijst, juist, n) {
   return shuffle(lijst.filter(function (x) { return x !== juist; })).slice(0, n);
 }
-export function hoofdletter(t) { return t.charAt(0).toUpperCase() + t.slice(1); }
+// a capital that is more than one letter (ß becomes SS) would change the name, and with it the key
+export function hoofdletter(t) {
+  var eerste = Array.from(t)[0] || '', groot = eerste.toUpperCase();
+  return (Array.from(groot).length === 1 ? groot : eerste) + t.slice(eerste.length);
+}
 

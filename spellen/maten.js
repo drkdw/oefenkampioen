@@ -123,11 +123,11 @@ import { shuffle, keuzes, vulAan, positief, vulRondom, hoofdletter, andere } fro
       }).join('') + '</div>';
   }
 
-  // converting goes wrong in two ways: in the wrong direction, or one step too far (not two:
-  // 10 000 cm for 1 m is no mistake a child makes)
+  // converting goes wrong in two ways: one step too far (not two: 10 000 cm for 1 m is no
+  // mistake a child makes), or forgetting to convert and keeping the number as it was
   function afleidersOm(juist, van, naar, waarde) {
-    var lijst = [], omgekeerd = Math.round(waarde * van.in * van.in / naar.in / naar.in);
-    vulAan(lijst, juist, [juist * 10, Math.round(juist / 10), omgekeerd, juist + 1], function (k) {
+    var lijst = [];
+    vulAan(lijst, juist, [juist * 10, Math.round(juist / 10), waarde, juist + 1], function (k) {
       return k > 0 && k === Math.round(k);
     });
     vulRondom(lijst, juist, 1);
