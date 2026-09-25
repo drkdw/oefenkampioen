@@ -28,8 +28,9 @@ De tests draaien zonder installatie, enkel met Node:
 node --import ./test/pre.mjs test/alles.mjs
 ```
 
-Dat bouwt elke vraag van elk spel, rekent elke spiegelvraag na vanuit de tekening en controleert
-de beloningslogica. In de browser meet
+Dat bouwt elke vraag van elk spel en rekent ze daarna nog eens onafhankelijk na, vanuit wat het
+kind ziet: de tekening, de som en de vraagtekst (`test/<spel>.test.mjs`). Het controleert ook de
+beloningslogica en of elke import echt bestaat. In de browser meet
 `(await import('/test/layout-meting.js')).meet()` of vraag, keuzes en de volgende-knop op het
 huidige scherm passen zonder te scrollen.
 
@@ -56,9 +57,9 @@ in het eerste 17. Elk hoofdstuk hoort bij het leerjaar waarin het in de klas aan
 
 ## Het startscherm en de beloningen
 
-Bovenaan staat **Voor jou vandaag**, eerst uit je eigen leerjaar: een hoofdstuk met 1 of 2 sterren
-om te verbeteren, anders een hoofdstuk dat je nog nooit speelde. Is je eigen leerjaar helemaal
-3 sterren, dan zoekt het een leerjaar lager. Elke dag begint het zoeken bij een ander spel. Daaronder
+Bovenaan staat **Voor jou vandaag**, eerst uit je eigen leerjaar: een hoofdstuk dat je al speelde
+maar waar je nog geen 3 sterren voor hebt, anders een hoofdstuk dat je nog nooit speelde. Is je
+eigen leerjaar helemaal 3 sterren, dan zoekt het een leerjaar lager. Elke dag begint het zoeken bij een ander spel. Daaronder
 één regel met leerjaar, aantal vragen en tempo, die openklapt, en dan de spellen als tegels.
 
 Elk hoofdstuk heeft 0 tot 3 sterren volgens je beste score: 1 vanaf 50%, 2 vanaf 70%, 3 vanaf
