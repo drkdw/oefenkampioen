@@ -1,5 +1,5 @@
 // the app's own checks: open index.html#test and look at the console
-import { pad2 } from './gereedschap.js';
+import { pad2, hoofdletter } from './gereedschap.js';
 import {
   leesDagen, SPELLEN, AANTALLEN, LEERJAREN, TEMPO, LOF, MOED, state, schoonNaam, schoonProfielen, mengBeste, naam, metNaam,
   leesTempo, secondenVoor, jasjesVoor, planVoor, bouwToets, maakVraag, toonStart
@@ -13,6 +13,9 @@ check(schoonNaam('<img src=x>') === 'img srcx', 'tekens die markup maken verdwij
 check(schoonNaam('Jean-Luc') === 'Jean-Luc', 'koppeltekens blijven');
 check(schoonNaam('abcdefghijklmnopqrstuvwxyz').length === 16, 'de naam wordt afgekapt');
 check(schoonNaam('Zoë') === 'Zoë' && schoonNaam('李明') === '李明', 'namen in elk schrift blijven heel');
+// a letter outside the basic range is two code units: cutting must never split it in two
+check(Array.from(schoonNaam('𠀋'.repeat(20))).length === 16 && !/[\uD800-\uDBFF]$/.test(schoonNaam('𠀋'.repeat(20))), 'een lange naam wordt per letter afgekapt');
+check(hoofdletter('ßen') === 'ßen' && hoofdletter('emma') === 'Emma' && hoofdletter('𠀋a') === '𠀋a', 'een hoofdletter verandert de naam niet');
 // an imported file is untrusted: every profile is rebuilt, markup and junk never get through
 var schoon = schoonProfielen([{ sleutel: 'k"><img src=z onerror=alert(1)>', naam: '<b>Lars</b>' }, null, { naam: 5 },
   { sleutel: 'emma', naam: 'emma' }, { sleutel: 'emma', naam: 'Emma dubbel' }, { sleutel: '', naam: '' }]);
@@ -135,7 +138,8 @@ SPELLEN.forEach(function (spel) {
                 ' past niet in een vakje van ' + (f.max || 2) + ' cijfers');
               return f.pad ? pad2(f.ant) : String(f.ant);
             }).join(v.typen.scheider);
-            check(getypt === v.ans, spel.id + ': de vakjes samen geven het antwoord (' + getypt + ' vs ' + v.ans + ')');
+            // the answer may be shown with a space between thousands (10 000), the child types 10000
+            check(getypt === v.ans.replace(/ /g, ''), spel.id + ': de vakjes samen geven het antwoord (' + getypt + ' vs ' + v.ans + ')');
           }
         }
         toetsen++;

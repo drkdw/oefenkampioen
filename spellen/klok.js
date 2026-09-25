@@ -253,7 +253,11 @@ export default {
     return { titel: kop + 'hoe lang duurt het van ' + label(wijzerUur(v.u), v.m) + ' tot ' + label(wijzerUur(v.eu), v.em) + '?' };
   },
   uitleg: function (v) {
-    if (v.soort === 'tijd') return 'De kleine wijzer staat bij ' + v.h + ', de grote op ' + (v.m / 5 || 12) + '.';
+    if (v.soort === 'tijd') {
+      // past the hour the small hand is already on its way to the next number
+      var klein = v.m ? 'tussen ' + v.h + ' en ' + (v.h % 12 + 1) : 'op ' + v.h;
+      return 'De kleine wijzer staat ' + klein + ', de grote op ' + (v.m / 5 || 12) + '.';
+    }
     if (v.soort === 'lezen') return fmt24(v.u, v.m) + ' lees je als ' + v.ans + '.';
     if (v.soort === 'digitaal') {
       return v.u > 12 ? 'Na de middag tel je 12 bij het uur: ' + v.h + ' + 12 = ' + v.u + '.'

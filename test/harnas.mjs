@@ -81,6 +81,11 @@ function audit(A, check) {
     const g = x.h.leerjaar <= 2 ? 100 : x.h.leerjaar === 3 ? 10000 : 100000; return x.v.n <= g && x.v.uit <= g;
   }), 'maten: getallen binnen het bereik van het leerjaar');
   check(!van('maten', 'past').some(x => / dm$/.test(x.v.ans)), 'maten: geen dm bij welke maat past');
+  // a wrong choice when converting is a mistake a child makes: one step too far, or keeping the
+  // number from the question. Never something absurdly large like 6 000 000 g for 6 kg
+  const getalVan = t => Number(String(t).replace(/ /g, '').replace(/[^\d].*$/, ''));
+  check(van('maten', 'om').every(x => x.v.options.every(o => getalVan(o.text) <= getalVan(x.v.ans) * 10 || getalVan(o.text) === x.v.n)),
+    'maten: geen keuze meer dan tien keer het juiste antwoord');
   check(!A.some(x => /meer erin|minder erin|weegt of meet/.test(x.alles)), 'maten: geen "meer erin"');
   check(van('maten', 'vergelijk').every(x => x.v.options.every(o => {
     const d = maat[o.text], b = x.v.basis.maat;

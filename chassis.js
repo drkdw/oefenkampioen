@@ -11,7 +11,9 @@ var adminModus = false;
 /* ==================== name, count and storage ==================== */
 // letters of any script, spaces, hyphens and apostrophes only, so a name is safe inside markup
 function schoonNaam(t) {
-  return String(t || '').slice(0, 40).replace(/[^\p{L}\p{M} '-]/gu, '').trim().slice(0, 16);
+  // cut by letter, not by code unit, so a letter outside the basic range is never split in two
+  var schoon = Array.from(String(t || '')).slice(0, 40).join('').replace(/[^\p{L}\p{M} '-]/gu, '').trim();
+  return Array.from(schoon).slice(0, 16).join('');
 }
 // every child is a profile: key = name flattened and lowercased, so "Emma" and "emma " are the
 // same child. Key '' is the profile from before profiles existed: the old flat keys (below,
@@ -467,9 +469,9 @@ function voorJouHtml(v) {
 function kaart(ico, nr, titel, tekst, beste, badge, sticker) {
   var n = sterrenVoor(beste);
   return '<span class="ico">' + ico + '</span>' +
-    '<span class="tekst"><h2>' + (nr ? nr + '. ' : '') + titel + '</h2><p>' + tekst + '</p></span>' +
+    '<span class="tekst"><span class="hfd-titel">' + (nr ? nr + '. ' : '') + titel + '</span><span class="hfd-uitleg">' + tekst + '</span></span>' +
     '<span class="hfd-rechts">' + (sticker && n === 3 ? '<span class="hfd-sticker" aria-hidden="true">' + sticker + '</span>' : '') +
-    '<span class="sterren" aria-label="' + n + ' van 3 sterren">' + sterrenTekst(n) + '</span>' +
+    '<span class="sterren" role="img" aria-label="' + n + ' van 3 sterren">' + sterrenTekst(n) + '</span>' +
     (badge ? '<span class="badge ' + badge + '">' + badge + '</span>' : '') + '</span>';
 }
 function toonStart() {
@@ -558,7 +560,7 @@ function toonProfielPaneel() {
     var n = geoefendVoor(p.sleutel);
     return '<div class="profielrij' + (p.sleutel === actiefSleutel ? ' actief' : '') + '">' +
       '<button class="profielkies" data-sleutel="' + p.sleutel + '">' +
-      '<span class="avatar" aria-hidden="true">' + p.naam.charAt(0).toUpperCase() + '</span>' +
+      '<span class="avatar" aria-hidden="true">' + hoofdletter(Array.from(p.naam)[0] || '') + '</span>' +
       '<span class="profielinfo"><span>' + p.naam + '</span>' +
       '<span class="profielvoortgang">' + jaarNaam(leerjaarVoor(p.sleutel)) + ' · ' + n +
       (n === 1 ? ' hoofdstuk' : ' hoofdstukken') + ' geoefend</span></span></button>' +

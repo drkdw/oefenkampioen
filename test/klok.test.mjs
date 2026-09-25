@@ -89,9 +89,11 @@ function een(check, soort, z, h) {
     if (v.soort === 'tijd') {
       juisteKeuzes(check, v, function (t) { return leesTijd(t) === w.t; }, waar);
       v.options.forEach(function (o) { check(leesTijd(o.text) !== null, waar + ': keuze "' + o.text + '" is geen Vlaamse klokzin'); });
-      var r = /^De kleine wijzer staat bij (\d+), de grote op (\d+)\.$/.exec(uitleg);
+      // on the hour the small hand is on its number, past it on the way to the next one
       var klein = Math.floor(w.t / 60) || 12, groot = (w.t % 60) / 5 || 12;
-      check(r && Number(r[1]) === klein && Number(r[2]) === groot, waar + ': uitleg "' + uitleg + '" klopt niet met de klok');
+      var verwacht = 'De kleine wijzer staat ' + (w.t % 60 ? 'tussen ' + klein + ' en ' + (klein % 12 + 1) : 'op ' + klein) +
+        ', de grote op ' + groot + '.';
+      check(uitleg === verwacht, waar + ': uitleg "' + uitleg + '" klopt niet met de klok, verwacht "' + verwacht + '"');
     }
     if (v.soort === 'digitaal') {
       var d = /^Vraag 1: de klok staat op (.+)\.$/.exec(vr.titel), deel = /^Het is (\w+)\./.exec(vr.sub || '');

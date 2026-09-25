@@ -170,7 +170,7 @@ import { keuzes, vulAan, positief, vulRondom, andere } from '../gereedschap.js';
         '">' + DIERTJES[i] + '</span>';
     }
     return '<div style="display:flex;gap:6px;justify-content:center;align-items:center" role="img" ' +
-      'aria-label="Een rij van ' + lengte + ' dieren, het dier op de ' + ORDINALEN[plek] + ' plaats heeft een randje">' + p + '</div>';
+      'aria-label="Een rij van ' + lengte + ' dieren, een ervan heeft een randje">' + p + '</div>';
   }
 
 export default {

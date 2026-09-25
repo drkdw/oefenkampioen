@@ -249,8 +249,8 @@
     font-size: 26px;
   }
   .hfd .tekst { flex: 1 1 auto; min-width: 0; }
-  .hfd h2 { font-family: Fredoka, sans-serif; font-size: 18px; margin: 0; }
-  .hfd p { margin: 2px 0 0; font-size: 14px; color: var(--ink-soft); }
+  .hfd-titel { display: block; font-family: Fredoka, sans-serif; font-size: 18px; }
+  .hfd-uitleg { display: block; margin-top: 2px; font-size: 14px; color: var(--ink-soft); }
   /* heading between the chapters of two school years in a flat list; no interaction,
      only to keep the list readable once it spans several school years */
   .jaarkop { font-family: Fredoka, sans-serif; font-size: 14px; color: var(--ink-soft); margin: 6px 4px -2px; }
@@ -765,7 +765,7 @@
   </div>
 
   <div class="result" id="result" hidden>
-    <div class="stars" id="stars" aria-live="polite"></div>
+    <div class="stars" id="stars" role="img" aria-live="polite"></div>
     <h2 id="resultTitle">Goed gedaan!</h2>
     <div class="big-score" id="resultScore">0 / 10</div>
     <p id="resultMsg"></p>

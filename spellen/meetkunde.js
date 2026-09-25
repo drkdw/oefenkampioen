@@ -48,13 +48,14 @@ import { keuzes, vulAan, vulRondom, positief, andere } from '../gereedschap.js';
       '" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/>',
       '<line x1="' + cx + '" y1="' + cy + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) +
       '" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/>'];
-    [0, 30, 60, 90, 120, 150, 180].forEach(function (g) {
+    // a tick every ten degrees, a bigger one every thirty: every angle can be read off, not guessed
+    for (var g = 0; g <= 180; g += 10) {
       var r2 = g * Math.PI / 180, tx = cx + boog * Math.cos(r2), ty = cy - boog * Math.sin(r2);
-      p.push('<circle cx="' + tx.toFixed(1) + '" cy="' + ty.toFixed(1) + '" r="2" fill="var(--ink-soft)"/>');
-    });
+      p.push('<circle cx="' + tx.toFixed(1) + '" cy="' + ty.toFixed(1) + '" r="' + (g % 30 ? 1.5 : 3) + '" fill="var(--ink-soft)"/>');
+    }
     p.push('<circle cx="' + cx + '" cy="' + cy + '" r="4" fill="var(--ink)"/>');
     return '<svg viewBox="-70 0 190 120" width="190" height="120" role="img" ' +
-      'aria-label="Een hoek van ' + graden + ' graden, met streepjes om de dertig graden">' + p.join('') + '</svg>';
+      'aria-label="Een hoek met een stip om de tien graden">' + p.join('') + '</svg>';
   }
 
   // the six solids of year 6. Faces, vertices and edges only for the ones with flat faces: how to
@@ -91,7 +92,7 @@ import { keuzes, vulAan, vulRondom, positief, andere } from '../gereedschap.js';
   function hoekTekening(graden) {
     var cx = 20, cy = 100, lengte = 85, rad = graden * Math.PI / 180;
     var x2 = cx + lengte * Math.cos(rad), y2 = cy - lengte * Math.sin(rad);
-    return '<svg viewBox="-70 0 190 120" width="190" height="120" role="img" aria-label="Een hoek van ' + graden + ' graden">' +
+    return '<svg viewBox="-70 0 190 120" width="190" height="120" role="img" aria-label="Een hoek tussen twee lijnen">' +
       '<line x1="' + cx + '" y1="' + cy + '" x2="' + (cx + lengte) + '" y2="' + cy +
       '" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/>' +
       '<line x1="' + cx + '" y1="' + cy + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) +
@@ -244,7 +245,7 @@ export default {
     var kop = 'Vraag ' + nr + ': ';
     if (v.soort === 'herkennen') return { titel: kop + 'welke ruimtefiguur is dit?', sub: 'Kies de juiste naam.' };
     if (v.soort === 'eigenschap') return { titel: kop + 'hoeveel ' + v.prop + ' heeft een ' + v.figuur.naam + '?', sub: 'Denk aan de vorm.' };
-    if (v.soort === 'graden') return { titel: kop + 'hoeveel graden is deze hoek?', sub: 'De streepjes staan om de dertig graden.' };
+    if (v.soort === 'graden') return { titel: kop + 'hoeveel graden is deze hoek?', sub: 'Elke kleine stip is tien graden, een grote stip dertig.' };
     if (v.soort === 'hoek') return { titel: kop + 'wat voor hoek is dit?', sub: 'Scherp, recht, stomp of gestrekt?' };
     var vorm = v.vierkant ? 'het vierkant' : 'de rechthoek';
     if (v.soort === 'oppervlakte') return { titel: kop + 'wat is de oppervlakte van ' + vorm + '?', sub: 'Breedte keer hoogte.' };
