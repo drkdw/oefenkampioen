@@ -28,7 +28,8 @@ De tests draaien zonder installatie, enkel met Node:
 node --import ./test/pre.mjs test/alles.mjs
 ```
 
-Dat bouwt elke vraag van elk spel en controleert de beloningslogica. In de browser meet
+Dat bouwt elke vraag van elk spel, rekent elke spiegelvraag na vanuit de tekening en controleert
+de beloningslogica. In de browser meet
 `(await import('/test/layout-meting.js')).meet()` of vraag, keuzes en de volgende-knop op het
 huidige scherm passen zonder te scrollen.
 
