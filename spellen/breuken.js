@@ -299,7 +299,12 @@ export default {
     if (v.soort === 'vanGetal') return v.getal + ' : ' + v.noemer + ' = ' + (v.getal / v.noemer) + ', en ' + v.teller + ' keer dat is ' + v.ans + '.';
     if (v.soort === 'tiende') return v.t + ' van de 10 stukjes is ' + v.ans + '.';
     if (v.soort === 'honderdste') return v.h + ' honderdsten schrijf je als ' + v.ans + '.';
-    if (v.soort === 'rondTiental' || v.soort === 'rondHonderdtal') return v.n + ' ligt het dichtst bij ' + v.ans + '.';
+    if (v.soort === 'rondTiental' || v.soort === 'rondHonderdtal') {
+      // exactly halfway is not "closest": there the rule decides, so say so
+      var halfweg = v.n % (v.soort === 'rondTiental' ? 10 : 100) === (v.soort === 'rondTiental' ? 5 : 50);
+      return halfweg ? v.n + ' ligt precies in het midden: dan rond je naar boven af, dus ' + v.ans + '.'
+        : v.n + ' ligt het dichtst bij ' + v.ans + '.';
+    }
     return v.teller + ' van de ' + v.noemer + ' stukjes is ' + v.ans + '.';
   },
   kort: function (v) {

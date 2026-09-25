@@ -18,7 +18,7 @@ import { keuzes, vulAan, vulRondom, positief, andere, shuffle } from '../gereeds
   // the usual sale discounts. Each comes with a step for the base amount so the part is whole.
   var TOENAME_STIJL = [
     { ctx: 'btw', ding: 'een fiets', dingen: { 6: 'een kar boodschappen' }, vraag: 'zonder btw', uitleg: 'de prijs met btw', percs: { 21: 100, 6: 50 } },
-    { ctx: 'intrest', ding: 'je spaargeld', vraag: 'op de bank', uitleg: 'wat je na een jaar hebt', percs: { 2: 50, 3: 100, 5: 20 } }
+    { ctx: 'intrest', ding: 'je spaargeld', vraag: 'op de bank', uitleg: 'je spaargeld na een jaar', percs: { 2: 50, 3: 100, 5: 20 } }
   ];
   var KORTING = { 10: 10, 20: 5, 25: 4, 50: 2 };
   var WAREN_TABEL = [

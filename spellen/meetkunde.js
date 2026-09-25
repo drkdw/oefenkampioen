@@ -57,15 +57,17 @@ import { keuzes, vulAan, vulRondom, positief, andere } from '../gereedschap.js';
       'aria-label="Een hoek van ' + graden + ' graden, met streepjes om de dertig graden">' + p.join('') + '</svg>';
   }
 
-  // the six solids of year 6, with their number of faces, vertices and edges
+  // the six solids of year 6. Faces, vertices and edges only for the ones with flat faces: how to
+  // count a curved surface or the tip of a cone differs between school methods
   var RUIMTEFIGUREN = [
     { naam: 'kubus', ico: '🎲', vlakken: 6, hoekpunten: 8, ribben: 12 },
     { naam: 'balk', ico: '📦', vlakken: 6, hoekpunten: 8, ribben: 12 },
-    { naam: 'cilinder', ico: '🥫', vlakken: 3, hoekpunten: 0, ribben: 2 },
-    { naam: 'bol', ico: '⚽', vlakken: 1, hoekpunten: 0, ribben: 0 },
-    { naam: 'kegel', ico: '🍦', vlakken: 2, hoekpunten: 1, ribben: 1 },
+    { naam: 'cilinder', ico: '🥫' },
+    { naam: 'bol', ico: '⚽' },
+    { naam: 'kegel', ico: '🍦' },
     { naam: 'piramide', ico: '', vlakken: 5, hoekpunten: 5, ribben: 8 }
   ];
+  var VEELVLAKKEN = RUIMTEFIGUREN.filter(function (f) { return f.vlakken; });
   // no emoji shows a square pyramid (the red triangle is flat), so this one is drawn
   var PIRAMIDE = '<svg viewBox="0 0 120 100" width="120" height="100" role="img" aria-label="Een piramide met een vierkant grondvlak">' +
     '<polygon points="20,80 80,80 100,65 40,65" fill="var(--card-2)" stroke="var(--ink)" stroke-width="2.5" stroke-linejoin="round"/>' +
@@ -147,7 +149,7 @@ export default {
     if (soort === 'eigenschap') {
       var uit5 = [];
       RUIMTEFIGUREN.forEach(function (f, i) {
-        ['vlakken', 'hoekpunten', 'ribben'].forEach(function (prop) { uit5.push({ i: i, prop: prop }); });
+        if (f.vlakken) ['vlakken', 'hoekpunten', 'ribben'].forEach(function (prop) { uit5.push({ i: i, prop: prop }); });
       });
       return uit5;
     }
@@ -187,7 +189,7 @@ export default {
     }
     if (soort === 'eigenschap') {
       var figuur2 = RUIMTEFIGUREN[z.i], waarde = figuur2[z.prop];
-      var poelWaarden = RUIMTEFIGUREN.map(function (f) { return f[z.prop]; });
+      var poelWaarden = VEELVLAKKEN.map(function (f) { return f[z.prop]; });
       var foutE = [];
       vulAan(foutE, waarde, poelWaarden);
       vulRondom(foutE, waarde, 1, function (k) { return k >= 0; });

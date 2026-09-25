@@ -13,7 +13,12 @@ import { shuffle, keuzes, vulAan, positief, vulRondom, hoofdletter, andere } fro
     var lijst = STELSELS[stelsel].eenheden;
     for (var i = 0; i < lijst.length; i++) if (lijst[i].naam === naam) return lijst[i];
   }
-  function toon(getal, naam) { return getal + ' ' + naam; }
+  // Flemish notation: a space between thousands from five digits on (10 000 g)
+  function metSpaties(n) {
+    var t = String(n);
+    return t.length > 4 ? t.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') : t;
+  }
+  function toon(n, naam) { return metSpaties(n) + ' ' + naam; }
 
   /* the things you measure in class, with their size in the smallest unit */
   var DINGEN = [
@@ -118,10 +123,11 @@ import { shuffle, keuzes, vulAan, positief, vulRondom, hoofdletter, andere } fro
       }).join('') + '</div>';
   }
 
-  // converting goes wrong in two ways: in the wrong direction, or one step too far
+  // converting goes wrong in two ways: in the wrong direction, or one step too far (not two:
+  // 10 000 cm for 1 m is no mistake a child makes)
   function afleidersOm(juist, van, naar, waarde) {
     var lijst = [], omgekeerd = Math.round(waarde * van.in * van.in / naar.in / naar.in);
-    vulAan(lijst, juist, [juist * 10, Math.round(juist / 10), omgekeerd, juist * 100, juist + 1], function (k) {
+    vulAan(lijst, juist, [juist * 10, Math.round(juist / 10), omgekeerd, juist + 1], function (k) {
       return k > 0 && k === Math.round(k);
     });
     vulRondom(lijst, juist, 1);
@@ -251,7 +257,7 @@ export default {
     var sl = soort + '|' + z.n + z.van + '>' + z.naar;
     if (soort === 'typ') {
       return { soort: soort, sleutel: sl, stelsel: z.stelsel, n: z.n, van: z.van, naar: z.naar,
-        uit: uitkomst, ans: String(uitkomst),
+        uit: uitkomst, ans: metSpaties(uitkomst),
         typen: { scheider: '', hulp: 'Typ een getal in het vakje.',
           velden: [{ ph: '0', aria: 'Jouw antwoord', ant: uitkomst, max: 5 }] } };
     }
@@ -273,7 +279,7 @@ export default {
     if (v.soort === 'past') return null;
     if (v.soort === 'vergelijk') return null;
     if (v.soort === 'liter') return null;
-    return v.n + ' ' + v.van + ' = ? ' + v.naar;
+    return metSpaties(v.n) + ' ' + v.van + ' = ? ' + v.naar;
   },
   vraag: function (v, nr) {
     var kop = 'Vraag ' + nr + ': ';
@@ -287,8 +293,8 @@ export default {
       var werkwoord = { lengte: 'hoe lang is ', gewicht: 'hoeveel weegt ', inhoud: 'hoeveel kan er in ' }[v.ding.stelsel];
       return { titel: kop + werkwoord + v.ding.naam + '?', sub: 'Kies het getal met de juiste maat erbij.' };
     }
-    if (v.soort === 'typ') return { titel: kop + 'hoeveel ' + v.naar + ' is ' + v.n + ' ' + v.van + '?', sub: 'Typ alleen het getal.' };
-    return { titel: kop + 'hoeveel ' + v.naar + ' is ' + v.n + ' ' + v.van + '?' };
+    if (v.soort === 'typ') return { titel: kop + 'hoeveel ' + v.naar + ' is ' + metSpaties(v.n) + ' ' + v.van + '?', sub: 'Typ alleen het getal.' };
+    return { titel: kop + 'hoeveel ' + v.naar + ' is ' + metSpaties(v.n) + ' ' + v.van + '?' };
   },
   uitleg: function (v) {
     if (v.soort === 'liter') return 'De beker is gevuld tot ' + v.liter + ' liter.';
@@ -300,15 +306,15 @@ export default {
     var van = eenheid(v.stelsel, v.van), naar = eenheid(v.stelsel, v.naar);
     var stap = van.in > naar.in ? van.in / naar.in : naar.in / van.in;
     return van.in > naar.in
-      ? 'Naar een kleinere maat maak je het getal ' + stap + ' keer groter: ' + v.n + ' × ' + stap + ' = ' + v.uit + '.'
-      : 'Naar een grotere maat maak je het getal ' + stap + ' keer kleiner: ' + v.n + ' : ' + stap + ' = ' + v.uit + '.';
+      ? 'Naar een kleinere maat maak je het getal ' + stap + ' keer groter: ' + metSpaties(v.n) + ' × ' + stap + ' = ' + metSpaties(v.uit) + '.'
+      : 'Naar een grotere maat maak je het getal ' + stap + ' keer kleiner: ' + metSpaties(v.n) + ' : ' + stap + ' = ' + metSpaties(v.uit) + '.';
   },
   kort: function (v) {
     if (v.soort === 'liter') return 'Hoeveel liter is dit?';
     if (v.soort === 'vergelijk') return hoofdletter(vergelijkZin(v.basis, v.richting));
     if (v.soort === 'liniaal') return 'De streep op de liniaal';
     if (v.soort === 'past') return 'Hoeveel is ' + v.ding.naam + '?';
-    return v.n + ' ' + v.van + ' in ' + v.naar;
+    return metSpaties(v.n) + ' ' + v.van + ' in ' + v.naar;
   },
   test: function (check) {
     check(eenheid('lengte', 'cm').in === 10, 'een centimeter is tien millimeter');
