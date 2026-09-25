@@ -87,6 +87,12 @@ export function beloningTests(check) {
       check(nieuwKind.reden === 'nieuw' && nieuwKind.spel.hoofdstukken[nieuwKind.index].leerjaar === lj, 'nieuw kind in leerjaar ' + lj + ': iets uit het eigen leerjaar');
     }
   });
+  // a chapter played with 0 stars is the one to improve, not a reason to say "all 3 stars"
+  var nulSter = {};
+  SPELLEN.forEach(function (s) { s.hoofdstukken.forEach(function (h, i) { if (h.leerjaar === 1) nulSter[s.id + ':' + i] = { score: 10, van: 10 }; }); });
+  nulSter['klok:0'] = { score: 4, van: 10 };
+  var v0 = voorstelVoor(SPELLEN, nulSter, 1, 0);
+  check(v0.reden === 'verbeter' && v0.spel.id === 'klok' && v0.index === 0, 'een hoofdstuk met 0 sterren wordt voorgesteld om te verbeteren');
   // a weak chapter from long ago does not push aside the own year
   var oudZwak = {}, br = SPELLEN.filter(function (s) { return s.id === 'brug'; })[0];
   oudZwak['brug:0'] = { score: 5, van: 10 };
