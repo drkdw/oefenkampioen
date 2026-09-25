@@ -2,7 +2,7 @@
 import { pad2 } from './gereedschap.js';
 import {
   leesDagen, SPELLEN, AANTALLEN, LEERJAREN, TEMPO, LOF, MOED, state, schoonNaam, schoonProfielen, mengBeste, naam, metNaam,
-  leesTempo, secondenVoor, jarenVan, jasjesVoor, planVoor, bouwToets, maakVraag, toonStart
+  leesTempo, secondenVoor, jasjesVoor, planVoor, bouwToets, maakVraag, toonStart
 } from './chassis.js';
 import { STICKERS, sterrenVoor, voorstelVoor } from './beloning.js';
 
@@ -65,7 +65,7 @@ SPELLEN.forEach(function (spel) {
     check(LEERJAREN.indexOf(h.leerjaar) > -1,
       spel.id + ' hoofdstuk ' + (i + 1) + ': leerjaar is een getal van 1 tot 6 (nu ' + h.leerjaar + ')');
   });
-  check(jarenVan(spel).length >= 1, spel.id + ': dekt minstens een leerjaar');
+  check(spel.hoofdstukken.length >= 1, spel.id + ': heeft minstens een hoofdstuk');
   // a jasje changes the presentation, never the answer and never the key
   spel.hoofdstukken.forEach(function (h, i) {
     Object.keys(h.plan).forEach(function (soort) {

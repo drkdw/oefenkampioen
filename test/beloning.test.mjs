@@ -1,5 +1,5 @@
 import { SPELLEN } from '../spellen/index.js';
-import { STICKERS, sterrenVoor, stickerVoor, datumVan, mengDagen, dagErbij, dagenDezeMaand, dagNummer, voorstelVoor, boekVoor, naarIndeling2 }
+import { STICKERS, sterrenVoor, stickerVoor, datumVan, mengDagen, dagErbij, dagenDezeMaand, dagNummer, voorstelVoor, boekVoor, naarIndeling2, opVolgorde }
   from '../beloning.js';
 
 export function beloningTests(check) {
@@ -74,4 +74,27 @@ export function beloningTests(check) {
   check(voorstelVoor(SPELLEN, alles3, 2, 5).reden === 'alles', 'alles 3 sterren geeft reden alles');
   var a = voorstelVoor(SPELLEN, {}, 3, 0), b = voorstelVoor(SPELLEN, {}, 3, 1);
   check(a.spel !== b.spel, 'een andere dag begint bij een ander spel');
+
+  // own school year first, everywhere: in the list of every game and in the daily suggestion
+  [1, 2, 3, 4, 5, 6].forEach(function (lj) {
+    SPELLEN.forEach(function (s) {
+      var jaren = opVolgorde(s, lj).map(function (r) { return r.h.leerjaar; });
+      check(jaren.every(function (j, k) { return j <= lj && (k === 0 || j <= jaren[k - 1]); }), s.id + ' in leerjaar ' + lj + ': eigen leerjaar bovenaan, dan aflopend');
+      check(jaren.length === s.hoofdstukken.filter(function (h) { return h.leerjaar <= lj; }).length, s.id + ' in leerjaar ' + lj + ': geen hoofdstuk kwijt');
+    });
+    for (var d = 0; d < 7; d++) {
+      var nieuwKind = voorstelVoor(SPELLEN, {}, lj, d);
+      check(nieuwKind.reden === 'nieuw' && nieuwKind.spel.hoofdstukken[nieuwKind.index].leerjaar === lj, 'nieuw kind in leerjaar ' + lj + ': iets uit het eigen leerjaar');
+    }
+  });
+  // a weak chapter from long ago does not push aside the own year
+  var oudZwak = {}, br = SPELLEN.filter(function (s) { return s.id === 'brug'; })[0];
+  oudZwak['brug:0'] = { score: 5, van: 10 };
+  var v6 = voorstelVoor(SPELLEN, oudZwak, 6, 0);
+  check(v6.reden === 'nieuw' && v6.spel.hoofdstukken[v6.index].leerjaar === 6, 'eigen leerjaar gaat voor op herhaling');
+  // once the own year is all 3 stars, the search goes one year lower, improving first
+  var klaar6 = { 'brug:0': { score: 5, van: 10 } };
+  SPELLEN.forEach(function (s) { s.hoofdstukken.forEach(function (h, i) { if (h.leerjaar >= 2) klaar6[s.id + ':' + i] = { score: 10, van: 10 }; }); });
+  var terug = voorstelVoor(SPELLEN, klaar6, 6, 0);
+  check(terug.reden === 'verbeter' && terug.spel === br && terug.index === 0, 'eigen leerjaar klaar: dan pas herhaling, eerst verbeteren');
 }
