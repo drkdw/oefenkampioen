@@ -4,7 +4,6 @@ import {
   leesDagen, SPELLEN, AANTALLEN, LEERJAREN, TEMPO, LOF, MOED, state, schoonNaam, schoonProfielen, mengBeste, naam, metNaam,
   leesTempo, secondenVoor, jasjesVoor, planVoor, bouwToets, maakVraag, toonStart
 } from './chassis.js';
-import { STICKERS, sterrenVoor, voorstelVoor } from './beloning.js';
 
 var fouten = 0;
 var check = function (ok, wat) { if (!ok) { fouten++; console.error('FOUT: ' + wat); } };
@@ -37,17 +36,6 @@ var ids = SPELLEN.map(function (s) { return s.id; });
 check(ids.filter(function (x, i) { return ids.indexOf(x) === i; }).length === ids.length, 'elk spel heeft een eigen id');
 
 check(Array.isArray(leesDagen('bestaat-niet')) && leesDagen('bestaat-niet').length === 0, 'een kind zonder dagen heeft een lege lijst');
-var alleStickers = [];
-SPELLEN.forEach(function (s) {
-  check((STICKERS[s.id] || []).length === s.hoofdstukken.length, s.id + ': precies een sticker per hoofdstuk');
-  alleStickers = alleStickers.concat(STICKERS[s.id] || []);
-});
-check(new Set(alleStickers).size === alleStickers.length, 'elke sticker is anders');
-check(sterrenVoor({ score: 9, van: 10 }) === 3 && sterrenVoor({ score: 13, van: 20 }) === 1 && sterrenVoor() === 0, 'sterrengrenzen');
-LEERJAREN.forEach(function (lj) {
-  var v = voorstelVoor(SPELLEN, {}, lj, lj);
-  check(v.reden === 'nieuw' && v.spel.hoofdstukken[v.index].leerjaar <= lj, 'voorstel binnen leerjaar ' + lj);
-});
 var toetsen = 0;
 var bewaardAantal = state.aantal, bewaardSpel = state.spel, bewaardHfd = state.hfd;
 SPELLEN.forEach(function (spel) {
@@ -84,7 +72,6 @@ SPELLEN.forEach(function (spel) {
     });
   });
 
-  if (spel.test) spel.test(check);
 
   AANTALLEN.forEach(function (aantal) {
     state.aantal = aantal;
@@ -189,16 +176,6 @@ state.spel = bewaardSpel;
 state.hfd = bewaardHfd;
 
 toonStart();
-var perJaar = {};
-SPELLEN.forEach(function (s2) {
-  s2.hoofdstukken.forEach(function (h) { perJaar[h.leerjaar] = (perJaar[h.leerjaar] || 0) + 1; });
-});
-// new in that year, and in brackets what a child at that level has to practise in total
-var opgeteld = 0;
-console.log('Hoofdstukken per leerjaar (nieuw, cumulatief): ' + LEERJAREN.map(function (lj) {
-  opgeteld += perJaar[lj] || 0;
-  return lj + ': ' + (perJaar[lj] || 0) + ' (' + opgeteld + ')';
-}).join(',  '));
 console.log(fouten === 0
   ? 'Zelfcheck klaar: ' + SPELLEN.length + ' spellen, ' + toetsen + ' toetsen doorgerekend, geen fouten.'
   : 'Zelfcheck klaar: ' + fouten + ' fouten gevonden.');

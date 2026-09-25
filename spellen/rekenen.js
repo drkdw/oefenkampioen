@@ -116,15 +116,6 @@ import { keuzes, vulAan, positief, vulRondom, andere } from '../gereedschap.js';
     return lijst.slice(0, 3);
   }
 
-  // two numbers in a row, for tens/units and doubling/halving
-  function getalDuo(a, b) {
-    return '<div style="display:flex;gap:14px;justify-content:center;align-items:center">' +
-      [a, b].map(function (n) {
-        return '<div style="display:flex;align-items:center;justify-content:center;font-family:Fredoka,sans-serif;' +
-          'font-size:48px;color:var(--ink);background:var(--card-2);border-radius:18px;width:96px;height:96px">' +
-          n + '</div>';
-      }).join('<span style="font-size:28px;color:var(--ink-soft);align-self:center">→</span>') + '</div>';
-  }
   /* --------- year 4: column arithmetic up to 10 000 --------- */
 
   // two numbers in column form, right-aligned as on paper. No intermediate steps: the child
@@ -164,6 +155,10 @@ import { keuzes, vulAan, positief, vulRondom, andere } from '../gereedschap.js';
           'font-size:22px;color:var(--ink)">' + n + '</div>';
       }).join('') + '</div>';
   }
+  // these show their question in the drawing or the text, so they get no sum screen
+  var ZONDER_SCHERM = new Set(['volgend', 'rang', 'sprongen', 'tientallen', 'eenheden', 'dubbel', 'helft', 'paar',
+    'duizendtal', 'honderdtal', 'cijferPlus', 'cijferMin', 'cijferKeer', 'cijferDelen', 'grootgetal', 'cijferDelen2',
+    'temp', 'macht']);
   var ORDINALEN = ['eerste', 'tweede', 'derde', 'vierde', 'vijfde', 'zesde'];
   var DIERTJES = ['🐶', '🐱', '🐰', '🐻', '🐸', '🦁'];
   function rijTekening(lengte, plek) {
@@ -578,11 +573,7 @@ export default {
     if (v.soort === 'omgekeerd') {
       return v.vraagTotaal ? '? = ' + v.a + ' + ' + v.b : v.uit + ' = ' + v.a + ' + ?';
     }
-    if (v.soort === 'volgend' || v.soort === 'rang' || v.soort === 'sprongen' || v.soort === 'tientallen' ||
-        v.soort === 'eenheden' || v.soort === 'dubbel' || v.soort === 'helft' || v.soort === 'paar' ||
-        v.soort === 'duizendtal' || v.soort === 'honderdtal' || v.soort === 'cijferPlus' ||
-        v.soort === 'cijferMin' || v.soort === 'cijferKeer' || v.soort === 'cijferDelen' ||
-        v.soort === 'grootgetal' || v.soort === 'cijferDelen2' || v.soort === 'temp' || v.soort === 'macht') return null;
+    if (ZONDER_SCHERM.has(v.soort)) return null;
     var teken = v.plus ? ' + ' : ' − ';
     if (v.soort === 'gat') return v.a + teken + '? = ' + v.uit;
     return v.a + teken + v.b;
