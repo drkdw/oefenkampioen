@@ -124,7 +124,7 @@ export default {
   hoofdstukken: [
     { leerjaar: 1, ico: '🛍️', titel: 'Samen betalen', tekst: 'Een appel van 1 euro en een ijsje van 3 euro. Hoeveel samen?',
       badge: 'makkelijk', plan: { samen: 10 } },
-    { leerjaar: 1, ico: '💰', titel: 'Gepast betalen', tekst: 'Hoeveel muntjes van 1 euro is hetzelfde als dit briefje?',
+    { leerjaar: 1, ico: '💰', titel: 'Gepast betalen', tekst: 'Hoeveel muntjes van 1 euro zijn evenveel waard?',
       badge: 'makkelijk', plan: { gepast: 10 } },
     { leerjaar: 1, ico: '🔎', titel: 'Welke munt is dit?', tekst: 'Vooral euro’s: van 50 cent tot 10 euro.',
       badge: 'makkelijk', bron: [50, 100, 200, 500, 1000], plan: { herkennen: 10 } },

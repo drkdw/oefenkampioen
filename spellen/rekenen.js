@@ -435,6 +435,8 @@ export default {
       var kern5 = soort === 'cijferPlus'
         ? [z.a - z.b, uitk + 10, uitk - 10, uitk + 100]
         : [z.a + z.b, uitk + 10, uitk - 10, uitk + 100];
+      // the chapter stays below 10 000: a wrong choice above it would stand out without counting
+      kern5 = kern5.filter(function (k) { return k <= 9999; });
       return { soort: soort, sleutel: soort + '|' + z.a + ':' + z.b, a: z.a, b: z.b, ans: String(uitk),
         options: keuzes(uitk, afleidersCijfer(uitk, kern5)) };
     }
@@ -593,13 +595,13 @@ export default {
     if (v.soort === 'helft') return { titel: kop + 'wat is de helft van ' + v.n + '?', sub: 'Verdeel in twee gelijke stukken.' };
     if (v.soort === 'paar') return { titel: kop + 'welk van deze vier getallen is ' + (v.even ? 'even' : 'oneven') + '?', sub: 'Even kan je door twee delen, zonder rest.' };
     if (v.soort === 'omgekeerd') return { titel: kop + 'welk getal ontbreekt?', sub: 'Het is-gelijk-teken werkt ook van rechts naar links.' };
-    if (v.soort === 'duizendtal') return { titel: kop + 'hoeveel duizendtallen zitten er in ' + v.n + '?', sub: v.n + ' = ? duizendtallen, ' + v.hond + ' honderdtallen, ...' };
-    if (v.soort === 'honderdtal') return { titel: kop + 'hoeveel honderdtallen zitten er in ' + v.n + '?', sub: v.n + ' = ' + v.duiz + ' duizendtallen, ? honderdtallen, ...' };
+    if (v.soort === 'duizendtal') return { titel: kop + 'welk cijfer staat bij de duizendtallen in ' + v.n + '?', sub: v.n + ' = ? duizendtallen, ' + v.hond + ' honderdtallen, ...' };
+    if (v.soort === 'honderdtal') return { titel: kop + 'welk cijfer staat bij de honderdtallen in ' + v.n + '?', sub: v.n + ' = ' + v.duiz + ' duizendtallen, ? honderdtallen, ...' };
     if (v.soort === 'cijferPlus') return { titel: kop + 'hoeveel is ' + v.a + ' plus ' + v.b + '?', sub: 'Zet ze onder elkaar.' };
     if (v.soort === 'cijferMin') return { titel: kop + 'hoeveel is ' + v.a + ' min ' + v.b + '?', sub: 'Zet ze onder elkaar.' };
     if (v.soort === 'cijferKeer') return { titel: kop + 'hoeveel is ' + v.a + ' keer ' + v.b + '?', sub: 'Vermenigvuldig cijfer per cijfer.' };
     if (v.soort === 'cijferDelen') return { titel: kop + 'hoeveel is ' + v.deeltal + ' gedeeld door ' + v.deler + '?', sub: 'Zonder rest.' };
-    if (v.soort === 'grootgetal') return { titel: kop + 'hoeveel duizendtallen zitten er in ' + metSpaties(v.n) + '?', sub: 'Deel door 1000.' };
+    if (v.soort === 'grootgetal') return { titel: kop + 'hoeveel duizendtallen zitten er in ' + metSpaties(v.n) + '?', sub: 'Hoeveel keer 1000 zit erin?' };
     if (v.soort === 'cijferDelen2') return { titel: kop + 'hoeveel is ' + v.deeltal + ' gedeeld door ' + v.deler + '?', sub: 'De deler heeft nu twee cijfers.' };
     if (v.soort === 'temp') {
       return { titel: kop + 'het is ' + v.start + ' °C, en het koelt ' + v.val + ' graden af.',
@@ -622,7 +624,7 @@ export default {
     if (v.soort === 'cijferMin') return v.a + ' − ' + v.b + ' = ' + (v.a - v.b) + '.';
     if (v.soort === 'cijferKeer') return v.a + ' × ' + v.b + ' = ' + (v.a * v.b) + '.';
     if (v.soort === 'cijferDelen') return v.deeltal + ' : ' + v.deler + ' = ' + v.ans + ', want ' + v.ans + ' × ' + v.deler + ' = ' + v.deeltal + '.';
-    if (v.soort === 'grootgetal') return metSpaties(v.n) + ' : 1000 = ' + v.ans + '.';
+    if (v.soort === 'grootgetal') return metSpaties(v.n) + ' = ' + v.ans + ' duizendtallen en ' + (v.n % 1000) + '.';
     if (v.soort === 'cijferDelen2') return v.deeltal + ' : ' + v.deler + ' = ' + v.ans + ', want ' + v.ans + ' × ' + v.deler + ' = ' + v.deeltal + '.';
     if (v.soort === 'temp') return v.start + ' − ' + v.val + ' = ' + v.ans + ' °C. Tot 0 zakt het ' + v.start +
       ' graden, daarna nog ' + (v.val - v.start) + ' onder nul.';
