@@ -1,6 +1,7 @@
 import { harnas } from './harnas.mjs';
 import { beloningTests } from './beloning.test.mjs';
 import { spiegelTests } from './spiegelen.test.mjs';
+import { koppelingTests } from './koppelingen.test.mjs';
 
 var fouten = 0;
 function check(ok, wat) {
@@ -11,5 +12,6 @@ function check(ok, wat) {
 var vragen = harnas(check);
 beloningTests(check);
 spiegelTests(check);
+koppelingTests(check);
 console.log(vragen + ' vragen doorgerekend, ' + (fouten ? fouten + ' fouten' : 'geen fouten'));
 process.exitCode = fouten ? 1 : 0;

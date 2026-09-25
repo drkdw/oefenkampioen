@@ -1,6 +1,6 @@
 import { shuffle, pad2, $, reduced, hoofdletter } from './gereedschap.js';
 import { SPELLEN } from './spellen/index.js';
-import { datumVan, mengDagen, dagErbij, sterrenVoor, stickerVoor, voorstelVoor, dagenDezeMaand, dagNummer, boekVoor, INDELING, naarIndeling2 } from './beloning.js';
+import { datumVan, mengDagen, dagErbij, sterrenVoor, stickerVoor, voorstelVoor, dagenDezeMaand, dagNummer, boekVoor, INDELING, naarIndeling2, opVolgorde } from './beloning.js';
 
 // an eight-year-old cannot keep going for more than twenty questions
 var AANTALLEN = [10, 15, 20];
@@ -226,11 +226,6 @@ function zetLeerjaar(lj) {
   try { localStorage.setItem('oefenkampioen-leerjaar' + postfix(), String(lj)); } catch (e) { /* may fail */ }
 }
 function jaarNaam(lj) { return (lj === 1 ? '1ste' : lj + 'de') + ' leerjaar'; }
-function jarenVan(spel) {
-  var uit = [];
-  spel.hoofdstukken.forEach(function (h) { if (uit.indexOf(h.leerjaar) === -1) uit.push(h.leerjaar); });
-  return uit.sort(function (a, b) { return a - b; });
-}
 // a school year is cumulative: a child in third year must still be able to practise the quarter
 // hours of the second, so everything up to and including the chosen year is included
 function hoofdstukkenVoor(spel) {
@@ -625,15 +620,15 @@ function toonMenu(spel) {
   stopKlok();
   state.spel = spel;
   var beste = lees();
-  // a flat list: the school year is already chosen on the start screen, so not once more here.
-  // but if it holds chapters from several school years, a heading goes in between: with ten
-  // chapters in a row an eight-year-old otherwise loses track of which ones belong together
-  var lijst = hoofdstukkenVoor(spel);
+  // the child's own school year on top, the earlier years below as revision. With chapters from
+  // several years a heading goes in between, so a child always sees which ones are its own
+  var lijst = opVolgorde(spel, state.leerjaar);
+  var meerJaren = lijst.some(function (r) { return r.h.leerjaar !== lijst[0].h.leerjaar; });
   var html = '', huidigJaar = null, nr = 0;
   lijst.forEach(function (r) {
     if (r.h.leerjaar !== huidigJaar) {
       huidigJaar = r.h.leerjaar;
-      if (jarenVan(spel).length > 1) html += '<p class="jaarkop">' + jaarNaam(huidigJaar) + '</p>';
+      if (meerJaren) html += '<p class="jaarkop">' + (huidigJaar === state.leerjaar ? '' : 'Herhaling: ') + jaarNaam(huidigJaar) + '</p>';
     }
     nr++;
     html += '<button class="hfd" data-i="' + r.i + '">' +
@@ -925,4 +920,4 @@ toonStart();
 // the self-check is for the developer, so it is only loaded with #test
 if (location.hash === '#test') import('./zelfcheck.js');
 
-export { leesDagen, SPELLEN, AANTALLEN, jasjesVoor, LEERJAREN, TEMPO, LOF, MOED, state, schoonNaam, schoonProfielen, mengBeste, naam, metNaam, leesTempo, secondenVoor, jarenVan, planVoor, bouwToets, maakVraag, toonStart };
+export { leesDagen, SPELLEN, AANTALLEN, jasjesVoor, LEERJAREN, TEMPO, LOF, MOED, state, schoonNaam, schoonProfielen, mengBeste, naam, metNaam, leesTempo, secondenVoor, planVoor, bouwToets, maakVraag, toonStart };

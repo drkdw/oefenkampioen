@@ -45,8 +45,8 @@ Een leerjaar is cumulatief. Kies je het derde, dan zie je alles tot en met het d
 uren van het eerste, de kwartieren van het tweede en de tijdsduur van het derde. Wie in het derde
 zit moet de kwartieren immers nog kunnen oefenen.
 
-- binnen een spel is het één vlakke lijst, met een kopje tussen de leerjaren als de lijst er meer
-  dan één bevat; je hoeft het leerjaar niet nog eens te kiezen
+- binnen een spel staat je eigen leerjaar bovenaan, daaronder de vorige leerjaren onder het kopje
+  **Herhaling**, van recent naar vroeger; je hoeft het leerjaar niet nog eens te kiezen
 - een spel zonder iets voor het gekozen niveau staat niet op het startscherm
 - een kind dat vooruit wil, zet het leerjaar een stapje hoger
 
@@ -56,8 +56,9 @@ in het eerste 17. Elk hoofdstuk hoort bij het leerjaar waarin het in de klas aan
 
 ## Het startscherm en de beloningen
 
-Bovenaan staat **Voor jou vandaag**: een hoofdstuk met 1 of 2 sterren om te verbeteren, anders een
-hoofdstuk dat je nog nooit speelde, en elke dag begint het zoeken bij een ander spel. Daaronder
+Bovenaan staat **Voor jou vandaag**, eerst uit je eigen leerjaar: een hoofdstuk met 1 of 2 sterren
+om te verbeteren, anders een hoofdstuk dat je nog nooit speelde. Is je eigen leerjaar helemaal
+3 sterren, dan zoekt het een leerjaar lager. Elke dag begint het zoeken bij een ander spel. Daaronder
 één regel met leerjaar, aantal vragen en tempo, die openklapt, en dan de spellen als tegels.
 
 Elk hoofdstuk heeft 0 tot 3 sterren volgens je beste score: 1 vanaf 50%, 2 vanaf 70%, 3 vanaf
