@@ -20,6 +20,12 @@ import { shuffle, keuzes, vulAan, positief, andere } from '../gereedschap.js';
     return vorm.map(function (c) { return [c[0], (c[1] + 1) % N]; });
   }
   function gelijk(a, b) { return sleutelVan(a) === sleutelVan(b); }
+  // a child compares shapes, not exact squares: a moved copy looks the same
+  function vormVan(vorm) {
+    var r = Math.min.apply(null, vorm.map(function (c) { return c[0]; })), k = Math.min.apply(null, vorm.map(function (c) { return c[1]; }));
+    return sleutelVan(vorm.map(function (c) { return [c[0] - r, c[1] - k]; }));
+  }
+  function zelfde(a, b) { return vormVan(a) === vormVan(b); }
   // for a flat axis the half has to lie in the top rows, so the shape is turned on its side:
   // row becomes column, and it no longer crosses the dashed line
   function naarBoven(vorm) { return vorm.map(function (c) { return [c[1], c[0]]; }); }
@@ -156,7 +162,8 @@ export default {
       if (soort === 'klopt') {
         // here the real and the fake mirror image are each a question of their own
         uit.push({ i: i, as: h.as, echt: true });
-        uit.push({ i: i, as: h.as, echt: false });
+        // a shape that looks the same after a half turn cannot show turned apart from shifted
+        if (!zelfde(draai(vorm), vorm)) uit.push({ i: i, as: h.as, echt: false });
       } else {
         uit.push({ i: i, as: h.as, echt: true });
       }
@@ -187,7 +194,7 @@ export default {
     }
     if (soort === 'klopt') {
       // a half turn looks like mirroring, but it is not
-      var gedraaid = !gelijk(draai(vorm), juist);
+      var gedraaid = !zelfde(draai(vorm), juist);
       var getoond = z.echt ? juist : (gedraaid ? draai(vorm) : schuif(vorm));
       // one exact answer per case: mirrored, turned, or shifted
       var juisteTekst = z.echt ? 'gespiegeld' : gedraaid ? 'gedraaid' : 'verschoven';
