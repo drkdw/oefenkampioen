@@ -84,7 +84,7 @@ export function opVolgorde(spel, leerjaar) {
     .sort(function (x, y) { return y.h.leerjaar - x.h.leerjaar || x.i - y.i; });
 }
 
-// own school year first: improve a chapter with 1 or 2 stars, else something never played;
+// own school year first: improve a played chapter without 3 stars, else something never played;
 // only when that year has nothing left, the same search one year lower
 export function voorstelVoor(spellen, beste, leerjaar, dag) {
   var rijen = spellen.map(function (s) { return { s: s, lijst: opVolgorde(s, leerjaar) }; })
@@ -102,7 +102,7 @@ export function voorstelVoor(spellen, beste, leerjaar, dag) {
     return null;
   }
   for (var jaar = leerjaar; jaar >= 1; jaar--) {
-    var v = zoek(jaar, function (score) { var n = sterrenVoor(score); return n === 1 || n === 2; });
+    var v = zoek(jaar, function (score) { return score && sterrenVoor(score) < 3; });
     if (v) return { reden: 'verbeter', spel: v.spel, index: v.index, beste: v.beste };
     v = zoek(jaar, function (score) { return !score; });
     if (v) return { reden: 'nieuw', spel: v.spel, index: v.index };
