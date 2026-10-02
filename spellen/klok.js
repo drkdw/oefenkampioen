@@ -51,6 +51,8 @@ import { shuffle, pad2, keuzes, vulAan, vulRondom, positief, andere, reduced } f
     90: 'anderhalf uur', 120: '2 uur', 150: 'twee en een half uur', 180: '3 uur'
   };
   var ALLE_MIN = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+  // the chapter that teaches five-minute steps asks only those: the quarters came in the chapters before
+  var VIJF_MIN = ALLE_MIN.filter(function (m) { return m % 15 !== 0; });
 
   function minTekst(n) { return n + (n === 1 ? ' minuut' : ' minuten'); }
   function afleidersTijd(h, m, minuten) {
@@ -130,7 +132,7 @@ export default {
     { leerjaar: 2, ico: '🐥', titel: 'Kwartieren', tekst: 'Kwart over en kwart voor erbij.',
       badge: 'makkelijk', minuten: [0, 15, 30, 45], plan: { tijd: 10 } },
     { leerjaar: 2, ico: '🦊', titel: 'Van vijf tot vijf', tekst: 'Tien over half, vijf voor vier.',
-      badge: 'gemiddeld', minuten: ALLE_MIN, plan: { tijd: 10 } },
+      badge: 'gemiddeld', minuten: VIJF_MIN, plan: { tijd: 10 } },
     { leerjaar: 2, ico: '🌙', titel: 'Dag en nacht', tekst: 'Ochtend, voormiddag, middag, namiddag, avond, nacht.',
       badge: 'makkelijk', minuten: [0, 30], plan: { dagdeel: 7, tijd: 3 } },
     { leerjaar: 2, ico: '🏆', titel: 'Het eerste klokexamen', tekst: 'Kwartieren, vijf-tot-vijf en dagdelen door elkaar.',

@@ -80,6 +80,9 @@ function audit(A, check) {
   check(A.filter(x => x.spel === 'maten' && (x.soort === 'om' || x.soort === 'typ')).every(x => {
     const g = x.h.leerjaar <= 2 ? 100 : x.h.leerjaar === 3 ? 10000 : 100000; return x.v.n <= g && x.v.uit <= g;
   }), 'maten: getallen binnen het bereik van het leerjaar');
+  // "Van vijf tot vijf" practises the new five-minute steps, not the quarters of the chapters before
+  check(A.filter(x => x.spel === 'klok' && x.h.titel === 'Van vijf tot vijf').every(x => x.v.m % 15 !== 0),
+    'klok: van vijf tot vijf vraagt geen hele, halve of kwartieren');
   check(!van('maten', 'past').some(x => / dm$/.test(x.v.ans)), 'maten: geen dm bij welke maat past');
   // a wrong choice when converting is a mistake a child makes: one step too far, or keeping the
   // number from the question. Never something absurdly large like 6 000 000 g for 6 kg
