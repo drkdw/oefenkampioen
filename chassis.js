@@ -557,7 +557,7 @@ function toonStart() {
     return '<button class="tegel' + (alles ? ' klaar' : '') + '" data-i="' + r.i + '"><span class="tegel-ico" aria-hidden="true">' + r.s.ico + '</span>' +
       '<span class="tegel-naam">' + r.s.naam + '</span>' +
       '<span class="tegel-sterren" aria-label="' + sv.verdiend + ' van ' + sv.max + ' sterren">★ ' + sv.verdiend + ' / ' + sv.max + '</span>' +
-      '<span class="tegel-klaar">' + (alles ? '✓ Alles klaar' : sv.klaar + ' van ' + sv.aantal + ' klaar') + '</span>' +
+      '<span class="tegel-klaar">' + (alles ? '✅ Alles klaar' : sv.klaar + ' van ' + sv.aantal + ' klaar') + '</span>' +
       '<span class="tegel-balk" aria-hidden="true"><span style="width:' + Math.round(100 * sv.klaar / sv.aantal) + '%"></span></span></button>';
   }).join('') + '<button class="tegel stickers" id="stickerTegel"><span class="tegel-ico" aria-hidden="true">📒</span>' +
     '<span class="tegel-naam">Mijn stickers</span><span class="tegel-sterren">' + st.n + ' / ' + st.totaal + '</span></button>';
