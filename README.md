@@ -67,6 +67,11 @@ Elk hoofdstuk heeft 0 tot 3 sterren volgens je beste score: 1 vanaf 50%, 2 vanaf
 teller telt de hoofdstukken tot je eigen leerjaar, plus elke sticker die je hoger al haalde. Per kind telt de app op hoeveel dagen er deze maand
 geoefend is; er is geen reeks die breekt als je een dag overslaat.
 
+In de lijst van hoofdstukken zie je meteen hoe ver je staat. Een hoofdstuk met 3 sterren is groen
+met een vinkje. Een hoofdstuk dat je speelde maar waarin je fouten maakte, krijgt een oranje rand
+en je beste score. Een hoofdstuk dat je nog nooit speelde, heeft grijze lege sterren. Op elke
+speltegel staat hoeveel hoofdstukken klaar zijn, met een balkje; is alles klaar, dan wordt de tegel groen.
+
 Tijdens een toets past alles op het scherm, ook op een kleine gsm en liggend. Na een juist
 antwoord gaat het na 3,5 seconden vanzelf verder; na een fout blijft de uitleg staan.
 

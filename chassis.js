@@ -434,9 +434,13 @@ var MAANDEN = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', '
   'september', 'oktober', 'november', 'december'];
 function sterrenTekst(n) { return '★★★'.slice(0, n) + '☆☆☆'.slice(n); }
 function sterrenVanSpel(spel, beste) {
-  var lijst = opVolgorde(spel, state.leerjaar), verdiend = 0;
-  lijst.forEach(function (r) { verdiend += sterrenVoor(beste[spel.id + ':' + r.i]); });
-  return { verdiend: verdiend, max: lijst.length * 3 };
+  var lijst = opVolgorde(spel, state.leerjaar), verdiend = 0, klaar = 0;
+  lijst.forEach(function (r) {
+    var n = sterrenVoor(beste[spel.id + ':' + r.i]);
+    verdiend += n;
+    if (n === 3) klaar++;
+  });
+  return { verdiend: verdiend, max: lijst.length * 3, klaar: klaar, aantal: lijst.length };
 }
 // counts only chapters up to the chosen school year, so the goal stays within reach
 function stickersVoorLeerjaar(beste) {
@@ -466,10 +470,18 @@ function voorJouHtml(v) {
   return kop + '<span class="vj-titel">' + v.spel.ico + ' ' + v.spel.naam + ': ' + h.titel + '</span>' +
     '<span class="vj-tekst">' + tekst + '</span>' + regel;
 }
+// three looks a child can tell apart at a glance: done, played with mistakes, and not yet played
+function staatVan(beste) {
+  if (!(Number(beste && beste.van) > 0)) return 'nieuw';
+  return sterrenVoor(beste) === 3 ? 'klaar' : 'bijna';
+}
 function kaart(ico, nr, titel, tekst, beste, badge, sticker) {
-  var n = sterrenVoor(beste);
+  var n = sterrenVoor(beste), staat = staatVan(beste);
+  var regel = staat === 'nieuw' ? ''
+    : '<span class="hfd-score">' + (staat === 'klaar' ? 'Klaar! ' : '') + Number(beste.score) + ' op ' + Number(beste.van) +
+      (staat === 'bijna' ? '. Nog eens?' : '') + '</span>';
   return '<span class="ico">' + ico + '</span>' +
-    '<span class="tekst"><span class="hfd-titel">' + (nr ? nr + '. ' : '') + titel + '</span><span class="hfd-uitleg">' + tekst + '</span></span>' +
+    '<span class="tekst"><span class="hfd-titel">' + (nr ? nr + '. ' : '') + titel + '</span><span class="hfd-uitleg">' + tekst + '</span>' + regel + '</span>' +
     '<span class="hfd-rechts">' + (sticker && n === 3 ? '<span class="hfd-sticker" aria-hidden="true">' + sticker + '</span>' : '') +
     '<span class="sterren" role="img" aria-label="' + n + ' van 3 sterren">' + sterrenTekst(n) + '</span>' +
     (badge ? '<span class="badge ' + badge + '">' + badge + '</span>' : '') + '</span>';
@@ -485,9 +497,12 @@ function toonStart() {
   var st = stickersVoorLeerjaar(beste);
   $('spellen').innerHTML = rijen.map(function (r) {
     var sv = sterrenVanSpel(r.s, beste);
-    return '<button class="tegel" data-i="' + r.i + '"><span class="tegel-ico" aria-hidden="true">' + r.s.ico + '</span>' +
+    var alles = sv.klaar === sv.aantal;
+    return '<button class="tegel' + (alles ? ' klaar' : '') + '" data-i="' + r.i + '"><span class="tegel-ico" aria-hidden="true">' + r.s.ico + '</span>' +
       '<span class="tegel-naam">' + r.s.naam + '</span>' +
-      '<span class="tegel-sterren" aria-label="' + sv.verdiend + ' van ' + sv.max + ' sterren">★ ' + sv.verdiend + ' / ' + sv.max + '</span></button>';
+      '<span class="tegel-sterren" aria-label="' + sv.verdiend + ' van ' + sv.max + ' sterren">★ ' + sv.verdiend + ' / ' + sv.max + '</span>' +
+      '<span class="tegel-klaar">' + (alles ? '✓ Alles klaar' : sv.klaar + ' van ' + sv.aantal + ' klaar') + '</span>' +
+      '<span class="tegel-balk" aria-hidden="true"><span style="width:' + Math.round(100 * sv.klaar / sv.aantal) + '%"></span></span></button>';
   }).join('') + '<button class="tegel stickers" id="stickerTegel"><span class="tegel-ico" aria-hidden="true">📒</span>' +
     '<span class="tegel-naam">Mijn stickers</span><span class="tegel-sterren">' + st.n + ' / ' + st.totaal + '</span></button>';
   Array.prototype.forEach.call($('spellen').querySelectorAll('.tegel[data-i]'), function (b) {
@@ -647,7 +662,7 @@ function toonMenu(spel) {
       if (meerJaren) html += '<p class="jaarkop">' + (huidigJaar === state.leerjaar ? '' : 'Herhaling: ') + jaarNaam(huidigJaar) + '</p>';
     }
     nr++;
-    html += '<button class="hfd" data-i="' + r.i + '">' +
+    html += '<button class="hfd ' + staatVan(beste[spel.id + ':' + r.i]) + '" data-i="' + r.i + '">' +
       kaart(r.h.ico, nr, r.h.titel, r.h.tekst, beste[spel.id + ':' + r.i], r.h.badge, stickerVoor(spel.id, r.i)) + '</button>';
   });
   $('menu').innerHTML = html;
