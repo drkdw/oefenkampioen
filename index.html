@@ -2,13 +2,44 @@
 <html lang="nl-BE">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Oefenkampioen</title>
+<title>Oefenkampioen: gratis oefenspellen wiskunde, leerjaar 1 tot 6</title>
 <meta name="description" content="Gratis oefenspellen voor het lager onderwijs in Vlaanderen, van het eerste tot het zesde leerjaar: rekenen, klokkijken, geld, meten, breuken en meer.">
 <meta property="og:title" content="Oefenkampioen">
 <meta property="og:description" content="Gratis oefenspellen voor het lager onderwijs in Vlaanderen, leerjaar 1 tot 6.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://drkdw.github.io/oefenkampioen/">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8F%86%3C/text%3E%3C/svg%3E">
+<meta property="og:site_name" content="Oefenkampioen">
+<meta property="og:locale" content="nl_BE">
+<meta property="og:image" content="https://drkdw.github.io/oefenkampioen/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Oefenkampioen: gratis oefenspellen wiskunde voor leerjaar 1 tot 6">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://drkdw.github.io/oefenkampioen/">
+<meta name="theme-color" content="#EDF3FF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121A2C" media="(prefers-color-scheme: dark)">
+<!-- a real file, not a data URI: search engines only show a favicon they can fetch -->
+<link rel="icon" href="icoon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Oefenkampioen",
+  "url": "https://drkdw.github.io/oefenkampioen/",
+  "image": "https://drkdw.github.io/oefenkampioen/og.png",
+  "description": "Gratis oefenspellen wiskunde voor het lager onderwijs in Vlaanderen, van het eerste tot het zesde leerjaar: rekenen, klokkijken, geld, meten, breuken en meer.",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "Any",
+  "inLanguage": "nl-BE",
+  "isAccessibleForFree": true,
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+  "educationalLevel": "Lager onderwijs, leerjaar 1 tot 6",
+  "audience": { "@type": "EducationalAudience", "educationalRole": "student" }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400&display=swap">
 <style>
   :root {
@@ -627,6 +658,10 @@
   .tegel .tegel-ico { font-size: 38px; line-height: 1.1; }
   .tegel .tegel-sterren { font-size: 14px; color: var(--gold); font-variant-numeric: tabular-nums; }
   .tegel.stickers { border-color: var(--gold); }
+  .over { margin-top: 18px; padding: 0 4px; color: var(--ink-soft); font-size: 13px; line-height: 1.5; }
+  .over h2 { margin: 0 0 4px; font-family: Fredoka, sans-serif; font-size: 15px; font-weight: 400; color: var(--ink); }
+  .over p { margin: 0 0 6px; }
+  .over a { color: inherit; }
   .tegel .tegel-klaar { font-family: Nunito, sans-serif; font-size: 13px; color: var(--ink-soft); }
   .tegel-balk { width: 70%; height: 6px; border-radius: 999px; background: var(--line); overflow: hidden; }
   .tegel-balk span { display: block; height: 100%; background: var(--good); border-radius: 999px; }
@@ -737,6 +772,14 @@
     </div>
     <p class="lead" id="lead"></p>
     <div class="tegels" id="spellen"></div>
+    <footer class="over">
+      <h2>Over Oefenkampioen</h2>
+      <p>Gratis oefenspellen wiskunde voor de lagere school in Vlaanderen, van het eerste tot het
+        zesde leerjaar: klokkijken, maaltafels, rekenen met geld, meten en wegen, de kalender,
+        optellen en aftrekken, spiegelen, breuken, meetkunde en verhoudingen. Zonder account en
+        zonder reclame: de scores blijven op dit toestel.</p>
+      <p><a href="https://github.com/drkdw/oefenkampioen">Broncode op GitHub</a> · MIT-licentie</p>
+    </footer>
   </div>
 
   <div id="menuScherm" hidden>
