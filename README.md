@@ -123,6 +123,10 @@ scores voorgoed weg, met een expliciete bevestiging ertussen).
 Achter `#admin` staat onderaan het paneel ook **Waar je kan helpen**: per kind de hoofdstukken
 die het speelde zonder 3 sterren te halen, het zwakste eerst, met de beste score erbij. Omdat
 alleen de beste poging bewaard wordt, betekent 3 op 10 daar dat geen enkele poging beter was.
+Daarnaast telt de app per hoofdstuk hoe vaak de hele toets gespeeld is (een oefenronde met fouten
+telt niet mee), bv. "5 op 10 · 3 keer". Het profielpaneel toont per kind het totaal aantal toetsen.
+Die tellingen gaan mee in het bewaarbestand; bij herstellen blijft het hoogste aantal staan, zodat
+hetzelfde bestand twee keer terugzetten niets dubbel telt.
 
 Die gegevens staan in `localStorage` van de browser: enkel op dit toestel, in deze ene browser,
 niet in een account en niet in de cloud. Wis je de browsergegevens, gebruik je een andere browser

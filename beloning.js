@@ -112,13 +112,28 @@ export function voorstelVoor(spellen, beste, leerjaar, dag) {
 
 // for the parent overview: every played chapter without 3 stars, weakest first. The stored score
 // is the best try, so a best under 70% means every try so far stayed under 2 stars
-export function werkpunten(spellen, beste) {
+export function werkpunten(spellen, beste, gespeeld) {
   var uit = [];
   spellen.forEach(function (s) {
     s.hoofdstukken.forEach(function (h, i) {
-      var b = beste[s.id + ':' + i];
-      if (Number(b && b.van) > 0 && sterrenVoor(b) < 3) uit.push({ spel: s, index: i, beste: b, deel: b.score / b.van });
+      var k = s.id + ':' + i, b = beste[k];
+      if (Number(b && b.van) > 0 && sterrenVoor(b) < 3) {
+        uit.push({ spel: s, index: i, beste: b, deel: b.score / b.van, keer: (gespeeld && gespeeld[k]) || 0 });
+      }
     });
   });
   return uit.sort(function (x, y) { return x.deel - y.deel; });
+}
+
+// how often each chapter was played as a full test. Merging keeps the higher count, so restoring
+// the same file twice never counts a test twice; anything malformed is dropped
+export function mengGespeeld(a, b) {
+  var uit = {};
+  [a, b].forEach(function (bron) {
+    Object.keys(bron && typeof bron === 'object' ? bron : {}).forEach(function (k) {
+      var n = Number(bron[k]);
+      if (/^[a-z]+:\d+$/.test(k) && n > 0 && n % 1 === 0 && !(uit[k] >= n)) uit[k] = n;
+    });
+  });
+  return uit;
 }

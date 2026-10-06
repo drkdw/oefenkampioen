@@ -1,6 +1,6 @@
 import { shuffle, pad2, $, reduced, hoofdletter, voorleestekst } from './gereedschap.js';
 import { SPELLEN } from './spellen/index.js';
-import { datumVan, mengDagen, sterrenVoor, stickerVoor, voorstelVoor, dagenDezeMaand, dagNummer, boekVoor, INDELING, naarIndeling2, opVolgorde, werkpunten } from './beloning.js';
+import { datumVan, mengDagen, sterrenVoor, stickerVoor, voorstelVoor, dagenDezeMaand, dagNummer, boekVoor, INDELING, naarIndeling2, opVolgorde, werkpunten, mengGespeeld } from './beloning.js';
 
 // an eight-year-old cannot keep going for more than twenty questions
 var AANTALLEN = [10, 15, 20];
@@ -104,7 +104,7 @@ function verwijderProfiel(sleutel) {
 function verwijderProfielEcht(sleutel) {
   var lijst = profielen().filter(function (p) { return p.sleutel !== sleutel; });
   zetProfielen(lijst);
-  ['oefenkampioen-leerjaar', 'oefenkampioen-aantal', 'oefenkampioen-tempo', 'oefenkampioen-voorlezen', 'oefenkampioen-beste', 'oefenkampioen-dagen'].forEach(function (k) {
+  ['oefenkampioen-leerjaar', 'oefenkampioen-aantal', 'oefenkampioen-tempo', 'oefenkampioen-voorlezen', 'oefenkampioen-beste', 'oefenkampioen-gespeeld', 'oefenkampioen-dagen'].forEach(function (k) {
     try { localStorage.removeItem(k + postfixVoor(sleutel)); } catch (e) { /* may fail */ }
   });
   // the old name would otherwise hand key '' back to whoever types it again
@@ -131,6 +131,15 @@ function exporteerData() {
   // revoking right away can cancel the download in older Safari and Firefox
   setTimeout(function () { URL.revokeObjectURL(a.href); }, 10000);
 }
+function leesGespeeld(sleutel) {
+  try { return mengGespeeld(JSON.parse(localStorage.getItem('oefenkampioen-gespeeld' + postfixVoor(sleutel)) || '{}'), {}); }
+  catch (e) { return {}; }
+}
+function telGespeeld(profiel, sleutel) {
+  var g = leesGespeeld(profiel);
+  g[sleutel] = (g[sleutel] || 0) + 1;
+  try { localStorage.setItem('oefenkampioen-gespeeld' + postfixVoor(profiel), JSON.stringify(g)); } catch (e) { /* may fail */ }
+}
 function leesBesteVoor(sleutel) {
   try { return JSON.parse(localStorage.getItem('oefenkampioen-beste' + postfixVoor(sleutel)) || '{}') || {}; }
   catch (e) { return {}; }
@@ -145,7 +154,7 @@ function zetIndeling() {
     // renumbering run a second time over scores that were already moved
     localStorage.setItem('oefenkampioen-indeling', String(INDELING));
     sleutels.forEach(function (k) {
-      if (k.indexOf('oefenkampioen-beste') !== 0) return;
+      if (k.indexOf('oefenkampioen-beste') !== 0 && k.indexOf('oefenkampioen-gespeeld') !== 0) return;
       try { localStorage.setItem(k, JSON.stringify(naarIndeling2(JSON.parse(localStorage.getItem(k) || '{}')))); }
       catch (e) { /* a damaged value stays as it is */ }
     });
@@ -198,6 +207,10 @@ function herstelData(data) {
     var uitBestand = typeof beste === 'string' ? JSON.parse(beste) : {};
     if (data['oefenkampioen-indeling'] !== String(INDELING)) uitBestand = naarIndeling2(uitBestand);
     schrijf['oefenkampioen-beste' + pf] = JSON.stringify(mengBeste(leesBesteVoor(doel.sleutel), uitBestand));
+    var gespeeld = data['oefenkampioen-gespeeld' + bron];
+    var gespeeldUit = typeof gespeeld === 'string' ? JSON.parse(gespeeld) : {};
+    if (data['oefenkampioen-indeling'] !== String(INDELING)) gespeeldUit = naarIndeling2(gespeeldUit);
+    schrijf['oefenkampioen-gespeeld' + pf] = JSON.stringify(mengGespeeld(leesGespeeld(doel.sleutel), gespeeldUit));
     // days are merged, never replaced: restoring an old file must not erase a day
     var dagen = data['oefenkampioen-dagen' + bron];
     schrijf['oefenkampioen-dagen' + pf] = JSON.stringify(mengDagen(leesDagen(doel.sleutel),
@@ -618,13 +631,15 @@ function toonStickerboek() {
 function toonProfielPaneel() {
   var actiefSleutel = actief();
   $('profielLijst').innerHTML = profielen().map(function (p) {
-    var n = geoefendVoor(p.sleutel);
+    var n = geoefendVoor(p.sleutel), g = leesGespeeld(p.sleutel), toetsen = 0;
+    Object.keys(g).forEach(function (k) { toetsen += g[k]; });
     return '<div class="profielrij' + (p.sleutel === actiefSleutel ? ' actief' : '') + '">' +
       '<button class="profielkies" data-sleutel="' + p.sleutel + '">' +
       '<span class="avatar" aria-hidden="true">' + hoofdletter(Array.from(p.naam)[0] || '') + '</span>' +
       '<span class="profielinfo"><span>' + p.naam + '</span>' +
       '<span class="profielvoortgang">' + jaarNaam(leerjaarVoor(p.sleutel)) + ' · ' + n +
-      (n === 1 ? ' hoofdstuk' : ' hoofdstukken') + ' geoefend</span></span></button>' +
+      (n === 1 ? ' hoofdstuk' : ' hoofdstukken') + ' geoefend' +
+      (toetsen ? ' · ' + toetsen + (toetsen === 1 ? ' toets' : ' toetsen') : '') + '</span></span></button>' +
       (adminModus ? '<button class="profielx" data-sleutel="' + p.sleutel + '" data-naam="' + p.naam +
         '" aria-label="' + p.naam + ' verwijderen">×</button>' : '') + '</div>';
   }).join('') || '<p class="lead">Nog geen profiel. Typ hieronder een naam.</p>';
@@ -680,16 +695,17 @@ function ouderOverzichtHtml() {
   var lijst = profielen();
   if (!lijst.length) lijst = [{ sleutel: '', naam: 'Zonder profiel' }];
   return '<h3>Waar je kan helpen</h3>' + lijst.map(function (p) {
-    var wp = werkpunten(SPELLEN, leesBesteVoor(p.sleutel));
+    var wp = werkpunten(SPELLEN, leesBesteVoor(p.sleutel), leesGespeeld(p.sleutel));
     var rijen = wp.slice(0, WERKPUNTEN_MAX).map(function (w) {
       return '<li><span>' + w.spel.ico + ' ' + w.spel.naam + ': ' + w.spel.hoofdstukken[w.index].titel + '</span>' +
-        '<span class="wp-score">' + Number(w.beste.score) + ' op ' + Number(w.beste.van) + '</span></li>';
+        '<span class="wp-score">' + Number(w.beste.score) + ' op ' + Number(w.beste.van) +
+        (w.keer ? ' · ' + w.keer + ' keer' : '') + '</span></li>';
     }).join('');
     var meer = wp.length > WERKPUNTEN_MAX ? '<p class="paneelnotitie">En nog ' + (wp.length - WERKPUNTEN_MAX) + ' andere.</p>' : '';
     return '<div class="ouderkind"><b>' + p.naam + '</b>' +
       (wp.length ? '<ul>' + rijen + '</ul>' + meer
         : '<p class="paneelnotitie">Niets om te helpen: elk gespeeld hoofdstuk heeft 3 sterren.</p>') + '</div>';
-  }).join('') + '<p class="paneelnotitie">Telt de beste poging per hoofdstuk. Hoofdstukken die nog niet gespeeld zijn, staan er niet bij.</p>';
+  }).join('') + '<p class="paneelnotitie">De beste poging per hoofdstuk, en hoe vaak de hele toets gespeeld is (oefenrondes met fouten tellen niet mee). Hoofdstukken die nog niet gespeeld zijn, staan er niet bij.</p>';
 }
 function opentProfielPaneel() {
   // checked here, not only at startup: adding #admin to the address bar later does not reload
@@ -957,6 +973,7 @@ function toonToetsResultaat() {
   // compare the stars of the best score before and after, so the sticker appears only once
   var voor = sterrenVoor(leesBesteVoor(state.profiel)[sleutel]);
   bewaar(state.profiel, sleutel, s, state.lengte);
+  telGespeeld(state.profiel, sleutel);
   bewaarDag(state.profiel);
   var na = sterrenVoor(leesBesteVoor(state.profiel)[sleutel]), deel = s / state.lengte, n = sterrenVoor({ score: s, van: state.lengte });
   $('stars').innerHTML = n ? [0, 1, 2].map(function (k) {

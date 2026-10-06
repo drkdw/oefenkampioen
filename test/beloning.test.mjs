@@ -1,5 +1,5 @@
 import { SPELLEN } from '../spellen/index.js';
-import { STICKERS, sterrenVoor, stickerVoor, datumVan, mengDagen, dagenDezeMaand, dagNummer, voorstelVoor, boekVoor, naarIndeling2, opVolgorde, werkpunten }
+import { STICKERS, sterrenVoor, stickerVoor, datumVan, mengDagen, dagenDezeMaand, dagNummer, voorstelVoor, boekVoor, naarIndeling2, opVolgorde, werkpunten, mengGespeeld }
   from '../beloning.js';
 
 export function beloningTests(check) {
@@ -108,4 +108,8 @@ export function beloningTests(check) {
   var wp = werkpunten([nepSpel], { 'x:0': { score: 8, van: 10 }, 'x:1': { score: 10, van: 10 }, 'x:3': { score: 3, van: 10 } });
   check(wp.map(function (w) { return w.index; }).join() === '3,0', 'werkpunten: zwakste eerst, zonder klaar of ongespeeld');
   check(werkpunten([nepSpel], { 'x:0': { score: 0, van: 0 } }).length === 0, 'werkpunten: kapotte score telt niet');
+  var wpk = werkpunten([nepSpel], { 'x:0': { score: 6, van: 10 } }, { 'x:0': 3 });
+  check(wpk[0].keer === 3 && werkpunten([nepSpel], { 'x:0': { score: 6, van: 10 } })[0].keer === 0, 'werkpunten: aantal keer gespeeld');
+  var mg = mengGespeeld({ 'x:0': 2, 'x:1': 5 }, { 'x:0': 4, 'x:1': 1, 'kapot': 9, 'x:2': -1, 'x:3': 1.5, 'x:4': '2' });
+  check(JSON.stringify(mg) === JSON.stringify({ 'x:0': 4, 'x:1': 5, 'x:4': 2 }), 'mengGespeeld: hoogste telt, rommel valt weg: ' + JSON.stringify(mg));
 }
