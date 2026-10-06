@@ -283,7 +283,9 @@ function zetVoorlezen(aan) {
 // a Dutch voice, Flemish first. Without any Dutch voice the button stays away: an English voice
 // reading Dutch only confuses a child. The voice list loads late in some browsers, so an empty
 // list still counts as "maybe"
-var spraak = window.speechSynthesis;
+var spraak = window.speechSynthesis, wachtOpStem = false;
+// asking once makes Chrome start loading its voices, so they are there by the first tap
+if (spraak) spraak.getVoices();
 function nlStem() {
   var stemmen = spraak ? spraak.getVoices() : [];
   function taal(v) { return String(v.lang).replace('_', '-').toLowerCase(); }
@@ -291,10 +293,13 @@ function nlStem() {
     stemmen.filter(function (v) { return taal(v).indexOf('nl') === 0; })[0] || null;
 }
 function kanVoorlezen() { return !!spraak && (!spraak.getVoices().length || !!nlStem()); }
-function stilte() { if (spraak) spraak.cancel(); }
+function stilte() { wachtOpStem = false; if (spraak) spraak.cancel(); }
 function leesVoor() {
   if (!kanVoorlezen() || !state.leestekst) return;
   stilte();
+  // without a voice Chrome falls back to the system default, an English voice reading Dutch:
+  // rather wait for the list, the voiceschanged handler below reads it then
+  if (!spraak.getVoices().length) { wachtOpStem = true; return; }
   var u = new SpeechSynthesisUtterance(state.leestekst), stem = nlStem();
   u.lang = stem ? stem.lang : 'nl-BE';
   if (stem) u.voice = stem;
@@ -999,6 +1004,10 @@ $('leesBtn').onclick = leesVoor;
 if (spraak && spraak.addEventListener) spraak.addEventListener('voiceschanged', function () {
   $('leesBtn').hidden = !kanVoorlezen();
   $('voorleesKaart').hidden = !kanVoorlezen();
+  if (wachtOpStem && spraak.getVoices().length) {
+    wachtOpStem = false;
+    if (!$('game').hidden) leesVoor();
+  }
 });
 $('againBtn').onclick = function () { startHoofdstuk(state.hfd); };
 $('oefenBtn').onclick = function () {
