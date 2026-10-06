@@ -1,4 +1,4 @@
-import { shuffle, pad2, $, reduced, hoofdletter } from './gereedschap.js';
+import { shuffle, pad2, $, reduced, hoofdletter, voorleestekst } from './gereedschap.js';
 import { SPELLEN } from './spellen/index.js';
 import { datumVan, mengDagen, sterrenVoor, stickerVoor, voorstelVoor, dagenDezeMaand, dagNummer, boekVoor, INDELING, naarIndeling2, opVolgorde, werkpunten } from './beloning.js';
 
@@ -41,6 +41,7 @@ function wisselProfiel(sleutel) {
   state.leerjaar = leesLeerjaar();
   state.aantal = leesAantal();
   state.tempo = leesTempo();
+  state.voorlezen = leesVoorlezen();
 }
 function oudeNaam() {
   try { return schoonNaam(localStorage.getItem('oefenkampioen-naam')); } catch (e) { return ''; }
@@ -103,7 +104,7 @@ function verwijderProfiel(sleutel) {
 function verwijderProfielEcht(sleutel) {
   var lijst = profielen().filter(function (p) { return p.sleutel !== sleutel; });
   zetProfielen(lijst);
-  ['oefenkampioen-leerjaar', 'oefenkampioen-aantal', 'oefenkampioen-tempo', 'oefenkampioen-beste', 'oefenkampioen-dagen'].forEach(function (k) {
+  ['oefenkampioen-leerjaar', 'oefenkampioen-aantal', 'oefenkampioen-tempo', 'oefenkampioen-voorlezen', 'oefenkampioen-beste', 'oefenkampioen-dagen'].forEach(function (k) {
     try { localStorage.removeItem(k + postfixVoor(sleutel)); } catch (e) { /* may fail */ }
   });
   // the old name would otherwise hand key '' back to whoever types it again
@@ -202,7 +203,7 @@ function herstelData(data) {
     schrijf['oefenkampioen-dagen' + pf] = JSON.stringify(mengDagen(leesDagen(doel.sleutel),
       typeof dagen === 'string' ? JSON.parse(dagen) : []));
     if (!nieuw) return;
-    ['leerjaar', 'aantal', 'tempo'].forEach(function (k) {
+    ['leerjaar', 'aantal', 'tempo', 'voorlezen'].forEach(function (k) {
       if (typeof data['oefenkampioen-' + k + bron] === 'string') schrijf['oefenkampioen-' + k + pf] = data['oefenkampioen-' + k + bron];
     });
     huidig.push(doel);
@@ -256,6 +257,36 @@ function leesTempo() {
 function zetTempo(aan) {
   state.tempo = aan;
   try { localStorage.setItem('oefenkampioen-tempo' + postfix(), aan ? 'aan' : 'uit'); } catch (e) { /* may fail */ }
+}
+function leesVoorlezen() {
+  try { return localStorage.getItem('oefenkampioen-voorlezen' + postfix()) === 'aan'; } catch (e) { return false; }
+}
+function zetVoorlezen(aan) {
+  state.voorlezen = aan;
+  try { localStorage.setItem('oefenkampioen-voorlezen' + postfix(), aan ? 'aan' : 'uit'); } catch (e) { /* may fail */ }
+}
+
+/* ==================== reading aloud ==================== */
+// a Dutch voice, Flemish first. Without any Dutch voice the button stays away: an English voice
+// reading Dutch only confuses a child. The voice list loads late in some browsers, so an empty
+// list still counts as "maybe"
+var spraak = window.speechSynthesis;
+function nlStem() {
+  var stemmen = spraak ? spraak.getVoices() : [];
+  function taal(v) { return String(v.lang).replace('_', '-').toLowerCase(); }
+  return stemmen.filter(function (v) { return taal(v) === 'nl-be'; })[0] ||
+    stemmen.filter(function (v) { return taal(v).indexOf('nl') === 0; })[0] || null;
+}
+function kanVoorlezen() { return !!spraak && (!spraak.getVoices().length || !!nlStem()); }
+function stilte() { if (spraak) spraak.cancel(); }
+function leesVoor() {
+  if (!kanVoorlezen() || !state.leestekst) return;
+  stilte();
+  var u = new SpeechSynthesisUtterance(state.leestekst), stem = nlStem();
+  u.lang = stem ? stem.lang : 'nl-BE';
+  if (stem) u.voice = stem;
+  u.rate = 0.9;
+  spraak.speak(u);
 }
 function stopKlok() {
   if (state.klok) clearTimeout(state.klok);
@@ -399,6 +430,7 @@ function maakVraag(soort) {
 var SCHERMEN = { start: 'startScherm', menu: 'menuScherm', game: 'game', result: 'result', stickers: 'stickerScherm' };
 // one place decides what is visible; the body attribute lets CSS hide the big header in a test
 function toonScherm(naam) {
+  if (naam !== 'game') stilte();
   Object.keys(SCHERMEN).forEach(function (k) { $(SCHERMEN[k]).hidden = k !== naam; });
   document.body.dataset.scherm = naam;
   // keyboard and screen reader users otherwise start again from the top of the page
@@ -523,7 +555,7 @@ function toonStart() {
     startHoofdstuk(voorstel.index);
   };
   $('instelRegel').innerHTML = '<span>' + jaarNaam(state.leerjaar) + ' · ' + state.aantal + ' vragen · ' +
-    (state.tempo ? 'met klok' : 'rustig') + '</span><span aria-hidden="true">' + (state.instellingenOpen ? '✕' : '⚙') + '</span>';
+    (state.tempo ? 'met klok' : 'rustig') + (state.voorlezen ? ' · voorlezen' : '') + '</span><span aria-hidden="true">' + (state.instellingenOpen ? '✕' : '⚙') + '</span>';
   $('instelRegel').setAttribute('aria-expanded', String(state.instellingenOpen));
   $('instellingen').hidden = !state.instellingenOpen;
   $('profielBtn').innerHTML = (naam() || 'Wie speelt er?') + ' <span class="chev">&#9662;</span>';
@@ -547,6 +579,14 @@ function toonStart() {
   Array.prototype.forEach.call($('tempoKnop').children, function (b) {
     b.onclick = function () { zetTempo(b.dataset.t === 'true'); toonStart(); };
   });
+  $('voorleesKnop').innerHTML = [false, true].map(function (aan) {
+    return '<button class="aantal" data-v="' + aan + '" aria-pressed="' + (aan === state.voorlezen) + '">' +
+      (aan ? 'ja, elke vraag' : 'nee, enkel als ik tik') + '</button>';
+  }).join('');
+  Array.prototype.forEach.call($('voorleesKnop').children, function (b) {
+    b.onclick = function () { zetVoorlezen(b.dataset.v === 'true'); toonStart(); };
+  });
+  $('voorleesKaart').hidden = !kanVoorlezen();
   $('lead').textContent = lead();
   $('kop').innerHTML = 'Oefen<span class="tick">kampioen</span>';
   stopVerder();
@@ -762,6 +802,9 @@ function volgendeVraag() {
   $('question').textContent = tekst.titel;
   $('subq').textContent = tekst.sub || '';
   $('subq').hidden = !tekst.sub;
+  state.leestekst = voorleestekst(tekst.titel, tekst.sub, v.options && v.options.map(function (o) { return o.text; }));
+  $('leesBtn').hidden = !kanVoorlezen();
+  stilte();
 
   $('options').hidden = !v.options;
   $('typen').hidden = !v.typen;
@@ -799,6 +842,8 @@ function volgendeVraag() {
   $('feedback').className = 'feedback';
   drawDots();
   pasDoekAan();
+  // only ever after the child tapped a chapter or the next button, never on page load
+  if (state.voorlezen) leesVoor();
   // the previous focus was the now disabled next button; land on the new question instead
   (v.typen ? $('in0') : $('question')).focus();
 }
@@ -932,6 +977,12 @@ function toonToetsResultaat() {
 /* ==================== buttons ==================== */
 $('nextBtn').onclick = volgende;
 $('checkBtn').onclick = controleer;
+$('leesBtn').onclick = leesVoor;
+// the voice list arrives late in Chrome: show or hide the button and the setting once it is known
+if (spraak && spraak.addEventListener) spraak.addEventListener('voiceschanged', function () {
+  $('leesBtn').hidden = !kanVoorlezen();
+  $('voorleesKaart').hidden = !kanVoorlezen();
+});
 $('againBtn').onclick = function () { startHoofdstuk(state.hfd); };
 $('oefenBtn').onclick = function () {
   startHoofdstuk(state.hfd, state.fouten.map(function (f) { return f.soort; }));
@@ -1003,6 +1054,7 @@ window.addEventListener('resize', function () { if (!$('game').hidden) pasDoekAa
 state.leerjaar = leesLeerjaar();
 state.aantal = leesAantal();
 state.tempo = leesTempo();
+state.voorlezen = leesVoorlezen();
 toonStart();
 
 // the self-check is for the developer, so it is only loaded with #test

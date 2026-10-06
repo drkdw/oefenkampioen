@@ -437,6 +437,10 @@
   .question:focus { outline: none; }
   #game { display: flex; flex-direction: column; gap: 12px; }
   .qbox { display: flex; flex-direction: column; gap: 6px; }
+  /* the question stays centred; the read-aloud button sits beside it without pushing it */
+  .vraagrij { display: grid; grid-template-columns: 42px minmax(0, 1fr) 42px; align-items: center; gap: 8px; }
+  .vraagrij .question { grid-column: 2; }
+  .vraagrij .icon-btn { grid-column: 3; }
   .subq {
     font-family: Nunito, sans-serif;
     font-size: 15px;
@@ -769,6 +773,10 @@
         <span class="kaartlabel">Op tempo?</span>
         <span class="aantallen" id="tempoKnop"></span>
       </div>
+      <div class="naamkaart" id="voorleesKaart" role="group" aria-label="Vragen voorlezen">
+        <span class="kaartlabel">Vragen voorlezen?</span>
+        <span class="aantallen" id="voorleesKnop"></span>
+      </div>
     </div>
     <p class="lead" id="lead"></p>
     <div class="tegels" id="spellen"></div>
@@ -820,7 +828,10 @@
     <div class="scherm-card" id="schermCard" hidden><span class="scherm" id="scherm"></span></div>
 
     <div class="qbox">
-      <p class="question" id="question" tabindex="-1"></p>
+      <div class="vraagrij">
+        <p class="question" id="question" tabindex="-1"></p>
+        <button class="icon-btn" id="leesBtn" aria-label="Lees de vraag voor" title="Lees de vraag voor" hidden>🗣️</button>
+      </div>
       <p class="subq" id="subq" hidden></p>
     </div>
 

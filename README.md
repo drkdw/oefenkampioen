@@ -75,6 +75,12 @@ speltegel staat hoeveel hoofdstukken klaar zijn, met een balkje; is alles klaar,
 Tijdens een toets past alles op het scherm, ook op een kleine gsm en liggend. Na een juist
 antwoord gaat het na 3,5 seconden vanzelf verder; na een fout blijft de uitleg staan.
 
+Naast elke vraag staat een knop 🗣️ die de vraag en de keuzes voorleest, met een Nederlandse stem
+van het toestel zelf (Vlaams als die er is). Tekens worden woorden: `1/4` wordt "een vierde",
+`€ 3` "3 euro", `−4` "min 4". In de instellingen kan **Vragen voorlezen** op "ja, elke vraag";
+dan leest elke nieuwe vraag zichzelf voor, maar nooit voor een kind zelf iets aantikte. Heeft
+het toestel geen Nederlandse stem, dan verschijnen knop en instelling niet.
+
 Na een toets met fouten verschijnt **Oefen je fouten**: een korte ronde met per fout een nieuwe
 vraag van hetzelfde soort. Die ronde telt niet voor de sterren, anders gaf 3 op 3 meteen een
 sticker. Wie opnieuw fouten maakt, kan die weer oefenen, of de hele toets opnieuw doen.

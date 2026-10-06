@@ -45,3 +45,35 @@ export function hoofdletter(t) {
   return (Array.from(groot).length === 1 ? groot : eerste) + t.slice(eerste.length);
 }
 
+
+// what a voice reads aloud: symbols a child sees as maths, written out as words, because a
+// speech engine reads "1/4" or "−4" as a date or skips the sign
+var DELEN = { 2: 'half', 3: 'derde', 4: 'vierde', 5: 'vijfde', 6: 'zesde', 7: 'zevende', 8: 'achtste',
+  9: 'negende', 10: 'tiende', 12: 'twaalfde', 100: 'honderdste', 1000: 'duizendste' };
+function uitgeschreven(t) {
+  return String(t)
+    .replace(/^[A-Z][a-z]+ \d+:\s*/, '')  // 'Vraag 3:', 'Monster 3:': the number is on the dots
+    .replace(/(\d+)\s*\/\s*(\d+)/g, function (m, a, b) {
+      if (!DELEN[b]) return a + ' gedeeld door ' + b;
+      return (a === '1' ? 'een' : a) + ' ' + (b === '2' && a !== '1' ? 'halve' : DELEN[b]);
+    })
+    .replace(/€\s?(\d[\d.,]*)/g, '$1 euro')
+    .replace(/\s?°C/g, ' graden')
+    .replace(/−\s?(?=\d)/g, 'min ')
+    .replace(/(\d)\s*[×x]\s*(?=\d)/g, '$1 maal ')
+    .replace(/(\d)\s*÷\s*(?=\d)/g, '$1 gedeeld door ')
+    .replace(/\s?%/g, ' procent')
+    .replace(/\s\+\s/g, ' plus ')
+    .replace(/\s[−-]\s/g, ' min ')
+    .replace(/\s=\s/g, ' is ')
+    .replace(/(^|\s)\?(?=\s|$)/g, '$1hoeveel');
+}
+export function voorleestekst(titel, sub, opties) {
+  var delen = [uitgeschreven(titel)];
+  if (sub) delen.push(uitgeschreven(sub));
+  if (opties && opties.length) {
+    var w = opties.map(uitgeschreven);
+    delen.push('Kies uit: ' + (w.length > 1 ? w.slice(0, -1).join(', ') + ' of ' + w[w.length - 1] : w[0]) + '.');
+  }
+  return delen.join(' ');
+}
