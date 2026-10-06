@@ -1,5 +1,5 @@
 import { SPELLEN } from '../spellen/index.js';
-import { STICKERS, sterrenVoor, stickerVoor, datumVan, mengDagen, dagenDezeMaand, dagNummer, voorstelVoor, boekVoor, naarIndeling2, opVolgorde }
+import { STICKERS, sterrenVoor, stickerVoor, datumVan, mengDagen, dagenDezeMaand, dagNummer, voorstelVoor, boekVoor, naarIndeling2, opVolgorde, werkpunten }
   from '../beloning.js';
 
 export function beloningTests(check) {
@@ -103,4 +103,9 @@ export function beloningTests(check) {
   SPELLEN.forEach(function (s) { s.hoofdstukken.forEach(function (h, i) { if (h.leerjaar >= 2) klaar6[s.id + ':' + i] = { score: 10, van: 10 }; }); });
   var terug = voorstelVoor(SPELLEN, klaar6, 6, 0);
   check(terug.reden === 'verbeter' && terug.spel === br && terug.index === 0, 'eigen leerjaar klaar: dan pas herhaling, eerst verbeteren');
+  // parent overview: only played chapters without 3 stars, weakest first
+  var nepSpel = { id: 'x', hoofdstukken: [{}, {}, {}, {}] };
+  var wp = werkpunten([nepSpel], { 'x:0': { score: 8, van: 10 }, 'x:1': { score: 10, van: 10 }, 'x:3': { score: 3, van: 10 } });
+  check(wp.map(function (w) { return w.index; }).join() === '3,0', 'werkpunten: zwakste eerst, zonder klaar of ongespeeld');
+  check(werkpunten([nepSpel], { 'x:0': { score: 0, van: 0 } }).length === 0, 'werkpunten: kapotte score telt niet');
 }

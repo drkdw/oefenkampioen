@@ -1,6 +1,6 @@
 import { shuffle, pad2, $, reduced, hoofdletter } from './gereedschap.js';
 import { SPELLEN } from './spellen/index.js';
-import { datumVan, mengDagen, sterrenVoor, stickerVoor, voorstelVoor, dagenDezeMaand, dagNummer, boekVoor, INDELING, naarIndeling2, opVolgorde } from './beloning.js';
+import { datumVan, mengDagen, sterrenVoor, stickerVoor, voorstelVoor, dagenDezeMaand, dagNummer, boekVoor, INDELING, naarIndeling2, opVolgorde, werkpunten } from './beloning.js';
 
 // an eight-year-old cannot keep going for more than twenty questions
 var AANTALLEN = [10, 15, 20];
@@ -347,18 +347,24 @@ function jasjesVoor(soort, h) {
   var j = state.spel.jasjes ? state.spel.jasjes(soort, h) : null;
   return j && j.length ? j.slice() : ['standaard'];
 }
-function bouwToets() {
+// without soorten the chapter's own plan; with soorten (practising mistakes) one question per entry
+function bouwToets(soorten) {
   var h = state.spel.hoofdstukken[state.hfd];
-  var verdeling = planVoor(h, state.aantal);
-  var plan = [];
+  var plan = soorten ? soorten.slice() : [];
+  if (!soorten) {
+    var verdeling = planVoor(h, state.aantal);
+    Object.keys(verdeling).forEach(function (soort) {
+      for (var i = 0; i < verdeling[soort]; i++) plan.push(soort);
+    });
+  }
   state.decks = {};
   state.jassen = {};
   state.vorigJasje = null;
   state.vorigeSleutel = null;
-  Object.keys(verdeling).forEach(function (soort) {
+  plan.forEach(function (soort) {
+    if (state.decks[soort]) return;
     state.decks[soort] = shuffle(state.spel.zaadjes(soort, h));
     state.jassen[soort] = shuffle(jasjesVoor(soort, h));
-    for (var i = 0; i < verdeling[soort]; i++) plan.push(soort);
   });
   state.plan = shuffle(plan);
 }
@@ -410,7 +416,7 @@ function stopVerder() {
 }
 function volgende() {
   stopVerder();
-  if (state.q >= state.aantal) toonResultaat(); else volgendeVraag();
+  if (state.q >= state.lengte) toonResultaat(); else volgendeVraag();
 }
 // the doek has a maximum height; a drawing taller than that is scaled down as a whole, so four
 // mirror grids stay readable instead of being cut off
@@ -628,11 +634,30 @@ function toonMelding(tekst) {
   $('paneelmelding').textContent = tekst;
   $('paneelmelding').hidden = !tekst;
 }
+// behind #admin only: per child the chapters it played without reaching 3 stars, weakest first
+var WERKPUNTEN_MAX = 5;
+function ouderOverzichtHtml() {
+  var lijst = profielen();
+  if (!lijst.length) lijst = [{ sleutel: '', naam: 'Zonder profiel' }];
+  return '<h3>Waar je kan helpen</h3>' + lijst.map(function (p) {
+    var wp = werkpunten(SPELLEN, leesBesteVoor(p.sleutel));
+    var rijen = wp.slice(0, WERKPUNTEN_MAX).map(function (w) {
+      return '<li><span>' + w.spel.ico + ' ' + w.spel.naam + ': ' + w.spel.hoofdstukken[w.index].titel + '</span>' +
+        '<span class="wp-score">' + Number(w.beste.score) + ' op ' + Number(w.beste.van) + '</span></li>';
+    }).join('');
+    var meer = wp.length > WERKPUNTEN_MAX ? '<p class="paneelnotitie">En nog ' + (wp.length - WERKPUNTEN_MAX) + ' andere.</p>' : '';
+    return '<div class="ouderkind"><b>' + p.naam + '</b>' +
+      (wp.length ? '<ul>' + rijen + '</ul>' + meer
+        : '<p class="paneelnotitie">Niets om te helpen: elk gespeeld hoofdstuk heeft 3 sterren.</p>') + '</div>';
+  }).join('') + '<p class="paneelnotitie">Telt de beste poging per hoofdstuk. Hoofdstukken die nog niet gespeeld zijn, staan er niet bij.</p>';
+}
 function opentProfielPaneel() {
   // checked here, not only at startup: adding #admin to the address bar later does not reload
   // the page, so a check at startup alone would never pick it up
   adminModus = location.hash === '#admin';
   $('paneelacties').hidden = !adminModus;
+  $('ouderOverzicht').hidden = !adminModus;
+  if (adminModus) $('ouderOverzicht').innerHTML = ouderOverzichtHtml();
   toonMelding('');
   toonProfielPaneel();
   $('profielPaneel').hidden = false;
@@ -678,7 +703,9 @@ function toonMenu(spel) {
   stopVerder();
   toonScherm('menu');
 }
-function startHoofdstuk(i) {
+// soorten given: a short round with a new question of the same kind for every mistake. That
+// round never counts for stars, or three right answers out of three would earn a sticker
+function startHoofdstuk(i, soorten) {
   stopKlok();
   // the test belongs to this child, even if another tab switches profile meanwhile
   state.profiel = actief();
@@ -687,8 +714,10 @@ function startHoofdstuk(i) {
   state.score = 0;
   state.results = [];
   state.fouten = [];
-  bouwToets();
-  $('hfdTitel').textContent = state.spel.hoofdstukken[i].titel;
+  state.oefenen = !!soorten;
+  state.lengte = soorten ? soorten.length : state.aantal;
+  bouwToets(soorten);
+  $('hfdTitel').textContent = state.spel.hoofdstukken[i].titel + (soorten ? ': je fouten' : '');
   $('spelNaam').textContent = naam();
   $('spelNaam').hidden = !naam();
   stopVerder();
@@ -698,7 +727,7 @@ function startHoofdstuk(i) {
 
 function drawDots() {
   var html = '';
-  for (var i = 0; i < state.aantal; i++) {
+  for (var i = 0; i < state.lengte; i++) {
     var cls = 'dot';
     if (state.results[i] === true) cls += ' good';
     else if (state.results[i] === false) cls += ' bad';
@@ -708,10 +737,10 @@ function drawDots() {
       '" aria-label="Vraag ' + (i + 1) + ': ' + stand + '">' + (i + 1) + '</span>';
   }
   // up to ten questions in one row, above that two rows of equal length
-  var kolommen = state.aantal <= 10 ? state.aantal : Math.ceil(state.aantal / 2);
+  var kolommen = state.lengte <= 10 ? state.lengte : Math.ceil(state.lengte / 2);
   $('dots').style.gridTemplateColumns = 'repeat(' + kolommen + ', 1fr)';
   $('dots').innerHTML = html;
-  $('scoreBadge').textContent = state.score + ' / ' + state.aantal;
+  $('scoreBadge').textContent = state.score + ' / ' + state.lengte;
 }
 
 function volgendeVraag() {
@@ -803,7 +832,7 @@ function antwoord(btn, tekst, ok) {
     beep(true);
   } else {
     state.results[state.q] = false;
-    state.fouten.push({ vraag: state.spel.kort(v), jouw: tekst, juist: v.ans });
+    state.fouten.push({ vraag: state.spel.kort(v), jouw: tekst, juist: v.ans, soort: state.plan[state.q] });
     fb.className = 'feedback bad';
     fb.innerHTML = metNaam(MOED[Math.floor(Math.random() * MOED.length)], state.profiel) +
       ' Het juiste antwoord is ' + v.ans + '.<small>' + uitleg + '</small>';
@@ -812,7 +841,7 @@ function antwoord(btn, tekst, ok) {
 
   state.q++;
   drawDots();
-  $('nextBtn').textContent = state.q >= state.aantal ? '🏁 Bekijk je punten' : 'Volgende vraag';
+  $('nextBtn').textContent = state.q >= state.lengte ? '🏁 Bekijk je punten' : 'Volgende vraag';
   $('blad').className = 'blad ' + (ok ? 'goed' : 'fout');
   $('blad').hidden = false;
   // right: carry on by itself after a short, visible wait; wrong: the explanation stays until
@@ -848,26 +877,20 @@ function controleer() {
 }
 
 /* ==================== result ==================== */
-function toonResultaat() {
-  var s = state.score, sleutel = state.spel.id + ':' + state.hfd;
-  // compare the stars of the best score before and after, so the sticker appears only once
-  var voor = sterrenVoor(leesBesteVoor(state.profiel)[sleutel]);
-  bewaar(state.profiel, sleutel, s, state.aantal);
+function toonOefenResultaat() {
+  var s = state.score, fout = state.fouten.length;
   bewaarDag(state.profiel);
-  var na = sterrenVoor(leesBesteVoor(state.profiel)[sleutel]), deel = s / state.aantal, n = sterrenVoor({ score: s, van: state.aantal });
-  $('stars').innerHTML = n ? [0, 1, 2].map(function (k) {
-    return '<span class="ster' + (k < n ? ' aan' : '') + '" style="animation-delay:' + (k * 0.35) + 's">★</span>';
-  }).join('') : '💪';
-  $('stars').setAttribute('aria-label', n + ' van 3 sterren');
-  var nieuw = voor < 3 && na === 3;
-  $('nieuweSticker').hidden = !nieuw;
-  if (nieuw) $('stickerGroot').textContent = stickerVoor(state.spel.id, state.hfd);
-  $('resultTitle').textContent = metNaam(deel >= 0.7 ? 'Goed gedaan%!' : 'Volgende keer beter%!', state.profiel);
-  $('resultScore').textContent = s + ' / ' + state.aantal;
-  $('resultMsg').textContent = deel >= 0.9 ? (state.spel.top || 'Jij bent een echte kampioen!')
-    : deel >= 0.7 ? 'Mooi werk. Nog een keer en je haalt alles juist.'
-    : deel >= 0.5 ? 'Goed bezig. Blijf oefenen, je bent er bijna.'
-    : 'Oefenen maakt sterk. Probeer eerst een makkelijker hoofdstuk.';
+  $('stars').innerHTML = fout ? '💪' : '🎯';
+  $('stars').setAttribute('aria-label', 'Fouten geoefend');
+  $('nieuweSticker').hidden = true;
+  $('resultTitle').textContent = metNaam(fout ? 'Goed geoefend%!' : 'Allemaal juist%!', state.profiel);
+  $('resultScore').textContent = s + ' / ' + state.lengte;
+  $('resultMsg').textContent = fout
+    ? 'Nog ' + fout + (fout === 1 ? ' fout' : ' fouten') + '. Oefen die nog eens, of probeer de hele toets.'
+    : 'Probeer nu de hele toets, dan telt het voor je sterren.';
+}
+function toonResultaat() {
+  if (state.oefenen) toonOefenResultaat(); else toonToetsResultaat();
   if (state.fouten.length) {
     $('review').innerHTML = '<h3>Deze mag je nog eens bekijken</h3>' + state.fouten.map(function (f) {
       return '<div class="rv"><b>' + f.vraag + '</b><em><span class="jouw">' + f.jouw +
@@ -877,13 +900,42 @@ function toonResultaat() {
   } else {
     $('review').hidden = true;
   }
+  $('oefenBtn').hidden = !state.fouten.length;
+  $('oefenBtn').textContent = '🎯 Oefen je ' + (state.fouten.length === 1 ? 'fout' : state.fouten.length + ' fouten');
+  $('againBtn').textContent = state.oefenen ? '🔁 De hele toets' : '🔁 Nog een toets';
+  // one big button at a time: practising the mistakes first when there are any
+  $('againBtn').className = 'big-btn' + (state.fouten.length ? ' stil' : '');
   toonScherm('result');
+}
+function toonToetsResultaat() {
+  var s = state.score, sleutel = state.spel.id + ':' + state.hfd;
+  // compare the stars of the best score before and after, so the sticker appears only once
+  var voor = sterrenVoor(leesBesteVoor(state.profiel)[sleutel]);
+  bewaar(state.profiel, sleutel, s, state.lengte);
+  bewaarDag(state.profiel);
+  var na = sterrenVoor(leesBesteVoor(state.profiel)[sleutel]), deel = s / state.lengte, n = sterrenVoor({ score: s, van: state.lengte });
+  $('stars').innerHTML = n ? [0, 1, 2].map(function (k) {
+    return '<span class="ster' + (k < n ? ' aan' : '') + '" style="animation-delay:' + (k * 0.35) + 's">★</span>';
+  }).join('') : '💪';
+  $('stars').setAttribute('aria-label', n + ' van 3 sterren');
+  var nieuw = voor < 3 && na === 3;
+  $('nieuweSticker').hidden = !nieuw;
+  if (nieuw) $('stickerGroot').textContent = stickerVoor(state.spel.id, state.hfd);
+  $('resultTitle').textContent = metNaam(deel >= 0.7 ? 'Goed gedaan%!' : 'Volgende keer beter%!', state.profiel);
+  $('resultScore').textContent = s + ' / ' + state.lengte;
+  $('resultMsg').textContent = deel >= 0.9 ? (state.spel.top || 'Jij bent een echte kampioen!')
+    : deel >= 0.7 ? 'Mooi werk. Nog een keer en je haalt alles juist.'
+    : deel >= 0.5 ? 'Goed bezig. Blijf oefenen, je bent er bijna.'
+    : 'Oefenen maakt sterk. Probeer eerst een makkelijker hoofdstuk.';
 }
 
 /* ==================== buttons ==================== */
 $('nextBtn').onclick = volgende;
 $('checkBtn').onclick = controleer;
 $('againBtn').onclick = function () { startHoofdstuk(state.hfd); };
+$('oefenBtn').onclick = function () {
+  startHoofdstuk(state.hfd, state.fouten.map(function (f) { return f.soort; }));
+};
 $('menuBtn').onclick = function () { toonMenu(state.spel); };
 $('homeBtn').onclick = function () { toonMenu(state.spel); };
 $('terugBtn').onclick = toonStart;

@@ -75,6 +75,10 @@ speltegel staat hoeveel hoofdstukken klaar zijn, met een balkje; is alles klaar,
 Tijdens een toets past alles op het scherm, ook op een kleine gsm en liggend. Na een juist
 antwoord gaat het na 3,5 seconden vanzelf verder; na een fout blijft de uitleg staan.
 
+Na een toets met fouten verschijnt **Oefen je fouten**: een korte ronde met per fout een nieuwe
+vraag van hetzelfde soort. Die ronde telt niet voor de sterren, anders gaf 3 op 3 meteen een
+sticker. Wie opnieuw fouten maakt, kan die weer oefenen, of de hele toets opnieuw doen.
+
 ## De spellen
 
 | spel | wat |
@@ -109,6 +113,10 @@ eigen profiel niet kunnen laten verdwijnen, ook niet de onschuldige variant. Ach
 er per profiel een kruisje bij dat de keuze geeft tussen **uit de lijst** (de scores blijven
 staan, typ de naam later opnieuw en ze staan er terug) en **écht wissen** (naam, leerjaar en
 scores voorgoed weg, met een expliciete bevestiging ertussen).
+
+Achter `#admin` staat onderaan het paneel ook **Waar je kan helpen**: per kind de hoofdstukken
+die het speelde zonder 3 sterren te halen, het zwakste eerst, met de beste score erbij. Omdat
+alleen de beste poging bewaard wordt, betekent 3 op 10 daar dat geen enkele poging beter was.
 
 Die gegevens staan in `localStorage` van de browser: enkel op dit toestel, in deze ene browser,
 niet in een account en niet in de cloud. Wis je de browsergegevens, gebruik je een andere browser

@@ -197,6 +197,11 @@
   .paneelnotitie { margin: 0; font-size: 12px; color: var(--ink-soft); }
   .paneelacties { display: flex; gap: 8px; flex-wrap: wrap; }
   .paneelacties .aantal { font-size: 13px; padding: 7px 12px; }
+  .ouderoverzicht { border-top: 2px solid var(--line); padding-top: 10px; display: flex; flex-direction: column; gap: 10px; }
+  .ouderoverzicht h3 { margin: 0; font-family: Fredoka, sans-serif; font-size: 16px; }
+  .ouderkind ul { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+  .ouderkind li { display: flex; justify-content: space-between; gap: 10px; }
+  .ouderkind .wp-score { flex: none; color: var(--accent); font-family: Fredoka, sans-serif; }
   .profielx {
     flex: none;
     width: 32px; height: 32px;
@@ -642,6 +647,13 @@
   .hfd-score { display: block; margin-top: 4px; font-family: Fredoka, sans-serif; font-size: 14px; color: var(--accent); }
   .hfd.klaar .hfd-score { color: var(--good); }
   .hfd-rechts { flex: none; display: flex; align-items: center; gap: 8px; }
+  /* on a phone the stars and the label go under the text, so a title gets the full width
+     instead of breaking over four lines */
+  @media (max-width: 520px) {
+    .hfd { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 14px; row-gap: 8px; }
+    .hfd .ico { grid-row: span 2; }
+    .hfd-rechts { grid-column: 2; }
+  }
   .sterren { color: var(--gold); font-size: 16px; letter-spacing: 1px; }
   .hfd-sticker { font-size: 24px; }
   #stickerScherm { display: flex; flex-direction: column; gap: 14px; }
@@ -703,6 +715,7 @@
       <input type="file" id="herstelInput" accept=".json,application/json" hidden>
     </div>
     <p class="paneelnotitie" id="paneelmelding" role="status" hidden></p>
+    <div class="ouderoverzicht" id="ouderOverzicht" hidden></div>
   </div>
 
   <div id="startScherm">
@@ -794,6 +807,7 @@
       <button class="big-btn stil" id="naarBoekBtn">📒 Naar mijn stickerboek</button>
     </div>
     <div class="review" id="review" hidden></div>
+    <button class="big-btn" id="oefenBtn" hidden>🎯 Oefen je fouten</button>
     <button class="big-btn" id="againBtn">&#128257; Nog een toets</button>
     <button class="big-btn stil" id="menuBtn">&#127968; Naar de hoofdstukken</button>
   </div>

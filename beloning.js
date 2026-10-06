@@ -109,3 +109,16 @@ export function voorstelVoor(spellen, beste, leerjaar, dag) {
   }
   return { reden: 'alles' };
 }
+
+// for the parent overview: every played chapter without 3 stars, weakest first. The stored score
+// is the best try, so a best under 70% means every try so far stayed under 2 stars
+export function werkpunten(spellen, beste) {
+  var uit = [];
+  spellen.forEach(function (s) {
+    s.hoofdstukken.forEach(function (h, i) {
+      var b = beste[s.id + ':' + i];
+      if (Number(b && b.van) > 0 && sterrenVoor(b) < 3) uit.push({ spel: s, index: i, beste: b, deel: b.score / b.van });
+    });
+  });
+  return uit.sort(function (x, y) { return x.deel - y.deel; });
+}
