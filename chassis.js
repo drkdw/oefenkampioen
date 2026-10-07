@@ -506,14 +506,15 @@ function lead() {
 var MAANDEN = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus',
   'september', 'oktober', 'november', 'december'];
 function sterrenTekst(n) { return '★★★'.slice(0, n) + '☆☆☆'.slice(n); }
-function sterrenVanSpel(spel, beste) {
-  var lijst = opVolgorde(spel, state.leerjaar), verdiend = 0, klaar = 0;
+function sterrenVanSpel(spel, beste, niveaus) {
+  var lijst = opVolgorde(spel, state.leerjaar), verdiend = 0, klaar = 0, goud = 0;
   lijst.forEach(function (r) {
-    var n = sterrenVoor(beste[spel.id + ':' + r.i]);
+    var k = spel.id + ':' + r.i, n = sterrenVoor(beste[k]);
     verdiend += n;
     if (n === 3) klaar++;
+    if (randVoor(niveauVan(niveaus, beste, k)) === 'goud') goud++;
   });
-  return { verdiend: verdiend, max: lijst.length * 3, klaar: klaar, aantal: lijst.length };
+  return { verdiend: verdiend, max: lijst.length * 3, klaar: klaar, goud: goud, aantal: lijst.length };
 }
 // counts only chapters up to the chosen school year, so the goal stays within reach
 function stickersVoorLeerjaar(beste) {
@@ -568,15 +569,20 @@ function toonStart() {
   // open a game first to find out it is empty there
   var rijen = SPELLEN.map(function (s, i) { return { s: s, i: i }; })
     .filter(function (r) { return opVolgorde(r.s, state.leerjaar).length > 0; });
-  var st = stickersVoorLeerjaar(beste);
+  var st = stickersVoorLeerjaar(beste), niveaus = leesNiveaus(actief());
   $('spellen').innerHTML = rijen.map(function (r) {
-    var sv = sterrenVanSpel(r.s, beste);
-    var alles = sv.klaar === sv.aantal;
-    return '<button class="tegel' + (alles ? ' klaar' : '') + '" data-i="' + r.i + '"><span class="tegel-ico" aria-hidden="true">' + r.s.ico + '</span>' +
+    var sv = sterrenVanSpel(r.s, beste, niveaus);
+    // all done: the bar starts over in gold and fills per gold sticker, so there is still a goal
+    var alles = sv.klaar === sv.aantal, allesGoud = sv.goud === sv.aantal;
+    var balk = allesGoud ? ''
+      : alles ? '<span class="tegel-balk goud" role="img" aria-label="' + sv.goud + ' van ' + sv.aantal + ' goud"><span style="width:' +
+        Math.round(100 * sv.goud / sv.aantal) + '%"></span></span>'
+      : '<span class="tegel-balk" aria-hidden="true"><span style="width:' + Math.round(100 * sv.klaar / sv.aantal) + '%"></span></span>';
+    return '<button class="tegel' + (allesGoud ? ' goud' : alles ? ' klaar' : '') + '" data-i="' + r.i + '"><span class="tegel-ico" aria-hidden="true">' + r.s.ico + '</span>' +
       '<span class="tegel-naam">' + r.s.naam + '</span>' +
       '<span class="tegel-sterren" aria-label="' + sv.verdiend + ' van ' + sv.max + ' sterren">★ ' + sv.verdiend + ' / ' + sv.max + '</span>' +
-      '<span class="tegel-klaar">' + (alles ? '✅ Alles klaar' : sv.klaar + ' van ' + sv.aantal + ' klaar') + '</span>' +
-      '<span class="tegel-balk" aria-hidden="true"><span style="width:' + Math.round(100 * sv.klaar / sv.aantal) + '%"></span></span></button>';
+      '<span class="tegel-klaar">' + (allesGoud ? '🏆 Alles goud!' : alles ? '✅ Alles klaar' : sv.klaar + ' van ' + sv.aantal + ' klaar') + '</span>' +
+      balk + '</button>';
   }).join('') + '<button class="tegel stickers" id="stickerTegel"><span class="tegel-ico" aria-hidden="true">📒</span>' +
     '<span class="tegel-naam">Mijn stickers</span><span class="tegel-sterren">' + st.n + ' / ' + st.totaal + '</span></button>';
   Array.prototype.forEach.call($('spellen').querySelectorAll('.tegel[data-i]'), function (b) {

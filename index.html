@@ -59,6 +59,8 @@
     --bad-bg: #FDE6E6;
     --gold: #FFC43D;
     --zilver: #AEB8C6;
+    --goud-ink: #9A6500;
+    --goud-bg: #FFF6D6;
     --screen: #16203A;
     --screen-ink: #7FE7FF;
     --shadow: 0 6px 0 rgba(43,58,103,.14);
@@ -81,6 +83,8 @@
       --bad-bg: #40222A;
       --gold: #FFD166;
       --zilver: #C9D2DE;
+      --goud-ink: #FFD166;
+      --goud-bg: #3A3220;
       --screen: #0B1220;
       --screen-ink: #7FE7FF;
       --shadow: 0 6px 0 rgba(0,0,0,.35);
@@ -675,7 +679,14 @@
   .tegel-balk span { display: block; height: 100%; background: var(--good); border-radius: 999px; }
   .tegel.klaar { border-color: var(--good); background: var(--good-bg); }
   .tegel.klaar .tegel-klaar { color: var(--good); font-family: Fredoka, sans-serif; }
-  .tegel.klaar .tegel-balk { display: none; }
+  .tegel-balk.goud span { background: linear-gradient(90deg, #E0A200, #FFE680, #E0A200); }
+  .tegel.goud {
+    border-color: transparent; position: relative; overflow: hidden;
+    background: linear-gradient(var(--goud-bg), var(--goud-bg)) padding-box,
+      conic-gradient(from 210deg, #FFF3B0, #E0A200, #FFE680, #B97A00, #FFD84D, #FFF3B0) border-box;
+    box-shadow: var(--shadow), 0 0 14px 1px rgba(255, 196, 61, .5);
+  }
+  .tegel.goud .tegel-klaar { color: var(--goud-ink); font-family: Fredoka, sans-serif; }
   .hfd.klaar { border-color: var(--good); background: var(--good-bg); }
   .hfd.klaar .badge.makkelijk { background: var(--card); }
   .hfd.bijna { border-color: var(--accent); }
@@ -713,7 +724,8 @@
   }
   /* a streak of light that slides across now and then; silver slower and softer than gold */
   .rand-zilver, .rand-goud, .vak.zilver, .vak.goud, .sticker-groot.zilver, .sticker-groot.goud { position: relative; overflow: hidden; }
-  .rand-zilver::after, .rand-goud::after, .vak.zilver::after, .vak.goud::after, .sticker-groot.zilver::after, .sticker-groot.goud::after {
+  .rand-zilver::after, .rand-goud::after, .vak.zilver::after, .vak.goud::after, .sticker-groot.zilver::after, .sticker-groot.goud::after,
+  .tegel.goud::after {
     content: ''; position: absolute; inset: 0; pointer-events: none;
     background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, .9) 48%, rgba(255, 255, 255, .9) 52%, transparent 70%);
     transform: translateX(-130%); animation: glansstreep 3.2s ease-in-out infinite;
@@ -751,7 +763,7 @@
   @media (prefers-reduced-motion: reduce) {
     .result .stars .ster, .sticker-groot { animation: none; }
     .rand-zilver::after, .rand-goud::after, .vak.zilver::after, .vak.goud::after, .sticker-groot.zilver::after,
-    .sticker-groot.goud::after, .vak.goud::before, .sticker-groot.goud::before { display: none; }
+    .sticker-groot.goud::after, .vak.goud::before, .sticker-groot.goud::before, .tegel.goud::after { display: none; }
   }
   /* title, name button and sound button stay on one row, also on a small phone */
   header { flex-wrap: nowrap; }

@@ -72,7 +72,9 @@ geeft een gewone sticker, 15 een zilveren rand, 20 een gouden rand die zacht gla
 gaat nooit omlaag. Wie al 20 op 20 als beste score had, krijgt meteen goud. Is alles tot je
 leerjaar 3 sterren, dan stelt **Voor jou vandaag** een sticker voor die nog geen goud is, en die
 knop start meteen een toets van 20 vragen, los van de instelling. Bij een gelijke verhouding telt
-de langere toets als beste score.
+de langere toets als beste score. Op het startscherm wordt een speltegel groen met "✅ Alles klaar" zodra
+elk hoofdstuk 3 sterren heeft; het balkje begint dan opnieuw, in goud, en vult zich per gouden
+sticker. Is alles goud, dan krijgt de tegel zelf een gouden rand met glans en "🏆 Alles goud!".
 
 In de lijst van hoofdstukken zie je meteen hoe ver je staat. Een hoofdstuk met 3 sterren is groen
 met een vinkje. Een hoofdstuk dat je speelde maar waarin je fouten maakte, krijgt een oranje rand
