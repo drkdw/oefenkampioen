@@ -130,8 +130,8 @@ scherm.
 
 ### Voor ouders
 
-Het scherm **Voor ouders** open je met de link onderaan het startscherm, met de knop onderaan het
-profielpaneel, of met `index.html#admin`. Verlaat je het, dan verdwijnt `#admin` uit de adresbalk,
+Het scherm **Voor ouders** open je met de link onderaan het startscherm, of met
+`index.html#admin`. Verlaat je het, dan verdwijnt `#admin` uit de adresbalk,
 zodat herladen gewoon op het startscherm begint. Er staan drie delen op.
 
 **Kinderen.** Per kind een kaart met **Waar je kan helpen**: de hoofdstukken die het speelde zonder

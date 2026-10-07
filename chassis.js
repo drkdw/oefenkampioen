@@ -702,7 +702,7 @@ function opentProfielPaneel() {
 /* ==================== the parents screen ==================== */
 // everything a parent needs and a child should not stumble on: progress per child, sharing and
 // removing a child, the backup of everyone, and putting a file back. Reached through the footer
-// link, the link in the profiles panel, or #admin
+// link or #admin
 function toonMelding(tekst, fout) {
   $('ouderMelding').textContent = tekst;
   $('ouderMelding').hidden = !tekst;
@@ -1143,7 +1143,7 @@ $('bewaarBtn').onclick = function () {
     bevestigKnop(knop, 'Bewaard ✓');
   });
 };
-$('ouderLink').onclick = $('ouderKnop').onclick = function (e) {
+$('ouderLink').onclick = function (e) {
   e.preventDefault();
   toonOuders();
 };
