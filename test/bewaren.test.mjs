@@ -1,4 +1,4 @@
-import { maakKindBestand, leesBestand, samenvatting, voegKindSamen, KIND_VERSIE } from '../bewaren.js';
+import { maakKindBestand, maakVolledigBestand, leesBestand, samenvatting, voegKindSamen, KIND_VERSIE } from '../bewaren.js';
 import { INDELING } from '../beloning.js';
 
 export function bewaarTests(check) {
@@ -64,4 +64,10 @@ export function bewaarTests(check) {
   check(m.gespeeld['klok:5'] === 5 && m.gespeeld['klok:7'] === 1 && m.niveau['klok:5'] === 20, 'samenvoegen: tellingen en niveaus dalen nooit');
   check(m.dagen.join() === '2026-09-01,2026-10-08', 'samenvoegen: dagen van beide');
   check(JSON.stringify(voegKindSamen(daar, hier)) === JSON.stringify(m), 'samenvoegen: de volgorde maakt niet uit');
+  // the day a file was made comes back, so a parent sees how old it is before restoring
+  check(terug.gemaakt === '2026-10-08', 'kindbestand: datum komt terug');
+  check(leesBestand(maakVolledigBestand(alles, '2026-10-01')).gemaakt === '2026-10-01', 'volledig: datum komt terug');
+  check(a.gemaakt === null && leesBestand(Object.assign({}, bestand, { gemaakt: 'gisteren' })).gemaakt === null,
+    'zonder of met een kapotte datum: geen datum, wel gewoon leesbaar');
+  check(!('oefenkampioen-gemaakt' in alles), 'maakVolledigBestand verandert de opslag zelf niet');
 }

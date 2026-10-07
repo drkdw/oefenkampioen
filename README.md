@@ -162,7 +162,8 @@ opnieuw en ze staan er terug) en **écht wissen** (naam, leerjaar en scores voor
 laatst gebeurde; na 30 dagen, of als het nog nooit gebeurde, valt die regel op in oranje.
 
 **Terugzetten.** Kies een bestand van één kind of van iedereen. Voor er iets verandert, toont het
-scherm wie erin zit en wat er gebeurt: "Lotte: 23 hoofdstukken, 4 goud, 12 dagen geoefend.
+scherm wanneer het bestand gemaakt is ("Gemaakt op donderdag 8 oktober 2026, 3 dagen geleden"),
+wie erin zit en wat er gebeurt: "Lotte: 23 hoofdstukken, 4 goud, 12 dagen geoefend.
 Wordt samengevoegd met Lotte hier." Pas na **Zet terug** wordt er geschreven, en dan alles in één
 keer: loopt de opslag halverwege vol, dan komt alles terug zoals het was.
 
@@ -197,7 +198,10 @@ gemaakt is met een nieuwere versie van het formaat, wordt in zijn geheel geweige
 Het bestand van één kind heeft een vaste kop (`"app": "oefenkampioen", "soort": "kind"`) en een
 `versie`. Die gaat pas omhoog als het formaat verandert op een manier die een oudere app niet kan
 lezen; een nieuwere app blijft elke oudere versie lezen. Het bestand van iedereen is een kopie van
-alle `oefenkampioen-`-sleutels zoals ze in de opslag staan, en blijft ook in die vorm leesbaar.
+alle `oefenkampioen-`-sleutels zoals ze in de opslag staan, plus `oefenkampioen-gemaakt` met de
+dag waarop het bestand gemaakt is, en blijft ook in die vorm leesbaar. Beide bestanden dragen die
+dag ook in hun naam, bv. `oefenkampioen-lotte-2026-10-08.json`; een ouder bestand zonder datum
+erin wordt gewoon gelezen.
 Bestanden van voor indeling 2 krijgen bij het lezen de hoofdstuknummers van nu.
 
 ## Hoe een spel in elkaar zit

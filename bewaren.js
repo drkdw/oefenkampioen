@@ -7,7 +7,9 @@ import { mengBeste, mengGespeeld, mengDagen, naarIndeling2, INDELING, niveauVan,
 // raised only when the format changes in a way an older app cannot read; a newer app keeps
 // reading every older version
 export var KIND_VERSIE = 1;
-var LEERJAREN = [1, 2, 3, 4, 5, 6], AANTALLEN = [10, 15, 20];
+var LEERJAREN = [1, 2, 3, 4, 5, 6], AANTALLEN = [10, 15, 20], DATUM = /^\d{4}-\d{2}-\d{2}$/;
+// the day the file was made, shown before restoring so a parent can tell an old file from a new one
+function datumOfNiets(d) { return typeof d === 'string' && DATUM.test(d) ? d : null; }
 
 function geldigeInstellingen(i) {
   var uit = {};
@@ -61,15 +63,26 @@ function uitVolledig(data) {
   });
 }
 
-// returns the children in the file, cleaned; throws 'geen bewaarbestand' or 'nieuwere versie'
+// the full backup gets the day it was made as one extra key; a file from before that has none
+export function maakVolledigBestand(data, vandaag) {
+  var uit = {};
+  Object.keys(data).forEach(function (k) { uit[k] = data[k]; });
+  uit['oefenkampioen-gemaakt'] = vandaag;
+  return uit;
+}
+
+// returns the children in the file, cleaned, and the day it was made (or null);
+// throws 'geen bewaarbestand' or 'nieuwere versie'
 export function leesBestand(data) {
   if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('geen bewaarbestand');
   if (data.app === 'oefenkampioen' && data.soort === 'kind') {
     if (!(Number(data.versie) >= 1)) throw new Error('geen bewaarbestand');
     if (Number(data.versie) > KIND_VERSIE) throw new Error('nieuwere versie');
-    return { soort: 'kind', kinderen: [schoonKind(data, Number(data.indeling) || 1)] };
+    return { soort: 'kind', gemaakt: datumOfNiets(data.gemaakt), kinderen: [schoonKind(data, Number(data.indeling) || 1)] };
   }
-  if (typeof data['oefenkampioen-profielen'] === 'string') return { soort: 'alles', kinderen: uitVolledig(data) };
+  if (typeof data['oefenkampioen-profielen'] === 'string') {
+    return { soort: 'alles', gemaakt: datumOfNiets(data['oefenkampioen-gemaakt']), kinderen: uitVolledig(data) };
+  }
   throw new Error('geen bewaarbestand');
 }
 

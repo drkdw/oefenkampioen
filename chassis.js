@@ -1,6 +1,6 @@
 import { shuffle, pad2, $, reduced, hoofdletter, voorleestekst } from './gereedschap.js';
 import { SPELLEN } from './spellen/index.js';
-import { maakKindBestand, leesBestand, samenvatting, voegKindSamen } from './bewaren.js';
+import { maakKindBestand, maakVolledigBestand, leesBestand, samenvatting, voegKindSamen } from './bewaren.js';
 import { datumVan, mengDagen, sterrenVoor, stickerVoor, voorstelVoor, dagenDezeMaand, dagNummer, boekVoor, INDELING, naarIndeling2, opVolgorde, werkpunten, mengGespeeld, GOUD, niveauVan, randVoor, bewaardRegel, mengBeste } from './beloning.js';
 
 // an eight-year-old cannot keep going for more than twenty questions
@@ -782,14 +782,22 @@ function bevestigKnop(knop, tekst) {
   knop.timer = setTimeout(function () { knop.textContent = oud; }, 2500);
 }
 // before anything is written, the parent sees who is in the file and what happens to each
-function vraagHerstel(plaatsen) {
+function datumTekst(d) {
+  var p = d.split('-').map(Number);
+  return new Date(p[0], p[1] - 1, p[2]).toLocaleDateString('nl-BE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
+function vraagHerstel(plaatsen, gemaakt) {
+  var oud = gemaakt ? dagNummer(vandaag()) - dagNummer(gemaakt) : null;
+  var wanneer = gemaakt
+    ? '<p class="sectieuitleg">Gemaakt op ' + datumTekst(gemaakt) + (oud > 1 ? ', ' + oud + ' dagen geleden' : oud === 1 ? ', gisteren' : oud === 0 ? ', vandaag' : '') + '.</p>'
+    : '<p class="sectieuitleg">Dit bestand is gemaakt voor de datum erin bewaard werd; kijk in de bestandsnaam.</p>';
   var rijen = plaatsen.map(function (pl) {
     var o = pl.overzicht;
     return '<li><b>' + pl.naam + '</b>: ' + o.hoofdstukken + (o.hoofdstukken === 1 ? ' hoofdstuk' : ' hoofdstukken') +
       (o.goud ? ', ' + o.goud + ' goud' : '') + ', ' + o.dagen + (o.dagen === 1 ? ' dag' : ' dagen') + ' geoefend. ' +
       '<span class="paneelnotitie">' + (pl.nieuw ? 'Nieuw op dit toestel.' : 'Wordt samengevoegd met ' + pl.doel.naam + ' hier.') + '</span></li>';
   }).join('');
-  $('herstelVraag').innerHTML = '<p class="ouderlabel">In dit bestand</p><ul class="herstellijst">' + rijen + '</ul>' +
+  $('herstelVraag').innerHTML = '<p class="ouderlabel">In dit bestand</p>' + wanneer + '<ul class="herstellijst">' + rijen + '</ul>' +
     '<p class="sectieuitleg">Er gaat niets verloren: van elk hoofdstuk blijft de beste score staan, en een gouden sticker blijft goud.</p>' +
     '<div class="paneelacties"><button class="aantal" id="herstelJa">Zet terug</button><button class="aantal" id="herstelNee">Annuleer</button></div>';
   $('herstelVraag').hidden = false;
@@ -1136,7 +1144,7 @@ function vraagBlijvendeOpslag() {
 $('bewaarBtn').onclick = function () {
   var knop = this;
   vraagBlijvendeOpslag();
-  deelBestand(bestandsnaamVoor('alles'), alleData()).then(function (gelukt) {
+  deelBestand(bestandsnaamVoor('alles'), maakVolledigBestand(alleData(), vandaag())).then(function (gelukt) {
     if (!gelukt) return;
     try { localStorage.setItem('oefenkampioen-laatstbewaard', vandaag()); } catch (e) { /* may fail */ }
     toonBewaard();
@@ -1157,16 +1165,16 @@ $('herstelInput').onchange = function () {
   toonMelding('');
   vraagBlijvendeOpslag();
   bestand.text().then(function (tekst) {
-    var plaatsen;
+    var plaatsen, gelezen;
     // alert() is suppressed in the same browsers that suppress confirm(), so the message stays on the screen
-    try { plaatsen = plaatsVoor(leesBestand(JSON.parse(tekst)).kinderen); } catch (e) {
+    try { gelezen = leesBestand(JSON.parse(tekst)); plaatsen = plaatsVoor(gelezen.kinderen); } catch (e) {
       toonMelding(e.message === 'nieuwere versie'
         ? 'Dat bestand is gemaakt met een nieuwere versie van Oefenkampioen. Herlaad de pagina en probeer opnieuw.'
         : 'Dat bestand kon niet gelezen worden. Kies een bestand dat Oefenkampioen gemaakt heeft.', true);
       return;
     }
     if (!plaatsen.length) { toonMelding('In dat bestand staat geen kind dat hier past.', true); return; }
-    vraagHerstel(plaatsen);
+    vraagHerstel(plaatsen, gelezen.gemaakt);
   });
 };
 $('soundBtn').onclick = $('soundBtn2').onclick = function () {
