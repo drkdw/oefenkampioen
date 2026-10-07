@@ -124,37 +124,65 @@ leerjaar, dus de schakelaar is niet alleen voor de grootsten. Standaard staat hi
 
 Elk kind heeft een eigen profiel: naam, gekozen leerjaar, instellingen en beste score per
 hoofdstuk. Tik op de naam naast het geluidsicoon om te wisselen of een nieuw profiel toe te
-voegen. In dat paneel zie je per kind ook het leerjaar en hoeveel hoofdstukken al geoefend zijn.
-Verwijderen kan enkel achter `index.html#admin`, niet in de gewone weergave: een kind mag zijn
-eigen profiel niet kunnen laten verdwijnen, ook niet de onschuldige variant. Achter `#admin` komt
-er per profiel een kruisje bij dat de keuze geeft tussen **uit de lijst** (de scores blijven
-staan, typ de naam later opnieuw en ze staan er terug) en **écht wissen** (naam, leerjaar en
-scores voorgoed weg, met een expliciete bevestiging ertussen).
+voegen. In dat paneel zie je per kind ook het leerjaar, hoeveel hoofdstukken al geoefend zijn en
+hoeveel toetsen er gespeeld zijn. Meer staat er niet in: wat voor ouders is, staat op een eigen
+scherm.
 
-Onderaan het startscherm opent **Voor ouders** hetzelfde paneel als `#admin`, zonder dat je iets
-in de adresbalk moet typen. Sluit je het paneel, dan staat de admin-stand weer uit, zodat het
-toestel van een kind er niet in blijft hangen. Onder de bewaarknoppen staat wanneer er op dit
-toestel laatst een bewaarbestand gemaakt is; na 30 dagen, of als het nog nooit gebeurde, valt die
-regel op in oranje.
+### Voor ouders
 
-Achter `#admin` staat onderaan het paneel ook **Waar je kan helpen**: per kind de hoofdstukken
-die het speelde zonder 3 sterren te halen, het zwakste eerst, met de beste score erbij. Omdat
-alleen de beste poging bewaard wordt, betekent 3 op 10 daar dat geen enkele poging beter was.
-Daarnaast telt de app per hoofdstuk hoe vaak de hele toets gespeeld is (een oefenronde met fouten
-telt niet mee), bv. "5 op 10 · 3 keer". Het profielpaneel toont per kind het totaal aantal toetsen.
-Die tellingen gaan mee in het bewaarbestand; bij herstellen blijft het hoogste aantal staan, zodat
-hetzelfde bestand twee keer terugzetten niets dubbel telt.
+Het scherm **Voor ouders** open je met de link onderaan het startscherm, met de knop onderaan het
+profielpaneel, of met `index.html#admin`. Verlaat je het, dan verdwijnt `#admin` uit de adresbalk,
+zodat herladen gewoon op het startscherm begint. Er staan drie delen op.
 
-Die gegevens staan in `localStorage` van de browser: enkel op dit toestel, in deze ene browser,
-niet in een account en niet in de cloud. Wis je de browsergegevens, gebruik je een andere browser
-of een ander toestel, dan zijn ze weg, en niets waarschuwt daar vooraf voor. `#admin` geeft ook
-twee bewaarknoppen, om diezelfde reden voor een ouder bedoeld, net als de zelfcheck achter
-`#test`: **Bewaar als bestand** downloadt een klein bestandje met alle profielen en scores,
-**Herstel van bestand** zet dat later terug. Herstellen voegt enkel toe: profielen worden op naam
-herkend, een profiel dat er al staat houdt zijn instellingen, en een beste score wordt alleen
-vervangen door een betere. Het bestand wordt eerst helemaal gecontroleerd; een kapot of vreemd
-bestand verandert niets en geeft een melding in het paneel. Scores worden op verhouding
-vergeleken, zodat 12 op 15 beter telt dan 7 op 10.
+**Kinderen.** Per kind een kaart met **Waar je kan helpen**: de hoofdstukken die het speelde zonder
+3 sterren te halen, het zwakste eerst, met de beste score en hoe vaak de hele toets gespeeld is,
+bv. "5 op 10 · 3 keer". Omdat alleen de beste poging bewaard wordt, betekent 3 op 10 daar dat
+geen enkele poging beter was; een oefenronde met fouten telt niet mee. Op de kaart staan ook
+**Deel** (een bestand met enkel dit kind, om het naar een ander toestel te sturen) en
+**Verwijderen**, met de keuze tussen **uit de lijst** (de scores blijven staan, typ de naam later
+opnieuw en ze staan er terug) en **écht wissen** (naam, leerjaar en scores voorgoed weg).
+
+**Back-up van iedereen.** Eén bestand met alle kinderen. Erboven staat wanneer dat op dit toestel
+laatst gebeurde; na 30 dagen, of als het nog nooit gebeurde, valt die regel op in oranje.
+
+**Terugzetten.** Kies een bestand van één kind of van iedereen. Voor er iets verandert, toont het
+scherm wie erin zit en wat er gebeurt: "Lotte: 23 hoofdstukken, 4 goud, 12 dagen geoefend.
+Wordt samengevoegd met Lotte hier." Pas na **Zet terug** wordt er geschreven, en dan alles in één
+keer: loopt de opslag halverwege vol, dan komt alles terug zoals het was.
+
+Op een gsm of tablet opent bewaren en delen het deelmenu (AirDrop, WhatsApp, iCloud Drive, Google
+Drive...); op een computer wordt het een gewone download.
+
+### Waar de gegevens staan, en waarom niets verloren gaat
+
+Alles staat in `localStorage` van de browser: enkel op dit toestel, in deze ene browser, niet in
+een account en niet in de cloud. Wis je de browsergegevens, gebruik je een andere browser of een
+ander toestel, dan zijn ze weg. Daarom de bestanden.
+
+Terugzetten **voegt altijd samen** en verlaagt nooit iets, hoe oud het bestand ook is:
+
+| Gegeven | Bij terugzetten |
+|---|---|
+| Beste score | de betere van de twee blijft; bij een gelijke verhouding de langere toets |
+| Stickerniveau | het hoogste blijft, goud blijft goud |
+| Dagen geoefend | alle dagen van beide |
+| Aantal keer gespeeld | het hoogste getal blijft, zodat hetzelfde bestand twee keer terugzetten niets dubbel telt |
+| Instellingen | enkel voor een kind dat nog niet op dit toestel staat |
+
+Kinderen worden op naam herkend, niet op hun interne sleutel. Speelt een kind op twee toestellen,
+3 keer op het ene en 2 keer op het andere, dan geeft samenvoegen "3 keer": te weinig, maar nooit
+iets kwijt.
+
+Een bestand wordt nooit vertrouwd zoals het is. `bewaren.js` bouwt elk deel opnieuw op met
+dezelfde regels die de app zelf gebruikt: een kapotte score, een onbekend leerjaar of een vreemde
+datum valt weg, de rest komt gewoon binnen. Een bestand dat geen Oefenkampioen-bestand is, of dat
+gemaakt is met een nieuwere versie van het formaat, wordt in zijn geheel geweigerd met een melding.
+
+Het bestand van één kind heeft een vaste kop (`"app": "oefenkampioen", "soort": "kind"`) en een
+`versie`. Die gaat pas omhoog als het formaat verandert op een manier die een oudere app niet kan
+lezen; een nieuwere app blijft elke oudere versie lezen. Het bestand van iedereen is een kopie van
+alle `oefenkampioen-`-sleutels zoals ze in de opslag staan, en blijft ook in die vorm leesbaar.
+Bestanden van voor indeling 2 krijgen bij het lezen de hoofdstuknummers van nu.
 
 ## Hoe een spel in elkaar zit
 
@@ -169,6 +197,7 @@ De bestanden:
 | `spellen/*.js` | een spel per bestand |
 | `zelfcheck.js` | de controles, alleen binnengehaald bij `#test` |
 | `beloning.js` | sterren, stickers, het voorstel van de dag en de dagen geoefend, zonder scherm of opslag |
+| `bewaren.js` | het formaat van de bewaarbestanden: lezen, opkuisen en samenvoegen, zonder scherm of opslag |
 | `test/` | de Node-tests en de layoutmeting |
 
 Het chassis kent de schermen, de punten, de bolletjes, de opslag en de zelfcheck. Een spel is

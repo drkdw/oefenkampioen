@@ -240,24 +240,28 @@
   .paneelacties .aantal { font-size: 13px; padding: 7px 12px; }
   .bewaardinfo { flex-basis: 100%; }
   .bewaardinfo.oud { color: var(--accent); font-family: Fredoka, sans-serif; }
-  .ouderoverzicht { border-top: 2px solid var(--line); padding-top: 10px; display: flex; flex-direction: column; gap: 10px; }
-  .ouderoverzicht h3 { margin: 0; font-family: Fredoka, sans-serif; font-size: 16px; }
-  .ouderkind ul { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
-  .ouderkind li { display: flex; justify-content: space-between; gap: 10px; }
-  .ouderkind .wp-score { flex: none; color: var(--accent); font-family: Fredoka, sans-serif; }
-  .profielx {
-    flex: none;
-    width: 32px; height: 32px;
-    border-radius: 999px;
-    border: 2px solid var(--line);
-    background: var(--card-2);
-    color: var(--ink-soft);
-    font-size: 13px;
-    line-height: 1;
-    padding: 0;
-    cursor: pointer;
+  .ouderknop { align-self: flex-start; font-size: 14px; padding: 7px 12px; }
+  #ouderScherm { display: flex; flex-direction: column; gap: 14px; }
+  .oudersectie { display: flex; flex-direction: column; gap: 10px; }
+  .oudersectie h2 { margin: 6px 0 0; font-family: Fredoka, sans-serif; font-size: 18px; font-weight: 400; }
+  .ouderkaart {
+    background: var(--card); border: 3px solid var(--line); border-radius: 20px; padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 8px;
   }
-  .profielrij.bevestig { background: var(--bad-bg); border-radius: 14px; padding: 8px 10px; flex-wrap: wrap; }
+  .ouderkop { display: flex; align-items: center; gap: 10px; font-family: Fredoka, sans-serif; font-size: 17px; }
+  .ouderkop .avatar {
+    display: inline-flex; align-items: center; justify-content: center; flex: none;
+    width: 32px; height: 32px; border-radius: 999px; background: var(--ink); color: var(--card); font-size: 16px;
+  }
+  .ouderlabel { margin: 0; font-family: Fredoka, sans-serif; font-size: 14px; color: var(--ink-soft); }
+  .werkpunten, .herstellijst { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+  .werkpunten li { display: flex; justify-content: space-between; gap: 10px; }
+  .werkpunten .wp-score { flex: none; color: var(--accent); font-family: Fredoka, sans-serif; }
+  .herstellijst .paneelnotitie { display: block; }
+  .ouderacties.bevestig { background: var(--bad-bg); border-radius: 14px; padding: 8px 10px; align-items: center; }
+  .herstelvraag { background: var(--card); border: 3px solid var(--accent); border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .melding { margin: 0; font-family: Fredoka, sans-serif; font-size: 15px; color: var(--good); }
+  .melding.fout { color: var(--accent); }
   .profielvraag { flex: 1 1 100%; font-size: 13px; color: var(--ink); }
   .profielja, .profielnee, .profiellijst {
     font-family: Fredoka, sans-serif;
@@ -808,16 +812,7 @@
       <input id="naam" type="text" maxlength="16" placeholder="Typ een naam" autocomplete="off">
       <button class="aantal" id="naamOk">Voeg toe</button>
     </div>
-    <p class="paneelnotitie">Staat enkel op dit toestel, in deze browser. Geen account, geen
-      cloud: browsergegevens wissen of een ander toestel gebruiken wist ook dit.</p>
-    <div class="paneelacties" id="paneelacties" hidden>
-      <button class="aantal" id="bewaarBtn">Bewaar als bestand</button>
-      <button class="aantal" id="herstelBtn">Herstel van bestand</button>
-      <input type="file" id="herstelInput" accept=".json,application/json" hidden>
-      <p class="paneelnotitie bewaardinfo" id="bewaardInfo"></p>
-    </div>
-    <p class="paneelnotitie" id="paneelmelding" role="status" hidden></p>
-    <div class="ouderoverzicht" id="ouderOverzicht" hidden></div>
+    <button class="aantal ouderknop" id="ouderKnop">👪 Voor ouders</button>
   </div>
 
   <div id="startScherm">
@@ -870,6 +865,34 @@
     </div>
     <p class="lead">Haal 3 sterren in een hoofdstuk en je krijgt zijn sticker. Lukt dat met 15 vragen, dan wordt hij zilver; met 20 vragen goud.</p>
     <div id="stickerBoek"></div>
+  </div>
+
+  <div id="ouderScherm" hidden>
+    <div class="scorebar">
+      <button class="icon-btn" id="ouderTerugBtn" aria-label="Terug naar de spellen">&#127968;</button>
+      <span class="titel">👪 Voor ouders</span>
+    </div>
+    <p class="lead">Alles staat enkel op dit toestel, in deze browser: geen account, geen cloud.
+      Browsergegevens wissen of een ander toestel gebruiken, wist ook dit. Bewaar daarom af en toe een bestand.</p>
+    <section class="oudersectie">
+      <h2>Kinderen</h2>
+      <div id="ouderKinderen"></div>
+      <p class="paneelnotitie">"Waar je kan helpen" toont de gespeelde hoofdstukken zonder 3 sterren, het zwakste eerst,
+        met de beste poging en hoe vaak de hele toets gespeeld is. Met "Deel" stuur je één kind naar een ander toestel.</p>
+    </section>
+    <section class="oudersectie">
+      <h2>Back-up van iedereen</h2>
+      <p class="paneelnotitie bewaardinfo" id="bewaardInfo"></p>
+      <div class="paneelacties"><button class="aantal" id="bewaarBtn">📤 Bewaar alles als bestand</button></div>
+    </section>
+    <section class="oudersectie">
+      <h2>Terugzetten</h2>
+      <p class="paneelnotitie">Een bestand van één kind of van iedereen. Je ziet eerst wat erin zit; er gaat nooit iets verloren.</p>
+      <div class="paneelacties"><button class="aantal" id="herstelBtn">📥 Kies een bestand</button></div>
+      <input type="file" id="herstelInput" accept=".json,application/json" hidden>
+      <div class="herstelvraag" id="herstelVraag" hidden></div>
+      <p class="melding" id="ouderMelding" role="status" hidden></p>
+    </section>
   </div>
 
   <div id="game" hidden>

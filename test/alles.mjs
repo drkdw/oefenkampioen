@@ -2,6 +2,7 @@ import { harnas } from './harnas.mjs';
 import { beloningTests } from './beloning.test.mjs';
 import { koppelingTests } from './koppelingen.test.mjs';
 import { voorleesTests } from './voorlezen.test.mjs';
+import { bewaarTests } from './bewaren.test.mjs';
 // every game recomputed independently, from what the child sees
 import { klokTests } from './klok.test.mjs';
 import { maalTests } from './maaltafels.test.mjs';
@@ -24,6 +25,7 @@ var vragen = harnas(check);
 beloningTests(check);
 koppelingTests(check);
 voorleesTests(check);
+bewaarTests(check);
 var nagerekend = [klokTests, maalTests, winkelTests, matenTests, kalenderTests, brugTests, spiegelTests,
   breukenTests, meetkundeTests, verhoudingenTests].reduce(function (n, t) { return n + t(check); }, 0);
 console.log(vragen + ' vragen doorgerekend, ' + nagerekend + ' nagerekend vanuit de tekening, ' +

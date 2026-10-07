@@ -1,12 +1,10 @@
 import { shuffle, pad2, $, reduced, hoofdletter, voorleestekst } from './gereedschap.js';
 import { SPELLEN } from './spellen/index.js';
-import { datumVan, mengDagen, sterrenVoor, stickerVoor, voorstelVoor, dagenDezeMaand, dagNummer, boekVoor, INDELING, naarIndeling2, opVolgorde, werkpunten, mengGespeeld, GOUD, niveauVan, randVoor, bewaardRegel } from './beloning.js';
+import { maakKindBestand, leesBestand, samenvatting, voegKindSamen } from './bewaren.js';
+import { datumVan, mengDagen, sterrenVoor, stickerVoor, voorstelVoor, dagenDezeMaand, dagNummer, boekVoor, INDELING, naarIndeling2, opVolgorde, werkpunten, mengGespeeld, GOUD, niveauVan, randVoor, bewaardRegel, mengBeste } from './beloning.js';
 
 // an eight-year-old cannot keep going for more than twenty questions
 var AANTALLEN = [10, 15, 20];
-// removing a profile is only possible behind #admin: a child must not be able to make its own
-// profile disappear, not even the harmless variant that keeps the scores
-var adminModus = false;
 
 /* ==================== name, count and storage ==================== */
 // letters of any script, spaces, hyphens and apostrophes only, so a name is safe inside markup
@@ -116,20 +114,94 @@ function naam(sleutel) {
   var p = profielen().filter(function (p) { return p.sleutel === k; })[0];
   return p ? p.naam : '';
 }
-// backup and restore: there is no account or cloud, so this file is the only way back after the
-// browser data is wiped
-function exporteerData() {
+// backup and restore: there is no account or cloud, so these files are the only way back after
+// the browser data is wiped. The format lives in bewaren.js; this part only reads and writes storage
+function alleData() {
   var data = {};
   for (var i = 0; i < localStorage.length; i++) {
     var k = localStorage.key(i);
     if (k.indexOf('oefenkampioen-') === 0) data[k] = localStorage.getItem(k);
   }
+  return data;
+}
+// on a phone or tablet the share sheet (AirDrop, WhatsApp, Drive...), elsewhere a plain download.
+// Resolves true when the file went somewhere, false when the parent cancelled the share sheet
+function deelBestand(bestandsnaam, inhoud) {
+  var bestand = new File([JSON.stringify(inhoud, null, 2)], bestandsnaam, { type: 'application/json' });
+  var aanraak = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+  if (aanraak && navigator.canShare && navigator.canShare({ files: [bestand] })) {
+    return navigator.share({ files: [bestand], title: bestandsnaam })
+      .then(function () { return true; }, function () { return false; });
+  }
   var a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
-  a.download = 'oefenkampioen-bewaard.json';
+  a.href = URL.createObjectURL(bestand);
+  a.download = bestandsnaam;
   a.click();
   // revoking right away can cancel the download in older Safari and Firefox
   setTimeout(function () { URL.revokeObjectURL(a.href); }, 10000);
+  return Promise.resolve(true);
+}
+function bestandsnaamVoor(wie) {
+  return 'oefenkampioen-' + wie.toLowerCase().replace(/[\s']+/g, '-') + '-' + vandaag() + '.json';
+}
+function leesWaarde(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function kindUitOpslag(sleutel, naamVanKind) {
+  var pf = postfixVoor(sleutel), instellingen = { leerjaar: leerjaarVoor(sleutel) };
+  var aantal = parseInt(leesWaarde('oefenkampioen-aantal' + pf), 10);
+  if (AANTALLEN.indexOf(aantal) > -1) instellingen.aantal = aantal;
+  if (leesWaarde('oefenkampioen-tempo' + pf) !== null) instellingen.tempo = leesWaarde('oefenkampioen-tempo' + pf) === 'aan';
+  if (leesWaarde('oefenkampioen-voorlezen' + pf) !== null) instellingen.voorlezen = leesWaarde('oefenkampioen-voorlezen' + pf) === 'aan';
+  return {
+    naam: naamVanKind, instellingen: instellingen, beste: leesBesteVoor(sleutel), gespeeld: leesGespeeld(sleutel),
+    niveau: leesNiveaus(sleutel), dagen: leesDagen(sleutel)
+  };
+}
+// who in the file goes where on this device: matched on the name, not the key, because key ''
+// means "the old data on this device" and can belong to a different child elsewhere
+function plaatsVoor(kinderen) {
+  var huidig = profielen();
+  return kinderen.map(function (kind) {
+    var weergave = hoofdletter(schoonNaam(kind.naam)), sleutel = sleutelVan(weergave);
+    if (!sleutel) return null;
+    var doel = huidig.filter(function (h) { return sleutelVan(h.naam) === sleutel; })[0];
+    // never key '' for a newcomer: on this device that is the old data of whoever had it
+    if (!doel && huidig.some(function (h) { return h.sleutel === sleutel; })) return null;
+    return { kind: kind, naam: weergave, nieuw: !doel, doel: doel || { sleutel: sleutel, naam: weergave }, overzicht: samenvatting(kind) };
+  }).filter(Boolean);
+}
+// everything is written at once or not at all: a full storage halfway puts back what was there.
+// Nothing is ever lowered, and a child already here keeps its own settings
+function pasToe(plaatsen) {
+  var schrijf = {}, huidig = profielen();
+  plaatsen.forEach(function (pl) {
+    var pf = postfixVoor(pl.doel.sleutel);
+    var samen = voegKindSamen(kindUitOpslag(pl.doel.sleutel, pl.naam), pl.kind);
+    schrijf['oefenkampioen-beste' + pf] = JSON.stringify(samen.beste);
+    schrijf['oefenkampioen-gespeeld' + pf] = JSON.stringify(samen.gespeeld);
+    schrijf['oefenkampioen-niveau' + pf] = JSON.stringify(samen.niveau);
+    schrijf['oefenkampioen-dagen' + pf] = JSON.stringify(samen.dagen);
+    if (!pl.nieuw) return;
+    var i = pl.kind.instellingen;
+    if (i.leerjaar) schrijf['oefenkampioen-leerjaar' + pf] = String(i.leerjaar);
+    if (i.aantal) schrijf['oefenkampioen-aantal' + pf] = String(i.aantal);
+    if (i.tempo !== undefined) schrijf['oefenkampioen-tempo' + pf] = i.tempo ? 'aan' : 'uit';
+    if (i.voorlezen !== undefined) schrijf['oefenkampioen-voorlezen' + pf] = i.voorlezen ? 'aan' : 'uit';
+    huidig.push(pl.doel);
+  });
+  var vorig = {};
+  try {
+    Object.keys(schrijf).forEach(function (k) { vorig[k] = localStorage.getItem(k); localStorage.setItem(k, schrijf[k]); });
+  } catch (e) {
+    // first free the space of everything written, then put the old values back
+    try {
+      Object.keys(vorig).forEach(function (k) { localStorage.removeItem(k); });
+      Object.keys(vorig).forEach(function (k) { if (vorig[k] !== null) localStorage.setItem(k, vorig[k]); });
+    } catch (e2) { /* nothing more to do */ }
+    throw new Error('opslag vol');
+  }
+  zetProfielen(huidig);
+  // on a fresh device nobody is active yet: start with the first child from the file
+  if (!huidig.some(function (h) { return h.sleutel === actief(); }) && plaatsen.length) wisselProfiel(plaatsen[0].doel.sleutel);
 }
 function leesGespeeld(sleutel) {
   try { return mengGespeeld(JSON.parse(localStorage.getItem('oefenkampioen-gespeeld' + postfixVoor(sleutel)) || '{}'), {}); }
@@ -181,80 +253,6 @@ function leesDagen(sleutel) {
 function bewaarDag(sleutel) {
   try { localStorage.setItem('oefenkampioen-dagen' + postfixVoor(sleutel), JSON.stringify(mengDagen(leesDagen(sleutel), [vandaag()]))); }
   catch (e) { /* may fail */ }
-}
-// keep the better of two best scores per chapter, and only well-formed entries
-function mengBeste(hier, daar) {
-  var uit = {};
-  [hier, daar].forEach(function (bron) {
-    Object.keys(bron && typeof bron === 'object' ? bron : {}).forEach(function (k) {
-      var s = Number(bron[k] && bron[k].score), v = Number(bron[k] && bron[k].van), oud = uit[k];
-      if (!/^[a-z]+:\d+$/.test(k) || !(v > 0) || !(s >= 0) || s > v || s % 1 || v % 1) return;
-      if (!oud || s / v > oud.score / oud.van) uit[k] = { score: s, van: v };
-    });
-  });
-  return uit;
-}
-// validate the whole file first and write afterwards, so a broken file never leaves half an
-// import. Restoring only adds: profiles already here keep their settings, and a best score is
-// only ever replaced by a better one. Returns the number of profiles in the file.
-function herstelData(data) {
-  if (!data || typeof data !== 'object' || typeof data['oefenkampioen-profielen'] !== 'string') throw new Error('geen bewaarbestand');
-  var backup = schoonProfielen(JSON.parse(data['oefenkampioen-profielen']));
-  if (!backup.length) throw new Error('geen profielen');
-  var huidig = profielen(), schrijf = {};
-  backup.forEach(function (p) {
-    // match on the name, not the key: key '' means "the old data on this device", so on another
-    // device it can belong to a different child
-    var bron = postfixVoor(p.sleutel), beste = data['oefenkampioen-beste' + bron];
-    var doel = huidig.filter(function (h) { return sleutelVan(h.naam) === sleutelVan(p.naam); })[0];
-    var nieuw = !doel;
-    if (nieuw) {
-      // never key '': on this device that is the old data of whoever had it, not this child's
-      doel = { sleutel: sleutelVan(p.naam), naam: p.naam };
-      if (huidig.some(function (h) { return h.sleutel === doel.sleutel; })) return;
-    }
-    var pf = postfixVoor(doel.sleutel);
-    // a file saved before layout 2 still has the old chapter numbers
-    var uitBestand = typeof beste === 'string' ? JSON.parse(beste) : {};
-    if (data['oefenkampioen-indeling'] !== String(INDELING)) uitBestand = naarIndeling2(uitBestand);
-    schrijf['oefenkampioen-beste' + pf] = JSON.stringify(mengBeste(leesBesteVoor(doel.sleutel), uitBestand));
-    var gespeeld = data['oefenkampioen-gespeeld' + bron];
-    var gespeeldUit = typeof gespeeld === 'string' ? JSON.parse(gespeeld) : {};
-    if (data['oefenkampioen-indeling'] !== String(INDELING)) gespeeldUit = naarIndeling2(gespeeldUit);
-    schrijf['oefenkampioen-gespeeld' + pf] = JSON.stringify(mengGespeeld(leesGespeeld(doel.sleutel), gespeeldUit));
-    var niveau = data['oefenkampioen-niveau' + bron];
-    var niveauUit = typeof niveau === 'string' ? JSON.parse(niveau) : {};
-    if (data['oefenkampioen-indeling'] !== String(INDELING)) niveauUit = naarIndeling2(niveauUit);
-    schrijf['oefenkampioen-niveau' + pf] = JSON.stringify(mengGespeeld(leesNiveaus(doel.sleutel), niveauUit));
-    // days are merged, never replaced: restoring an old file must not erase a day
-    var dagen = data['oefenkampioen-dagen' + bron];
-    schrijf['oefenkampioen-dagen' + pf] = JSON.stringify(mengDagen(leesDagen(doel.sleutel),
-      typeof dagen === 'string' ? JSON.parse(dagen) : []));
-    if (!nieuw) return;
-    ['leerjaar', 'aantal', 'tempo', 'voorlezen'].forEach(function (k) {
-      if (typeof data['oefenkampioen-' + k + bron] === 'string') schrijf['oefenkampioen-' + k + pf] = data['oefenkampioen-' + k + bron];
-    });
-    huidig.push(doel);
-  });
-  // a full storage halfway would leave half an import: then put back what was there
-  var vorig = {};
-  try {
-    Object.keys(schrijf).forEach(function (k) { vorig[k] = localStorage.getItem(k); localStorage.setItem(k, schrijf[k]); });
-  } catch (e) {
-    // first free the space of everything written, then put the old values back
-    try {
-      Object.keys(vorig).forEach(function (k) { localStorage.removeItem(k); });
-      Object.keys(vorig).forEach(function (k) { if (vorig[k] !== null) localStorage.setItem(k, vorig[k]); });
-    } catch (e2) { /* nothing more to do */ }
-    throw new Error('opslag vol');
-  }
-  zetProfielen(huidig);
-  // on a fresh device nobody is active yet: start with the first restored child
-  if (!huidig.some(function (h) { return h.sleutel === actief(); })) {
-    var eerste = huidig.filter(function (h) { return sleutelVan(h.naam) === sleutelVan(backup[0].naam); })[0] || huidig[0];
-    if (eerste) wisselProfiel(eerste.sleutel);
-  }
-  return backup.length;
 }
 // the % spot becomes the name with a comma, or nothing if no name was filled in
 function metNaam(sjabloon, sleutel) {
@@ -462,7 +460,7 @@ function maakVraag(soort) {
 }
 
 /* ==================== screens ==================== */
-var SCHERMEN = { start: 'startScherm', menu: 'menuScherm', game: 'game', result: 'result', stickers: 'stickerScherm' };
+var SCHERMEN = { start: 'startScherm', menu: 'menuScherm', game: 'game', result: 'result', stickers: 'stickerScherm', ouders: 'ouderScherm' };
 // one place decides what is visible; the body attribute lets CSS hide the big header in a test
 function toonScherm(naam) {
   if (naam !== 'game') stilte();
@@ -677,110 +675,139 @@ function toonProfielPaneel() {
       '<span class="profielinfo"><span>' + p.naam + '</span>' +
       '<span class="profielvoortgang">' + jaarNaam(leerjaarVoor(p.sleutel)) + ' · ' + n +
       (n === 1 ? ' hoofdstuk' : ' hoofdstukken') + ' geoefend' +
-      (toetsen ? ' · ' + toetsen + (toetsen === 1 ? ' toets' : ' toetsen') : '') + '</span></span></button>' +
-      (adminModus ? '<button class="profielx" data-sleutel="' + p.sleutel + '" data-naam="' + p.naam +
-        '" aria-label="' + p.naam + ' verwijderen">×</button>' : '') + '</div>';
+      (toetsen ? ' · ' + toetsen + (toetsen === 1 ? ' toets' : ' toetsen') : '') + '</span></span></button></div>';
   }).join('') || '<p class="lead">Nog geen profiel. Typ hieronder een naam.</p>';
   Array.prototype.forEach.call($('profielLijst').querySelectorAll('.profielkies'), function (b) {
     b.onclick = function () { wisselProfiel(b.dataset.sleutel); sluitProfielPaneel(); toonStart(); };
-  });
-  // removing is only possible behind #admin, not in the normal view a child also uses.
-  // window.confirm() is suppressed by some browsers (test browsers among them) and then always
-  // returns "no" without anything showing: so the question is built here by hand
-  Array.prototype.forEach.call($('profielLijst').querySelectorAll('.profielx'), function (b) {
-    b.onclick = function (e) {
-      e.stopPropagation();
-      var rij = b.closest('.profielrij'), sleutel = b.dataset.sleutel, naam = b.dataset.naam;
-      rij.className = 'profielrij bevestig';
-      rij.innerHTML = '<span class="profielvraag">' + naam + ' verwijderen?</span>' +
-        '<button class="profiellijst">Uit de lijst, scores blijven</button>' +
-        '<button class="profielja">Écht wissen, voorgoed weg</button>' +
-        '<button class="profielnee">Nee</button>';
-      rij.querySelector('.profiellijst').onclick = function (e) {
-        e.stopPropagation();
-        verwijderProfiel(sleutel);
-        toonStart();
-        toonProfielPaneel();
-        focusPaneel();
-      };
-      rij.querySelector('.profielja').onclick = function (e) {
-        e.stopPropagation();
-        verwijderProfielEcht(sleutel);
-        toonStart();
-        toonProfielPaneel();
-        focusPaneel();
-      };
-      rij.querySelector('.profielnee').onclick = function (e) {
-        e.stopPropagation();
-        toonProfielPaneel();
-        focusPaneel();
-      };
-      // the button that had focus is gone now; the safe answer takes it over
-      rij.querySelector('.profielnee').focus();
-    };
   });
 }
 function focusPaneel() {
   ($('profielLijst').querySelector('.profielkies') || $('naam')).focus();
 }
-function toonMelding(tekst) {
-  $('paneelmelding').textContent = tekst;
-  $('paneelmelding').hidden = !tekst;
+function sluitProfielPaneel() {
+  var wasOpen = !$('profielPaneel').hidden;
+  $('profielPaneel').hidden = true;
+  $('profielBackdrop').hidden = true;
+  $('profielBtn').setAttribute('aria-expanded', 'false');
+  if (wasOpen) $('profielBtn').focus();
 }
-// behind #admin only: per child the chapters it played without reaching 3 stars, weakest first
-var WERKPUNTEN_MAX = 5;
-function ouderOverzichtHtml() {
-  var lijst = profielen();
-  if (!lijst.length) lijst = [{ sleutel: '', naam: 'Zonder profiel' }];
-  return '<h3>Waar je kan helpen</h3>' + lijst.map(function (p) {
-    var wp = werkpunten(SPELLEN, leesBesteVoor(p.sleutel), leesGespeeld(p.sleutel));
-    var rijen = wp.slice(0, WERKPUNTEN_MAX).map(function (w) {
-      return '<li><span>' + w.spel.ico + ' ' + w.spel.naam + ': ' + w.spel.hoofdstukken[w.index].titel + '</span>' +
-        '<span class="wp-score">' + Number(w.beste.score) + ' op ' + Number(w.beste.van) +
-        (w.keer ? ' · ' + w.keer + ' keer' : '') + '</span></li>';
-    }).join('');
-    var meer = wp.length > WERKPUNTEN_MAX ? '<p class="paneelnotitie">En nog ' + (wp.length - WERKPUNTEN_MAX) + ' andere.</p>' : '';
-    return '<div class="ouderkind"><b>' + p.naam + '</b>' +
-      (wp.length ? '<ul>' + rijen + '</ul>' + meer
-        : '<p class="paneelnotitie">Niets om te helpen: elk gespeeld hoofdstuk heeft 3 sterren.</p>') + '</div>';
-  }).join('') + '<p class="paneelnotitie">De beste poging per hoofdstuk, en hoe vaak de hele toets gespeeld is (oefenrondes met fouten tellen niet mee). Hoofdstukken die nog niet gespeeld zijn, staan er niet bij.</p>';
-}
-// one date for the whole device: the backup file holds every profile at once
-function toonBewaard() {
-  var laatst;
-  try { laatst = localStorage.getItem('oefenkampioen-laatstbewaard'); } catch (e) { laatst = null; }
-  var r = bewaardRegel(laatst, vandaag());
-  $('bewaardInfo').textContent = r.tekst + (r.oud ? '. Tijd voor een nieuw bestand.' : '');
-  $('bewaardInfo').classList.toggle('oud', r.oud);
-}
-// the footer link opens the parent panel without typing #admin; closing it ends admin mode again,
-// so the device a child plays on does not stay in it
-var viaOuderLink = false;
 function opentProfielPaneel() {
-  // checked here, not only at startup: adding #admin to the address bar later does not reload
-  // the page, so a check at startup alone would never pick it up
-  adminModus = location.hash === '#admin';
-  $('paneelacties').hidden = !adminModus;
-  $('ouderOverzicht').hidden = !adminModus;
-  if (adminModus) { $('ouderOverzicht').innerHTML = ouderOverzichtHtml(); toonBewaard(); }
-  toonMelding('');
   toonProfielPaneel();
   $('profielPaneel').hidden = false;
   $('profielBackdrop').hidden = false;
   $('profielBtn').setAttribute('aria-expanded', 'true');
   focusPaneel();
 }
-function sluitProfielPaneel() {
-  var wasOpen = !$('profielPaneel').hidden;
-  if (viaOuderLink) {
-    viaOuderLink = false;
-    adminModus = false;
-    history.replaceState(null, '', location.pathname + location.search);
-  }
-  $('profielPaneel').hidden = true;
-  $('profielBackdrop').hidden = true;
-  $('profielBtn').setAttribute('aria-expanded', 'false');
-  if (wasOpen) $('profielBtn').focus();
+
+/* ==================== the parents screen ==================== */
+// everything a parent needs and a child should not stumble on: progress per child, sharing and
+// removing a child, the backup of everyone, and putting a file back. Reached through the footer
+// link, the link in the profiles panel, or #admin
+function toonMelding(tekst, fout) {
+  $('ouderMelding').textContent = tekst;
+  $('ouderMelding').hidden = !tekst;
+  $('ouderMelding').classList.toggle('fout', !!fout);
+}
+// one date for the whole device: the backup of everyone holds every profile at once
+function toonBewaard() {
+  var r = bewaardRegel(leesWaarde('oefenkampioen-laatstbewaard'), vandaag());
+  $('bewaardInfo').textContent = r.tekst + (r.oud ? '. Tijd voor een nieuw bestand.' : '');
+  $('bewaardInfo').classList.toggle('oud', r.oud);
+}
+var WERKPUNTEN_MAX = 5;
+function ouderKindHtml(p) {
+  var wp = werkpunten(SPELLEN, leesBesteVoor(p.sleutel), leesGespeeld(p.sleutel)), g = leesGespeeld(p.sleutel), toetsen = 0;
+  Object.keys(g).forEach(function (k) { toetsen += g[k]; });
+  var n = geoefendVoor(p.sleutel);
+  var rijen = wp.slice(0, WERKPUNTEN_MAX).map(function (w) {
+    return '<li><span>' + w.spel.ico + ' ' + w.spel.naam + ': ' + w.spel.hoofdstukken[w.index].titel + '</span>' +
+      '<span class="wp-score">' + Number(w.beste.score) + ' op ' + Number(w.beste.van) +
+      (w.keer ? ' · ' + w.keer + ' keer' : '') + '</span></li>';
+  }).join('');
+  var meer = wp.length > WERKPUNTEN_MAX ? '<p class="paneelnotitie">En nog ' + (wp.length - WERKPUNTEN_MAX) + ' andere.</p>' : '';
+  return '<div class="ouderkaart" data-sleutel="' + p.sleutel + '" data-naam="' + p.naam + '">' +
+    '<div class="ouderkop"><span class="avatar" aria-hidden="true">' + hoofdletter(Array.from(p.naam)[0] || '') + '</span>' +
+    '<span class="profielinfo"><b>' + p.naam + '</b><span class="profielvoortgang">' + jaarNaam(leerjaarVoor(p.sleutel)) + ' · ' +
+    n + (n === 1 ? ' hoofdstuk' : ' hoofdstukken') + ' geoefend' + (toetsen ? ' · ' + toetsen + (toetsen === 1 ? ' toets' : ' toetsen') : '') +
+    '</span></span></div>' +
+    '<p class="ouderlabel">Waar je kan helpen</p>' +
+    (wp.length ? '<ul class="werkpunten">' + rijen + '</ul>' + meer
+      : '<p class="paneelnotitie">Niets: elk gespeeld hoofdstuk heeft 3 sterren.</p>') +
+    '<div class="paneelacties ouderacties"><button class="aantal deelKind">📤 Deel ' + p.naam + '</button>' +
+    '<button class="aantal wisKind">Verwijderen</button></div></div>';
+}
+function toonOuders() {
+  stopKlok();
+  sluitProfielPaneel();
+  var lijst = profielen();
+  $('ouderKinderen').innerHTML = lijst.map(ouderKindHtml).join('') ||
+    '<p class="paneelnotitie">Nog geen kinderen op dit toestel. Maak een profiel via de naamknop bovenaan, of zet hieronder een bestand terug.</p>';
+  Array.prototype.forEach.call($('ouderKinderen').querySelectorAll('.ouderkaart'), function (kaart) {
+    var sleutel = kaart.dataset.sleutel, wie = kaart.dataset.naam;
+    kaart.querySelector('.deelKind').onclick = function () {
+      var knop = this;
+      vraagBlijvendeOpslag();
+      deelBestand(bestandsnaamVoor(wie), maakKindBestand(kindUitOpslag(sleutel, wie), vandaag())).then(function (gelukt) {
+        if (gelukt) bevestigKnop(knop, 'Klaar ✓');
+      });
+    };
+    // window.confirm() is suppressed by some browsers (test browsers among them) and then always
+    // returns "no" without anything showing: so the question is built here by hand
+    kaart.querySelector('.wisKind').onclick = function () {
+      var acties = kaart.querySelector('.ouderacties');
+      acties.classList.add('bevestig');
+      acties.innerHTML = '<span class="profielvraag">' + wie + ' verwijderen?</span>' +
+        '<button class="aantal profiellijst">Uit de lijst, scores blijven</button>' +
+        '<button class="aantal profielja">Écht wissen, voorgoed weg</button>' +
+        '<button class="aantal profielnee">Nee</button>';
+      acties.querySelector('.profiellijst').onclick = function () { verwijderProfiel(sleutel); toonOuders(); };
+      acties.querySelector('.profielja').onclick = function () { verwijderProfielEcht(sleutel); toonOuders(); };
+      acties.querySelector('.profielnee').onclick = function () { toonOuders(); };
+      // the button that had focus is gone now; the safe answer takes it over
+      acties.querySelector('.profielnee').focus();
+    };
+  });
+  toonBewaard();
+  $('herstelVraag').hidden = true;
+  $('kop').innerHTML = 'Oefen<span class="tick">kampioen</span>';
+  toonScherm('ouders');
+  window.scrollTo(0, 0);
+}
+// a quiet button would look as if nothing happened: the browser saves a download without notice
+function bevestigKnop(knop, tekst) {
+  var oud = knop.dataset.tekst || knop.textContent;
+  knop.dataset.tekst = oud;
+  knop.textContent = tekst;
+  clearTimeout(knop.timer);
+  knop.timer = setTimeout(function () { knop.textContent = oud; }, 2500);
+}
+// before anything is written, the parent sees who is in the file and what happens to each
+function vraagHerstel(plaatsen) {
+  var rijen = plaatsen.map(function (pl) {
+    var o = pl.overzicht;
+    return '<li><b>' + pl.naam + '</b>: ' + o.hoofdstukken + (o.hoofdstukken === 1 ? ' hoofdstuk' : ' hoofdstukken') +
+      (o.goud ? ', ' + o.goud + ' goud' : '') + ', ' + o.dagen + (o.dagen === 1 ? ' dag' : ' dagen') + ' geoefend. ' +
+      '<span class="paneelnotitie">' + (pl.nieuw ? 'Nieuw op dit toestel.' : 'Wordt samengevoegd met ' + pl.doel.naam + ' hier.') + '</span></li>';
+  }).join('');
+  $('herstelVraag').innerHTML = '<p class="ouderlabel">In dit bestand</p><ul class="herstellijst">' + rijen + '</ul>' +
+    '<p class="paneelnotitie">Er gaat niets verloren: van elk hoofdstuk blijft de beste score staan, en een gouden sticker blijft goud.</p>' +
+    '<div class="paneelacties"><button class="aantal" id="herstelJa">Zet terug</button><button class="aantal" id="herstelNee">Annuleer</button></div>';
+  $('herstelVraag').hidden = false;
+  $('herstelJa').onclick = function () {
+    try { pasToe(plaatsen); } catch (e) {
+      toonMelding(e.message === 'opslag vol' ? 'Er is geen plaats meer in deze browser. Er is niets veranderd.' : 'Er ging iets mis. Er is niets veranderd.', true);
+      return;
+    }
+    toonOuders();
+    toonMelding('Teruggezet: ' + plaatsen.map(function (pl) { return pl.naam; }).join(', ') + '.');
+  };
+  $('herstelNee').onclick = function () { $('herstelVraag').hidden = true; $('herstelBtn').focus(); };
+  $('herstelJa').focus();
+}
+function verlaatOuders() {
+  // reloading should not land on this screen again
+  if (location.hash === '#admin') history.replaceState(null, '', location.pathname + location.search);
+  toonStart();
 }
 function toonMenu(spel) {
   stopKlok();
@@ -1107,40 +1134,39 @@ function vraagBlijvendeOpslag() {
   if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
 }
 $('bewaarBtn').onclick = function () {
+  var knop = this;
   vraagBlijvendeOpslag();
-  exporteerData();
-  try { localStorage.setItem('oefenkampioen-laatstbewaard', vandaag()); } catch (e) { /* may fail */ }
-  toonBewaard();
-  // the browser saves the file silently, without its own notice: without this text it looks
-  // as if nothing happens
-  $('bewaarBtn').textContent = 'Bewaard ✓';
-  clearTimeout($('bewaarBtn').timer);
-  $('bewaarBtn').timer = setTimeout(function () { $('bewaarBtn').textContent = 'Bewaar als bestand'; }, 2500);
+  deelBestand(bestandsnaamVoor('alles'), alleData()).then(function (gelukt) {
+    if (!gelukt) return;
+    try { localStorage.setItem('oefenkampioen-laatstbewaard', vandaag()); } catch (e) { /* may fail */ }
+    toonBewaard();
+    bevestigKnop(knop, 'Bewaard ✓');
+  });
 };
-$('ouderLink').onclick = function (e) {
+$('ouderLink').onclick = $('ouderKnop').onclick = function (e) {
   e.preventDefault();
-  viaOuderLink = true;
-  history.replaceState(null, '', '#admin');
-  window.scrollTo(0, 0);
-  opentProfielPaneel();
+  toonOuders();
 };
+$('ouderTerugBtn').onclick = verlaatOuders;
+window.addEventListener('hashchange', function () { if (location.hash === '#admin') toonOuders(); });
 $('herstelBtn').onclick = function () { $('herstelInput').click(); };
 $('herstelInput').onchange = function () {
   var bestand = $('herstelInput').files[0];
   if (!bestand) return;
   $('herstelInput').value = '';
+  toonMelding('');
   vraagBlijvendeOpslag();
   bestand.text().then(function (tekst) {
-    var n;
-    // alert() is suppressed in the same browsers that suppress confirm(), so the message stays in the panel
-    try { n = herstelData(JSON.parse(tekst)); } catch (e) {
-      toonMelding(e.message === 'opslag vol' ? 'Er is geen plaats meer in deze browser. Er is niets veranderd.'
-        : 'Dat bestand kon niet gelezen worden. Kies een bestand dat met "Bewaar als bestand" gemaakt is.');
+    var plaatsen;
+    // alert() is suppressed in the same browsers that suppress confirm(), so the message stays on the screen
+    try { plaatsen = plaatsVoor(leesBestand(JSON.parse(tekst)).kinderen); } catch (e) {
+      toonMelding(e.message === 'nieuwere versie'
+        ? 'Dat bestand is gemaakt met een nieuwere versie van Oefenkampioen. Herlaad de pagina en probeer opnieuw.'
+        : 'Dat bestand kon niet gelezen worden. Kies een bestand dat Oefenkampioen gemaakt heeft.', true);
       return;
     }
-    toonStart();
-    toonProfielPaneel();
-    toonMelding('Teruggezet: ' + n + (n === 1 ? ' profiel.' : ' profielen.'));
+    if (!plaatsen.length) { toonMelding('In dat bestand staat geen kind dat hier past.', true); return; }
+    vraagHerstel(plaatsen);
   });
 };
 $('soundBtn').onclick = $('soundBtn2').onclick = function () {
@@ -1154,6 +1180,7 @@ state.aantal = leesAantal();
 state.tempo = leesTempo();
 state.voorlezen = leesVoorlezen();
 toonStart();
+if (location.hash === '#admin') toonOuders();
 
 // the self-check is for the developer, so it is only loaded with #test
 if (location.hash === '#test') import('./zelfcheck.js');

@@ -179,3 +179,17 @@ export function bewaardRegel(laatst, vandaag) {
     oud: dagen >= BEWAAR_HERINNERING
   };
 }
+
+// keep the better of two best scores per chapter, and only well-formed entries. At an equal ratio
+// the longer test wins, the same rule as saving a score
+export function mengBeste(hier, daar) {
+  var uit = {};
+  [hier, daar].forEach(function (bron) {
+    Object.keys(bron && typeof bron === 'object' ? bron : {}).forEach(function (k) {
+      var s = Number(bron[k] && bron[k].score), v = Number(bron[k] && bron[k].van), oud = uit[k];
+      if (!/^[a-z]+:\d+$/.test(k) || !(v > 0) || !(s >= 0) || s > v || s % 1 || v % 1) return;
+      if (!oud || s / v > oud.score / oud.van || (s / v === oud.score / oud.van && v > oud.van)) uit[k] = { score: s, van: v };
+    });
+  });
+  return uit;
+}
