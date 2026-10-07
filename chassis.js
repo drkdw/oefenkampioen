@@ -1,6 +1,6 @@
 import { shuffle, pad2, $, reduced, hoofdletter, voorleestekst } from './gereedschap.js';
 import { SPELLEN } from './spellen/index.js';
-import { datumVan, mengDagen, sterrenVoor, stickerVoor, voorstelVoor, dagenDezeMaand, dagNummer, boekVoor, INDELING, naarIndeling2, opVolgorde, werkpunten, mengGespeeld } from './beloning.js';
+import { datumVan, mengDagen, sterrenVoor, stickerVoor, voorstelVoor, dagenDezeMaand, dagNummer, boekVoor, INDELING, naarIndeling2, opVolgorde, werkpunten, mengGespeeld, GOUD, niveauVan, randVoor } from './beloning.js';
 
 // an eight-year-old cannot keep going for more than twenty questions
 var AANTALLEN = [10, 15, 20];
@@ -104,7 +104,7 @@ function verwijderProfiel(sleutel) {
 function verwijderProfielEcht(sleutel) {
   var lijst = profielen().filter(function (p) { return p.sleutel !== sleutel; });
   zetProfielen(lijst);
-  ['oefenkampioen-leerjaar', 'oefenkampioen-aantal', 'oefenkampioen-tempo', 'oefenkampioen-voorlezen', 'oefenkampioen-beste', 'oefenkampioen-gespeeld', 'oefenkampioen-dagen'].forEach(function (k) {
+  ['oefenkampioen-leerjaar', 'oefenkampioen-aantal', 'oefenkampioen-tempo', 'oefenkampioen-voorlezen', 'oefenkampioen-beste', 'oefenkampioen-gespeeld', 'oefenkampioen-niveau', 'oefenkampioen-dagen'].forEach(function (k) {
     try { localStorage.removeItem(k + postfixVoor(sleutel)); } catch (e) { /* may fail */ }
   });
   // the old name would otherwise hand key '' back to whoever types it again
@@ -135,6 +135,17 @@ function leesGespeeld(sleutel) {
   try { return mengGespeeld(JSON.parse(localStorage.getItem('oefenkampioen-gespeeld' + postfixVoor(sleutel)) || '{}'), {}); }
   catch (e) { return {}; }
 }
+// the longest test per chapter with 3 stars: the level of its sticker
+function leesNiveaus(sleutel) {
+  try { return mengGespeeld(JSON.parse(localStorage.getItem('oefenkampioen-niveau' + postfixVoor(sleutel)) || '{}'), {}); }
+  catch (e) { return {}; }
+}
+function zetNiveau(profiel, sleutel, n) {
+  var nv = leesNiveaus(profiel);
+  if (nv[sleutel] >= n) return;
+  nv[sleutel] = n;
+  try { localStorage.setItem('oefenkampioen-niveau' + postfixVoor(profiel), JSON.stringify(nv)); } catch (e) { /* may fail */ }
+}
 function telGespeeld(profiel, sleutel) {
   var g = leesGespeeld(profiel);
   g[sleutel] = (g[sleutel] || 0) + 1;
@@ -154,7 +165,7 @@ function zetIndeling() {
     // renumbering run a second time over scores that were already moved
     localStorage.setItem('oefenkampioen-indeling', String(INDELING));
     sleutels.forEach(function (k) {
-      if (k.indexOf('oefenkampioen-beste') !== 0 && k.indexOf('oefenkampioen-gespeeld') !== 0) return;
+      if (!/^oefenkampioen-(beste|gespeeld|niveau)/.test(k)) return;
       try { localStorage.setItem(k, JSON.stringify(naarIndeling2(JSON.parse(localStorage.getItem(k) || '{}')))); }
       catch (e) { /* a damaged value stays as it is */ }
     });
@@ -211,6 +222,10 @@ function herstelData(data) {
     var gespeeldUit = typeof gespeeld === 'string' ? JSON.parse(gespeeld) : {};
     if (data['oefenkampioen-indeling'] !== String(INDELING)) gespeeldUit = naarIndeling2(gespeeldUit);
     schrijf['oefenkampioen-gespeeld' + pf] = JSON.stringify(mengGespeeld(leesGespeeld(doel.sleutel), gespeeldUit));
+    var niveau = data['oefenkampioen-niveau' + bron];
+    var niveauUit = typeof niveau === 'string' ? JSON.parse(niveau) : {};
+    if (data['oefenkampioen-indeling'] !== String(INDELING)) niveauUit = naarIndeling2(niveauUit);
+    schrijf['oefenkampioen-niveau' + pf] = JSON.stringify(mengGespeeld(leesNiveaus(doel.sleutel), niveauUit));
     // days are merged, never replaced: restoring an old file must not erase a day
     var dagen = data['oefenkampioen-dagen' + bron];
     schrijf['oefenkampioen-dagen' + pf] = JSON.stringify(mengDagen(leesDagen(doel.sleutel),
@@ -330,8 +345,10 @@ function lees() { return leesBesteVoor(actief()); }
 function bewaar(profiel, sleutel, score, van) {
   try {
     var b = leesBesteVoor(profiel), oud = b[sleutel];
-    // compare by ratio, because a test can have 10, 15 or 20 questions
-    if (!oud || !oud.van || score / van > oud.score / oud.van) {
+    // compare by ratio, because a test can have 10, 15 or 20 questions; at an equal ratio the
+    // longer test wins, so 20 out of 20 after 10 out of 10 shows as 20 out of 20
+    var deel = score / van, oudDeel = oud && oud.van ? oud.score / oud.van : -1;
+    if (deel > oudDeel || (deel === oudDeel && van > oud.van)) {
       b[sleutel] = { score: score, van: van };
       localStorage.setItem('oefenkampioen-beste' + postfixVoor(profiel), JSON.stringify(b));
     }
@@ -397,11 +414,11 @@ function jasjesVoor(soort, h) {
   return j && j.length ? j.slice() : ['standaard'];
 }
 // without soorten the chapter's own plan; with soorten (practising mistakes) one question per entry
-function bouwToets(soorten) {
+function bouwToets(soorten, n) {
   var h = state.spel.hoofdstukken[state.hfd];
   var plan = soorten ? soorten.slice() : [];
   if (!soorten) {
-    var verdeling = planVoor(h, state.aantal);
+    var verdeling = planVoor(h, n || state.aantal);
     Object.keys(verdeling).forEach(function (soort) {
       for (var i = 0; i < verdeling[soort]; i++) plan.push(soort);
     });
@@ -515,13 +532,14 @@ function voorJouHtml(v) {
   var regel = dagen ? '<span class="vj-dagen">Al ' + dagen + (dagen === 1 ? ' dag' : ' dagen') + ' geoefend in ' +
     MAANDEN[Number(vandaag().slice(5, 7)) - 1] + '</span>' : '';
   if (v.reden === 'alles') {
-    return kop + '<span class="vj-titel">Alles 3 sterren!</span><span class="vj-tekst">' +
+    return kop + '<span class="vj-titel">Alle stickers van goud!</span><span class="vj-tekst">' +
       (state.leerjaar < 6 ? 'Probeer eens het ' + jaarNaam(state.leerjaar + 1) + '.' : 'Kies gerust een hoofdstuk om te herhalen.') +
       '</span>' + regel;
   }
   var h = v.spel.hoofdstukken[v.index];
   var tekst = v.reden === 'verbeter'
     ? 'Je had ' + Number(v.beste.score) + ' op ' + Number(v.beste.van) + '. Haal je er 3 sterren?'
+    : v.reden === 'goud' ? 'Je sticker is ' + (v.rand === 'zilver' ? 'van zilver' : 'er al') + '. Speel ' + GOUD + ' vragen voor goud!'
     : 'Iets nieuws om te proberen.';
   return kop + '<span class="vj-titel">' + v.spel.ico + ' ' + v.spel.naam + ': ' + h.titel + '</span>' +
     '<span class="vj-tekst">' + tekst + '</span>' + regel;
@@ -531,14 +549,14 @@ function staatVan(beste) {
   if (!(Number(beste && beste.van) > 0)) return 'nieuw';
   return sterrenVoor(beste) === 3 ? 'klaar' : 'bijna';
 }
-function kaart(ico, nr, titel, tekst, beste, badge, sticker) {
+function kaart(ico, nr, titel, tekst, beste, badge, sticker, rand) {
   var n = sterrenVoor(beste), staat = staatVan(beste);
   var regel = staat === 'nieuw' ? ''
     : '<span class="hfd-score">' + (staat === 'klaar' ? 'Klaar! ' : '') + Number(beste.score) + ' op ' + Number(beste.van) +
       (staat === 'bijna' ? '. Nog eens?' : '') + '</span>';
   return '<span class="ico">' + ico + '</span>' +
     '<span class="tekst"><span class="hfd-titel">' + (nr ? nr + '. ' : '') + titel + '</span><span class="hfd-uitleg">' + tekst + '</span>' + regel + '</span>' +
-    '<span class="hfd-rechts">' + (sticker && n === 3 ? '<span class="hfd-sticker" aria-hidden="true">' + sticker + '</span>' : '') +
+    '<span class="hfd-rechts">' + (sticker && rand ? '<span class="hfd-sticker rand-' + rand + '" aria-hidden="true">' + sticker + '</span>' : '') +
     '<span class="sterren" role="img" aria-label="' + n + ' van 3 sterren">' + sterrenTekst(n) + '</span>' +
     (badge ? '<span class="badge ' + badge + '">' + badge + '</span>' : '') + '</span>';
 }
@@ -565,12 +583,12 @@ function toonStart() {
     b.onclick = function () { toonMenu(SPELLEN[Number(b.dataset.i)]); };
   });
   $('stickerTegel').onclick = toonStickerboek;
-  var voorstel = voorstelVoor(SPELLEN, beste, state.leerjaar, dagNummer(vandaag()));
+  var voorstel = voorstelVoor(SPELLEN, beste, state.leerjaar, dagNummer(vandaag()), leesNiveaus(actief()));
   $('voorJou').innerHTML = voorJouHtml(voorstel);
   $('voorJou').onclick = function () {
     if (voorstel.reden === 'alles') { zetInstellingen(true); return; }
     state.spel = voorstel.spel;
-    startHoofdstuk(voorstel.index);
+    startHoofdstuk(voorstel.index, null, voorstel.reden === 'goud' ? GOUD : null);
   };
   $('instelRegel').innerHTML = '<span>' + jaarNaam(state.leerjaar) + ' · ' + state.aantal + ' vragen · ' +
     (state.tempo ? 'met klok' : 'rustig') + (state.voorlezen ? ' · voorlezen' : '') + '</span><span aria-hidden="true">' + (state.instellingenOpen ? '✕' : '⚙') + '</span>';
@@ -616,16 +634,19 @@ function zetInstellingen(open) {
   if (open) $('leerjaren').querySelector('[aria-pressed="true"]').focus();
 }
 function toonStickerboek() {
-  var beste = lees(), st = stickersVoorLeerjaar(beste);
+  var beste = lees(), niveaus = leesNiveaus(actief()), st = stickersVoorLeerjaar(beste);
   $('stickerTeller').textContent = st.n + ' / ' + st.totaal;
   $('stickerBoek').innerHTML = SPELLEN.map(function (s) {
     var lijst = boekVoor(s, beste, state.leerjaar);
     if (!lijst.length) return '';
-    var verdiend = lijst.filter(function (r) { return sterrenVoor(beste[s.id + ':' + r.i]) === 3; }).length;
-    return '<section class="boekspel"><h3>' + s.ico + ' ' + s.naam + ' · ' + verdiend + ' van ' + lijst.length + '</h3>' +
-      '<div class="boek">' + lijst.map(function (r) {
-        return sterrenVoor(beste[s.id + ':' + r.i]) === 3
-          ? '<span class="vak" role="img" aria-label="Sticker van ' + r.h.titel + '" title="' + r.h.titel + '">' + stickerVoor(s.id, r.i) + '</span>'
+    var randen = lijst.map(function (r) { return randVoor(niveauVan(niveaus, beste, s.id + ':' + r.i)); });
+    var verdiend = randen.filter(Boolean).length, goud = randen.filter(function (r) { return r === 'goud'; }).length;
+    return '<section class="boekspel"><h3>' + s.ico + ' ' + s.naam + ' · ' + verdiend + ' van ' + lijst.length +
+      (goud ? ' · ' + goud + ' goud' : '') + '</h3>' +
+      '<div class="boek">' + lijst.map(function (r, j) {
+        var rand = randen[j], soort = rand === 'goud' ? 'Gouden sticker' : rand === 'zilver' ? 'Zilveren sticker' : 'Sticker';
+        return rand
+          ? '<span class="vak ' + rand + '" role="img" aria-label="' + soort + ' van ' + r.h.titel + '" title="' + r.h.titel + '">' + stickerVoor(s.id, r.i) + '</span>'
           : '<span class="vak leeg" role="img" aria-label="' + r.h.titel + ': nog 3 sterren halen" title="' + r.h.titel + '">?</span>';
       }).join('') + '</div></section>';
   }).join('');
@@ -736,7 +757,7 @@ function sluitProfielPaneel() {
 function toonMenu(spel) {
   stopKlok();
   state.spel = spel;
-  var beste = lees();
+  var beste = lees(), niveaus = leesNiveaus(actief());
   // the child's own school year on top, the earlier years below as revision. With chapters from
   // several years a heading goes in between, so a child always sees which ones are its own
   var lijst = opVolgorde(spel, state.leerjaar);
@@ -749,7 +770,8 @@ function toonMenu(spel) {
     }
     nr++;
     html += '<button class="hfd ' + staatVan(beste[spel.id + ':' + r.i]) + '" data-i="' + r.i + '">' +
-      kaart(r.h.ico, nr, r.h.titel, r.h.tekst, beste[spel.id + ':' + r.i], r.h.badge, stickerVoor(spel.id, r.i)) + '</button>';
+      kaart(r.h.ico, nr, r.h.titel, r.h.tekst, beste[spel.id + ':' + r.i], r.h.badge, stickerVoor(spel.id, r.i),
+        randVoor(niveauVan(niveaus, beste, spel.id + ':' + r.i))) + '</button>';
   });
   $('menu').innerHTML = html;
   Array.prototype.forEach.call($('menu').querySelectorAll('.hfd'), function (b) {
@@ -766,7 +788,8 @@ function toonMenu(spel) {
 }
 // soorten given: a short round with a new question of the same kind for every mistake. That
 // round never counts for stars, or three right answers out of three would earn a sticker
-function startHoofdstuk(i, soorten) {
+// aantal given: a test of that length regardless of the setting (the gold suggestion asks 20)
+function startHoofdstuk(i, soorten, aantal) {
   stopKlok();
   // the test belongs to this child, even if another tab switches profile meanwhile
   state.profiel = actief();
@@ -776,8 +799,8 @@ function startHoofdstuk(i, soorten) {
   state.results = [];
   state.fouten = [];
   state.oefenen = !!soorten;
-  state.lengte = soorten ? soorten.length : state.aantal;
-  bouwToets(soorten);
+  state.lengte = soorten ? soorten.length : aantal || state.aantal;
+  bouwToets(soorten, state.lengte);
   $('hfdTitel').textContent = state.spel.hoofdstukken[i].titel + (soorten ? ': je fouten' : '');
   $('spelNaam').textContent = naam();
   $('spelNaam').hidden = !naam();
@@ -977,6 +1000,7 @@ function toonToetsResultaat() {
   var s = state.score, sleutel = state.spel.id + ':' + state.hfd;
   // compare the stars of the best score before and after, so the sticker appears only once
   var voor = sterrenVoor(leesBesteVoor(state.profiel)[sleutel]);
+  var randVoorAf = randVoor(niveauVan(leesNiveaus(state.profiel), leesBesteVoor(state.profiel), sleutel));
   bewaar(state.profiel, sleutel, s, state.lengte);
   telGespeeld(state.profiel, sleutel);
   bewaarDag(state.profiel);
@@ -985,15 +1009,26 @@ function toonToetsResultaat() {
     return '<span class="ster' + (k < n ? ' aan' : '') + '" style="animation-delay:' + (k * 0.35) + 's">★</span>';
   }).join('') : '💪';
   $('stars').setAttribute('aria-label', n + ' van 3 sterren');
-  var nieuw = voor < 3 && na === 3;
-  $('nieuweSticker').hidden = !nieuw;
-  if (nieuw) $('stickerGroot').textContent = stickerVoor(state.spel.id, state.hfd);
+  if (n === 3) zetNiveau(state.profiel, sleutel, state.lengte);
+  var rand = randVoor(niveauVan(leesNiveaus(state.profiel), leesBesteVoor(state.profiel), sleutel));
+  var RANGEN = ['', 'gewoon', 'zilver', 'goud'];
+  var nieuw = voor < 3 && na === 3, beter = !nieuw && RANGEN.indexOf(rand) > RANGEN.indexOf(randVoorAf);
+  $('nieuweSticker').hidden = !nieuw && !beter;
+  if (nieuw || beter) {
+    $('stickerGroot').textContent = stickerVoor(state.spel.id, state.hfd);
+    $('stickerGroot').className = 'sticker-groot ' + rand;
+    var metaal = rand === 'goud' ? 'gouden' : rand === 'zilver' ? 'zilveren' : '';
+    $('stickerTekst').textContent = nieuw
+      ? 'Nieuwe ' + (metaal ? metaal + ' ' : '') + 'sticker! Hij zit in je stickerboek.'
+      : 'Je sticker is nu van ' + rand + '!' + (rand === 'goud' ? ' 🏆' : '');
+  }
   $('resultTitle').textContent = metNaam(deel >= 0.7 ? 'Goed gedaan%!' : 'Volgende keer beter%!', state.profiel);
   $('resultScore').textContent = s + ' / ' + state.lengte;
   $('resultMsg').textContent = deel >= 0.9 ? (state.spel.top || 'Jij bent een echte kampioen!')
     : deel >= 0.7 ? 'Mooi werk. Nog een keer en je haalt alles juist.'
     : deel >= 0.5 ? 'Goed bezig. Blijf oefenen, je bent er bijna.'
     : 'Oefenen maakt sterk. Probeer eerst een makkelijker hoofdstuk.';
+  if (n === 3 && rand !== 'goud') $('resultMsg').textContent += ' Speel eens ' + GOUD + ' vragen voor een gouden sticker.';
 }
 
 /* ==================== buttons ==================== */

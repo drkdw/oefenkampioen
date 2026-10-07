@@ -1,5 +1,5 @@
 import { SPELLEN } from '../spellen/index.js';
-import { STICKERS, sterrenVoor, stickerVoor, datumVan, mengDagen, dagenDezeMaand, dagNummer, voorstelVoor, boekVoor, naarIndeling2, opVolgorde, werkpunten, mengGespeeld }
+import { STICKERS, sterrenVoor, stickerVoor, datumVan, mengDagen, dagenDezeMaand, dagNummer, voorstelVoor, boekVoor, naarIndeling2, opVolgorde, werkpunten, mengGespeeld, niveauVan, randVoor }
   from '../beloning.js';
 
 export function beloningTests(check) {
@@ -112,4 +112,19 @@ export function beloningTests(check) {
   check(wpk[0].keer === 3 && werkpunten([nepSpel], { 'x:0': { score: 6, van: 10 } })[0].keer === 0, 'werkpunten: aantal keer gespeeld');
   var mg = mengGespeeld({ 'x:0': 2, 'x:1': 5 }, { 'x:0': 4, 'x:1': 1, 'kapot': 9, 'x:2': -1, 'x:3': 1.5, 'x:4': '2' });
   check(JSON.stringify(mg) === JSON.stringify({ 'x:0': 4, 'x:1': 5, 'x:4': 2 }), 'mengGespeeld: hoogste telt, rommel valt weg: ' + JSON.stringify(mg));
+  // sticker levels: the longest test with 3 stars, from the stored level or from the best score
+  check(randVoor(0) === '' && randVoor(10) === 'gewoon' && randVoor(15) === 'zilver' && randVoor(20) === 'goud', 'randVoor');
+  check(niveauVan({}, { 'x:0': { score: 20, van: 20 } }, 'x:0') === 20, 'niveau: 20 op 20 van vroeger is meteen goud');
+  check(niveauVan({}, { 'x:0': { score: 13, van: 15 } }, 'x:0') === 0, 'niveau: geen 3 sterren, geen niveau');
+  check(niveauVan({ 'x:0': 20 }, { 'x:0': { score: 10, van: 10 } }, 'x:0') === 20, 'niveau: goud blijft, ook als de beste score 10 op 10 is');
+  // all 3 stars: then a sticker that is not gold yet, own school year first
+  var goud = voorstelVoor(SPELLEN, alles3, 2, 5, {});
+  check(goud.reden === 'goud' && goud.spel.hoofdstukken[goud.index].leerjaar === 2 && goud.rand === 'gewoon', 'alles 3 sterren: op naar goud, eigen leerjaar eerst');
+  var allesGoud = {};
+  Object.keys(alles3).forEach(function (k) { allesGoud[k] = 20; });
+  check(voorstelVoor(SPELLEN, alles3, 2, 5, allesGoud).reden === 'alles', 'alles goud geeft reden alles');
+  var nog = {};
+  SPELLEN.forEach(function (s) { s.hoofdstukken.forEach(function (h, i) { if (h.leerjaar <= 2) nog[s.id + ':' + i] = { score: 10, van: 10 }; }); });
+  nog['klok:0'] = { score: 5, van: 10 };
+  check(voorstelVoor(SPELLEN, nog, 2, 5, {}).reden === 'verbeter', 'verbeteren gaat voor op goud');
 }

@@ -86,7 +86,9 @@ export function opVolgorde(spel, leerjaar) {
 
 // own school year first: improve a played chapter without 3 stars, else something never played;
 // only when that year has nothing left, the same search one year lower
-export function voorstelVoor(spellen, beste, leerjaar, dag) {
+// niveaus given: when every chapter up to the school year has 3 stars, a sticker that is not gold
+// yet is the next goal, own school year first
+export function voorstelVoor(spellen, beste, leerjaar, dag, niveaus) {
   var rijen = spellen.map(function (s) { return { s: s, lijst: opVolgorde(s, leerjaar) }; })
     .filter(function (r) { return r.lijst.length; });
   if (!rijen.length) return { reden: 'alles' };
@@ -107,7 +109,22 @@ export function voorstelVoor(spellen, beste, leerjaar, dag) {
     v = zoek(jaar, function (score) { return !score; });
     if (v) return { reden: 'nieuw', spel: v.spel, index: v.index };
   }
+  if (niveaus) {
+    for (jaar = leerjaar; jaar >= 1; jaar--) {
+      v = zoekMetSleutel(jaar);
+      if (v) return { reden: 'goud', spel: v.spel, index: v.index, rand: v.rand };
+    }
+  }
   return { reden: 'alles' };
+  function zoekMetSleutel(jaar) {
+    for (var a = 0; a < volgorde.length; a++) {
+      for (var b = 0; b < volgorde[a].lijst.length; b++) {
+        var r = volgorde[a].lijst[b], k = volgorde[a].s.id + ':' + r.i, rand = randVoor(niveauVan(niveaus, beste, k));
+        if (r.h.leerjaar === jaar && rand !== 'goud') return { spel: volgorde[a].s, index: r.i, rand: rand };
+      }
+    }
+    return null;
+  }
 }
 
 // for the parent overview: every played chapter without 3 stars, weakest first. The stored score
@@ -125,8 +142,9 @@ export function werkpunten(spellen, beste, gespeeld) {
   return uit.sort(function (x, y) { return x.deel - y.deel; });
 }
 
-// how often each chapter was played as a full test. Merging keeps the higher count, so restoring
-// the same file twice never counts a test twice; anything malformed is dropped
+// how often each chapter was played as a full test, and (with the same merge) the longest test
+// done with 3 stars. Merging keeps the higher number, so restoring the same file twice never
+// counts a test twice; anything malformed is dropped
 export function mengGespeeld(a, b) {
   var uit = {};
   [a, b].forEach(function (bron) {
@@ -136,4 +154,16 @@ export function mengGespeeld(a, b) {
     });
   });
   return uit;
+}
+
+// a sticker earned on a longer test looks better: 15 questions silver, 20 gold. The level is the
+// longest test with 3 stars; a best score that is already 3 stars counts too, so 20 out of 20
+// from before this existed is gold right away
+export var GOUD = 20, ZILVER = 15;
+export function niveauVan(niveaus, beste, k) {
+  var b = beste && beste[k], uitBeste = sterrenVoor(b) === 3 ? Number(b.van) : 0;
+  return Math.max(Number(niveaus && niveaus[k]) || 0, uitBeste);
+}
+export function randVoor(niveau) {
+  return niveau >= GOUD ? 'goud' : niveau >= ZILVER ? 'zilver' : niveau > 0 ? 'gewoon' : '';
 }

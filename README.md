@@ -67,6 +67,13 @@ Elk hoofdstuk heeft 0 tot 3 sterren volgens je beste score: 1 vanaf 50%, 2 vanaf
 teller telt de hoofdstukken tot je eigen leerjaar, plus elke sticker die je hoger al haalde. Per kind telt de app op hoeveel dagen er deze maand
 geoefend is; er is geen reeks die breekt als je een dag overslaat.
 
+Een sticker heeft drie niveaus, volgens de langste toets waarin je 3 sterren haalde: 10 vragen
+geeft een gewone sticker, 15 een zilveren rand, 20 een gouden rand die zacht glanst. Een niveau
+gaat nooit omlaag. Wie al 20 op 20 als beste score had, krijgt meteen goud. Is alles tot je
+leerjaar 3 sterren, dan stelt **Voor jou vandaag** een sticker voor die nog geen goud is, en die
+knop start meteen een toets van 20 vragen, los van de instelling. Bij een gelijke verhouding telt
+de langere toets als beste score.
+
 In de lijst van hoofdstukken zie je meteen hoe ver je staat. Een hoofdstuk met 3 sterren is groen
 met een vinkje. Een hoofdstuk dat je speelde maar waarin je fouten maakte, krijgt een oranje rand
 en je beste score. Een hoofdstuk dat je nog nooit speelde, heeft grijze lege sterren. Op elke
