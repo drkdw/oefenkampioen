@@ -695,11 +695,36 @@
   /* sticker levels: a test of 15 questions with 3 stars gives a silver rim, 20 a gold one */
   .hfd-sticker.rand-zilver, .hfd-sticker.rand-goud {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 36px; height: 36px; border-radius: 50%; background: var(--card); font-size: 21px;
+    width: 38px; height: 38px; border-radius: 50%; font-size: 21px;
   }
-  .rand-zilver { box-shadow: 0 0 0 3px var(--zilver); }
-  .rand-goud { box-shadow: 0 0 0 3px var(--gold), 0 0 10px 2px var(--gold); animation: glans 2.4s ease-in-out infinite; }
-  @keyframes glans { 50% { box-shadow: 0 0 0 3px var(--gold), 0 0 2px 0 var(--gold); } }
+  /* a metal rim: a light-to-dark sweep in the border instead of one flat colour */
+  .rand-zilver, .vak.zilver {
+    border: 3px solid transparent;
+    background: linear-gradient(var(--card), var(--card)) padding-box,
+      conic-gradient(from 210deg, #F4F7FB, #9AA5B4, #FFFFFF, #8590A0, #E3E8EF, #F4F7FB) border-box;
+  }
+  .rand-goud, .vak.goud {
+    border: 3px solid transparent;
+    background: linear-gradient(var(--card), var(--card)) padding-box,
+      conic-gradient(from 210deg, #FFF3B0, #E0A200, #FFE680, #B97A00, #FFD84D, #FFF3B0) border-box;
+    box-shadow: 0 0 12px 1px rgba(255, 196, 61, .55);
+  }
+  /* a streak of light that slides across now and then; silver slower and softer than gold */
+  .rand-zilver, .rand-goud, .vak.zilver, .vak.goud, .sticker-groot.zilver, .sticker-groot.goud { position: relative; overflow: hidden; }
+  .rand-zilver::after, .rand-goud::after, .vak.zilver::after, .vak.goud::after, .sticker-groot.zilver::after, .sticker-groot.goud::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, .9) 48%, rgba(255, 255, 255, .9) 52%, transparent 70%);
+    transform: translateX(-130%); animation: glansstreep 3.2s ease-in-out infinite;
+  }
+  .rand-zilver::after, .vak.zilver::after, .sticker-groot.zilver::after { opacity: .6; animation-duration: 4.5s; }
+  @keyframes glansstreep { 0%, 55% { transform: translateX(-130%); } 100% { transform: translateX(130%); } }
+  /* gold also twinkles in a corner */
+  .vak.goud::before, .sticker-groot.goud::before {
+    content: '✨'; position: absolute; top: 2px; right: 3px; font-size: 13px; line-height: 1;
+    animation: twinkel 2.6s ease-in-out infinite; z-index: 1;
+  }
+  .sticker-groot.goud::before { font-size: 22px; top: 4px; right: 6px; }
+  @keyframes twinkel { 0%, 100% { transform: scale(.3); opacity: 0; } 45%, 60% { transform: scale(1) rotate(20deg); opacity: 1; } }
   #stickerScherm { display: flex; flex-direction: column; gap: 14px; }
   .boekspel h3 { font-family: Fredoka, sans-serif; font-size: 17px; margin: 4px 0 8px; color: var(--ink); }
   .boek { display: grid; grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)); gap: 8px; }
@@ -707,9 +732,6 @@
     aspect-ratio: 1; border-radius: 16px; background: var(--card); border: 3px solid var(--line);
     display: flex; align-items: center; justify-content: center; font-size: 30px;
   }
-  .vak.zilver { border-color: var(--zilver); }
-  .vak.goud { border-color: var(--gold); box-shadow: 0 0 10px 1px var(--gold); animation: glansVak 2.4s ease-in-out infinite; }
-  @keyframes glansVak { 50% { box-shadow: 0 0 2px 0 var(--gold); } }
   .vak.leeg { background: none; border-style: dashed; color: var(--line); font-family: Fredoka, sans-serif; font-size: 20px; }
   .result .stars .ster { display: inline-block; color: var(--line); animation: sterIn .35s ease-out both; }
   .result .stars .ster.aan { color: var(--gold); }
@@ -725,7 +747,9 @@
   .sticker-groot.goud { box-shadow: 0 0 0 5px var(--gold), 0 0 22px 4px var(--gold); }
   @keyframes plak { from { transform: scale(1.6) rotate(-20deg); opacity: 0; } to { transform: scale(1) rotate(-6deg); opacity: 1; } }
   @media (prefers-reduced-motion: reduce) {
-    .result .stars .ster, .sticker-groot, .rand-goud, .vak.goud { animation: none; }
+    .result .stars .ster, .sticker-groot { animation: none; }
+    .rand-zilver::after, .rand-goud::after, .vak.zilver::after, .vak.goud::after, .sticker-groot.zilver::after,
+    .sticker-groot.goud::after, .vak.goud::before, .sticker-groot.goud::before { display: none; }
   }
   /* title, name button and sound button stay on one row, also on a small phone */
   header { flex-wrap: nowrap; }
