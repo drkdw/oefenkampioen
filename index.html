@@ -61,6 +61,8 @@
     --zilver: #AEB8C6;
     --goud-ink: #9A6500;
     --goud-bg: #FFF6D6;
+    --zilver-bg: #F0F3F7;
+    --zilver-ink: #5B6575;
     --screen: #16203A;
     --screen-ink: #7FE7FF;
     --shadow: 0 6px 0 rgba(43,58,103,.14);
@@ -85,6 +87,8 @@
       --zilver: #C9D2DE;
       --goud-ink: #FFD166;
       --goud-bg: #3A3220;
+      --zilver-bg: #2A3346;
+      --zilver-ink: #D5DCE6;
       --screen: #0B1220;
       --screen-ink: #7FE7FF;
       --shadow: 0 6px 0 rgba(0,0,0,.35);
@@ -679,7 +683,16 @@
   .tegel-balk span { display: block; height: 100%; background: var(--good); border-radius: 999px; }
   .tegel.klaar { border-color: var(--good); background: var(--good-bg); }
   .tegel.klaar .tegel-klaar { color: var(--good); font-family: Fredoka, sans-serif; }
-  .tegel-balk.goud span { background: linear-gradient(90deg, #E0A200, #FFE680, #E0A200); }
+  .tegel-balk.metaal { display: flex; }
+  .tegel-balk.metaal span { border-radius: 0; }
+  .tegel-balk .g { background: linear-gradient(90deg, #E0A200, #FFE680, #E0A200); }
+  .tegel-balk .z { background: linear-gradient(90deg, #9AA5B4, #F4F7FB, #9AA5B4); }
+  .tegel.zilver {
+    border-color: transparent; position: relative; overflow: hidden;
+    background: linear-gradient(var(--zilver-bg), var(--zilver-bg)) padding-box,
+      conic-gradient(from 210deg, #F4F7FB, #9AA5B4, #FFFFFF, #8590A0, #E3E8EF, #F4F7FB) border-box;
+  }
+  .tegel.zilver .tegel-klaar { color: var(--zilver-ink); font-family: Fredoka, sans-serif; }
   .tegel.goud {
     border-color: transparent; position: relative; overflow: hidden;
     background: linear-gradient(var(--goud-bg), var(--goud-bg)) padding-box,
@@ -725,12 +738,12 @@
   /* a streak of light that slides across now and then; silver slower and softer than gold */
   .rand-zilver, .rand-goud, .vak.zilver, .vak.goud, .sticker-groot.zilver, .sticker-groot.goud { position: relative; overflow: hidden; }
   .rand-zilver::after, .rand-goud::after, .vak.zilver::after, .vak.goud::after, .sticker-groot.zilver::after, .sticker-groot.goud::after,
-  .tegel.goud::after {
+  .tegel.goud::after, .tegel.zilver::after {
     content: ''; position: absolute; inset: 0; pointer-events: none;
     background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, .9) 48%, rgba(255, 255, 255, .9) 52%, transparent 70%);
     transform: translateX(-130%); animation: glansstreep 3.2s ease-in-out infinite;
   }
-  .rand-zilver::after, .vak.zilver::after, .sticker-groot.zilver::after { opacity: .6; animation-duration: 4.5s; }
+  .rand-zilver::after, .vak.zilver::after, .sticker-groot.zilver::after, .tegel.zilver::after { opacity: .6; animation-duration: 4.5s; }
   @keyframes glansstreep { 0%, 55% { transform: translateX(-130%); } 100% { transform: translateX(130%); } }
   /* gold also twinkles in a corner */
   .vak.goud::before, .sticker-groot.goud::before {
@@ -763,7 +776,7 @@
   @media (prefers-reduced-motion: reduce) {
     .result .stars .ster, .sticker-groot { animation: none; }
     .rand-zilver::after, .rand-goud::after, .vak.zilver::after, .vak.goud::after, .sticker-groot.zilver::after,
-    .sticker-groot.goud::after, .vak.goud::before, .sticker-groot.goud::before, .tegel.goud::after { display: none; }
+    .sticker-groot.goud::after, .vak.goud::before, .sticker-groot.goud::before, .tegel.goud::after, .tegel.zilver::after { display: none; }
   }
   /* title, name button and sound button stay on one row, also on a small phone */
   header { flex-wrap: nowrap; }

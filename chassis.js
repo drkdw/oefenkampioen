@@ -507,14 +507,16 @@ var MAANDEN = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', '
   'september', 'oktober', 'november', 'december'];
 function sterrenTekst(n) { return '★★★'.slice(0, n) + '☆☆☆'.slice(n); }
 function sterrenVanSpel(spel, beste, niveaus) {
-  var lijst = opVolgorde(spel, state.leerjaar), verdiend = 0, klaar = 0, goud = 0;
+  var lijst = opVolgorde(spel, state.leerjaar), verdiend = 0, klaar = 0, goud = 0, zilver = 0;
   lijst.forEach(function (r) {
     var k = spel.id + ':' + r.i, n = sterrenVoor(beste[k]);
     verdiend += n;
     if (n === 3) klaar++;
-    if (randVoor(niveauVan(niveaus, beste, k)) === 'goud') goud++;
+    var rand = randVoor(niveauVan(niveaus, beste, k));
+    if (rand === 'goud') goud++;
+    if (rand === 'zilver') zilver++;
   });
-  return { verdiend: verdiend, max: lijst.length * 3, klaar: klaar, goud: goud, aantal: lijst.length };
+  return { verdiend: verdiend, max: lijst.length * 3, klaar: klaar, goud: goud, zilver: zilver, aantal: lijst.length };
 }
 // counts only chapters up to the chosen school year, so the goal stays within reach
 function stickersVoorLeerjaar(beste) {
@@ -572,17 +574,21 @@ function toonStart() {
   var st = stickersVoorLeerjaar(beste), niveaus = leesNiveaus(actief());
   $('spellen').innerHTML = rijen.map(function (r) {
     var sv = sterrenVanSpel(r.s, beste, niveaus);
-    // all done: the bar starts over in gold and fills per gold sticker, so there is still a goal
-    var alles = sv.klaar === sv.aantal, allesGoud = sv.goud === sv.aantal;
-    var balk = allesGoud ? ''
-      : alles ? '<span class="tegel-balk goud" role="img" aria-label="' + sv.goud + ' van ' + sv.aantal + ' goud"><span style="width:' +
-        Math.round(100 * sv.goud / sv.aantal) + '%"></span></span>'
-      : '<span class="tegel-balk" aria-hidden="true"><span style="width:' + Math.round(100 * sv.klaar / sv.aantal) + '%"></span></span>';
-    return '<button class="tegel' + (allesGoud ? ' goud' : alles ? ' klaar' : '') + '" data-i="' + r.i + '"><span class="tegel-ico" aria-hidden="true">' + r.s.ico + '</span>' +
+    // three steps like the stickers: all done (green), all at least silver, all gold. Once all is
+    // done the bar starts over and fills with gold first, then silver, so there is still a goal
+    var alles = sv.klaar === sv.aantal, allesGoud = sv.goud === sv.aantal, allesZilver = sv.goud + sv.zilver === sv.aantal;
+    var stap = allesGoud ? 'goud' : allesZilver ? 'zilver' : alles ? 'klaar' : '';
+    function deel(n) { return Math.round(100 * n / sv.aantal) + '%'; }
+    var balk = stap === 'goud' ? ''
+      : stap ? '<span class="tegel-balk metaal" role="img" aria-label="' + sv.goud + ' van ' + sv.aantal + ' goud' +
+        (stap === 'klaar' && sv.zilver ? ', ' + sv.zilver + ' zilver' : '') + '"><span class="g" style="width:' + deel(sv.goud) + '"></span>' +
+        (stap === 'klaar' ? '<span class="z" style="width:' + deel(sv.zilver) + '"></span>' : '') + '</span>'
+      : '<span class="tegel-balk" aria-hidden="true"><span style="width:' + deel(sv.klaar) + '"></span></span>';
+    var regel = { goud: '🏆 Alles goud!', zilver: '🥈 Alles zilver', klaar: '✅ Alles klaar' }[stap] || sv.klaar + ' van ' + sv.aantal + ' klaar';
+    return '<button class="tegel' + (stap ? ' ' + stap : '') + '" data-i="' + r.i + '"><span class="tegel-ico" aria-hidden="true">' + r.s.ico + '</span>' +
       '<span class="tegel-naam">' + r.s.naam + '</span>' +
       '<span class="tegel-sterren" aria-label="' + sv.verdiend + ' van ' + sv.max + ' sterren">★ ' + sv.verdiend + ' / ' + sv.max + '</span>' +
-      '<span class="tegel-klaar">' + (allesGoud ? '🏆 Alles goud!' : alles ? '✅ Alles klaar' : sv.klaar + ' van ' + sv.aantal + ' klaar') + '</span>' +
-      balk + '</button>';
+      '<span class="tegel-klaar">' + regel + '</span>' + balk + '</button>';
   }).join('') + '<button class="tegel stickers" id="stickerTegel"><span class="tegel-ico" aria-hidden="true">📒</span>' +
     '<span class="tegel-naam">Mijn stickers</span><span class="tegel-sterren">' + st.n + ' / ' + st.totaal + '</span></button>';
   Array.prototype.forEach.call($('spellen').querySelectorAll('.tegel[data-i]'), function (b) {
