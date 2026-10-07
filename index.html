@@ -238,29 +238,49 @@
   .paneelnotitie { margin: 0; font-size: 12px; color: var(--ink-soft); }
   .paneelacties { display: flex; gap: 8px; flex-wrap: wrap; }
   .paneelacties .aantal { font-size: 13px; padding: 7px 12px; }
-  .bewaardinfo { flex-basis: 100%; }
+  .bewaardinfo { margin: 0; font-size: 14px; color: var(--ink); }
   .bewaardinfo.oud { color: var(--accent); font-family: Fredoka, sans-serif; }
-  #ouderScherm { display: flex; flex-direction: column; gap: 14px; }
-  .oudersectie { display: flex; flex-direction: column; gap: 10px; }
-  .oudersectie h2 { margin: 6px 0 0; font-family: Fredoka, sans-serif; font-size: 18px; font-weight: 400; }
+  /* the parents screen: calmer and roomier than the child screens, it is read, not tapped through */
+  #ouderScherm { display: flex; flex-direction: column; gap: 32px; padding-bottom: 32px; }
+  #ouderScherm > .lead { line-height: 1.55; }
+  .oudersectie { display: flex; flex-direction: column; gap: 14px; }
+  .oudersectie h2 { margin: 0; font-family: Fredoka, sans-serif; font-size: 21px; font-weight: 400; }
+  .sectieuitleg { margin: 0; font-size: 14px; line-height: 1.55; color: var(--ink-soft); }
+  .ouderkinderen { display: flex; flex-direction: column; gap: 16px; }
   .ouderkaart {
-    background: var(--card); border: 3px solid var(--line); border-radius: 20px; padding: 14px 16px;
-    display: flex; flex-direction: column; gap: 8px;
+    background: var(--card); border: 3px solid var(--line); border-radius: 22px; padding: 20px 20px 18px;
+    display: flex; flex-direction: column; gap: 14px;
   }
-  .ouderkop { display: flex; align-items: center; gap: 10px; font-family: Fredoka, sans-serif; font-size: 17px; }
+  .ouderkop { display: flex; align-items: center; gap: 12px; font-family: Fredoka, sans-serif; font-size: 18px; }
   .ouderkop .avatar {
     display: inline-flex; align-items: center; justify-content: center; flex: none;
-    width: 32px; height: 32px; border-radius: 999px; background: var(--ink); color: var(--card); font-size: 16px;
+    width: 38px; height: 38px; border-radius: 999px; background: var(--ink); color: var(--card); font-size: 17px;
   }
-  .ouderlabel { margin: 0; font-family: Fredoka, sans-serif; font-size: 14px; color: var(--ink-soft); }
-  .werkpunten, .herstellijst { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
-  .werkpunten li { display: flex; justify-content: space-between; gap: 10px; }
+  .ouderkop .profielvoortgang { font-family: Nunito, sans-serif; font-size: 13px; line-height: 1.4; }
+  .ouderlabel { margin: 4px 0 -6px; font-family: Fredoka, sans-serif; font-size: 14px; color: var(--ink-soft); }
+  .werkpunten, .herstellijst { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; font-size: 15px; line-height: 1.4; }
+  .werkpunten li { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; }
+  .werkpunten li + li, .herstellijst li + li { border-top: 1px solid var(--line); }
   .werkpunten .wp-score { flex: none; color: var(--accent); font-family: Fredoka, sans-serif; }
+  .herstellijst li { padding: 10px 0; }
+  .ouderkaart .paneelacties { gap: 10px; margin-top: 2px; }
+  .ouderkaart .paneelacties .aantal { font-size: 14px; padding: 9px 16px; }
   .herstellijst .paneelnotitie { display: block; }
-  .ouderacties.bevestig { background: var(--bad-bg); border-radius: 14px; padding: 8px 10px; align-items: center; }
-  .herstelvraag { background: var(--card); border: 3px solid var(--accent); border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .ouderacties.bevestig { background: var(--bad-bg); border-radius: 16px; padding: 12px 14px; align-items: center; }
+  .herstelvraag { background: var(--card); border: 3px solid var(--accent); border-radius: 22px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
   .melding { margin: 0; font-family: Fredoka, sans-serif; font-size: 15px; color: var(--good); }
   .melding.fout { color: var(--accent); }
+  .faq { display: flex; flex-direction: column; background: var(--card); border: 3px solid var(--line); border-radius: 22px; overflow: hidden; }
+  .faq details + details { border-top: 1px solid var(--line); }
+  .faq summary {
+    cursor: pointer; list-style: none; padding: 16px 20px; display: flex; justify-content: space-between; gap: 12px;
+    font-family: Fredoka, sans-serif; font-size: 16px; line-height: 1.35;
+  }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: '+'; flex: none; color: var(--ink-soft); font-size: 20px; line-height: 1; }
+  .faq details[open] summary::after { content: '−'; }
+  .faq details p { margin: 0; padding: 0 20px 18px; font-size: 14px; line-height: 1.6; color: var(--ink-soft); }
+  .faq details p b { color: var(--ink); font-weight: 400; font-family: Fredoka, sans-serif; }
   .profielvraag { flex: 1 1 100%; font-size: 13px; color: var(--ink); }
   .profielja, .profielnee, .profiellijst {
     font-family: Fredoka, sans-serif;
@@ -868,28 +888,100 @@
   <div id="ouderScherm" hidden>
     <div class="scorebar">
       <button class="icon-btn" id="ouderTerugBtn" aria-label="Terug naar de spellen">&#127968;</button>
-      <span class="titel">👪 Voor ouders</span>
+      <span class="titel">📋 Voor ouders</span>
     </div>
     <p class="lead">Alles staat enkel op dit toestel, in deze browser: geen account, geen cloud.
       Browsergegevens wissen of een ander toestel gebruiken, wist ook dit. Bewaar daarom af en toe een bestand.</p>
     <section class="oudersectie">
       <h2>Kinderen</h2>
-      <div id="ouderKinderen"></div>
-      <p class="paneelnotitie">"Waar je kan helpen" toont de gespeelde hoofdstukken zonder 3 sterren, het zwakste eerst,
+      <p class="sectieuitleg">"Waar je kan helpen" toont de gespeelde hoofdstukken zonder 3 sterren, het zwakste eerst,
         met de beste poging en hoe vaak de hele toets gespeeld is. Met "Deel" stuur je één kind naar een ander toestel.</p>
+      <div class="ouderkinderen" id="ouderKinderen"></div>
     </section>
     <section class="oudersectie">
       <h2>Back-up van iedereen</h2>
-      <p class="paneelnotitie bewaardinfo" id="bewaardInfo"></p>
-      <div class="paneelacties"><button class="aantal" id="bewaarBtn">📤 Bewaar alles als bestand</button></div>
+      <div class="ouderkaart">
+        <p class="sectieuitleg">Eén bestand met alle kinderen. Bewaar het op een plek buiten dit toestel, bv. in iCloud Drive, Google Drive of je mail.</p>
+        <p class="bewaardinfo" id="bewaardInfo"></p>
+        <div class="paneelacties"><button class="aantal" id="bewaarBtn">📤 Bewaar alles als bestand</button></div>
+      </div>
     </section>
     <section class="oudersectie">
       <h2>Terugzetten</h2>
-      <p class="paneelnotitie">Een bestand van één kind of van iedereen. Je ziet eerst wat erin zit; er gaat nooit iets verloren.</p>
-      <div class="paneelacties"><button class="aantal" id="herstelBtn">📥 Kies een bestand</button></div>
-      <input type="file" id="herstelInput" accept=".json,application/json" hidden>
+      <div class="ouderkaart">
+        <p class="sectieuitleg">Een bestand van één kind of van iedereen. Je ziet eerst wat erin zit, en er gaat nooit iets verloren.</p>
+        <div class="paneelacties"><button class="aantal" id="herstelBtn">📥 Kies een bestand</button></div>
+        <input type="file" id="herstelInput" accept=".json,application/json" hidden>
+        <p class="melding" id="ouderMelding" role="status" hidden></p>
+      </div>
       <div class="herstelvraag" id="herstelVraag" hidden></div>
-      <p class="melding" id="ouderMelding" role="status" hidden></p>
+    </section>
+    <!-- keep these answers in step with how the app works: the README points here -->
+    <section class="oudersectie">
+      <h2>Vragen van ouders</h2>
+      <div class="faq">
+        <details>
+          <summary>Waar staan de scores? Staat er iets online?</summary>
+          <p>Nee. Alles staat enkel op dit toestel, in deze browser. Er is geen account en er gaat niets
+            naar een server. Daarom bestaan de bewaarbestanden: dat is de enige manier om de scores te
+            bewaren buiten dit toestel.</p>
+        </details>
+        <details>
+          <summary>Hoe zet ik een kind over naar een ander toestel?</summary>
+          <p>Tik hierboven bij het kind op <b>Deel</b> en stuur het bestand naar jezelf, bv. met AirDrop,
+            WhatsApp of mail. Open Oefenkampioen op het andere toestel, ga onderaan naar <b>Voor ouders</b>,
+            tik op <b>Kies een bestand</b> en kies dat bestand. Je ziet eerst wat erin zit; pas na
+            <b>Zet terug</b> verandert er iets.</p>
+        </details>
+        <details>
+          <summary>Kan een oud bestand de vooruitgang van nu wissen?</summary>
+          <p>Nee. Terugzetten voegt altijd samen en verlaagt nooit iets: van elk hoofdstuk blijft de beste
+            score staan, een gouden sticker blijft goud, en de geoefende dagen van beide blijven. Bestaat
+            het kind al op dit toestel, dan blijven ook zijn instellingen zoals ze zijn.</p>
+        </details>
+        <details>
+          <summary>Hoe vaak maak ik best een back-up?</summary>
+          <p>Eens per maand is genoeg. Bij <b>Back-up van iedereen</b> zie je wanneer het laatst gebeurde;
+            na 30 dagen kleurt die regel oranje. Bewaar het bestand op een plek buiten dit toestel, bv. in
+            iCloud Drive, Google Drive of je mail.</p>
+        </details>
+        <details>
+          <summary>Wat als we een tijd niet spelen?</summary>
+          <p>Op een iPhone of iPad kan Safari de gegevens van een website wissen als je die ongeveer een
+            week niet opent. Gaan jullie op vakantie of pauzeren jullie een tijd, maak dan vooraf een
+            back-up. Na het terugzetten speelt iedereen gewoon verder.</p>
+        </details>
+        <details>
+          <summary>Hoe werken de sterren en stickers?</summary>
+          <p>Elk hoofdstuk krijgt sterren volgens de beste toets: 1 ster vanaf de helft juist, 2 vanaf 70%,
+            3 vanaf 90%. Drie sterren geeft de sticker van dat hoofdstuk. Lukt dat met een toets van 15
+            vragen, dan wordt de sticker zilver; met 20 vragen goud. Een oefenronde met enkel de fouten
+            telt niet mee voor de sterren.</p>
+        </details>
+        <details>
+          <summary>Wat betekent "Waar je kan helpen"?</summary>
+          <p>De hoofdstukken die het kind al speelde zonder 3 sterren te halen, het zwakste eerst. "5 op 10 ·
+            3 keer" betekent: de beste poging was 5 op 10, en de hele toets is 3 keer gespeeld. Hoofdstukken
+            die nog niet gespeeld zijn, staan er niet bij.</p>
+        </details>
+        <details>
+          <summary>Wat is het verschil tussen "uit de lijst" en "écht wissen"?</summary>
+          <p><b>Uit de lijst</b> haalt enkel de naam weg; typ je die naam later opnieuw, dan staan de scores
+            er terug. <b>Écht wissen</b> verwijdert naam, instellingen en scores voorgoed. Maak eerst een
+            back-up als je twijfelt.</p>
+        </details>
+        <details>
+          <summary>Ik hoor geen stem bij het voorlezen.</summary>
+          <p>Voorlezen gebruikt een Nederlandse stem van het toestel zelf. Zet het volume hoger, en zet op
+            een iPhone de stille modus uit. Heeft het toestel geen Nederlandse stem, dan verschijnt de knop
+            🗣️ niet.</p>
+        </details>
+        <details>
+          <summary>Werkt het zonder internet?</summary>
+          <p>Nee, de pagina heeft internet nodig om te openen. De scores zelf staan wel op het toestel en
+            gaan niet verloren als het internet even wegvalt.</p>
+        </details>
+      </div>
     </section>
   </div>
 

@@ -724,7 +724,7 @@ function ouderKindHtml(p) {
       '<span class="wp-score">' + Number(w.beste.score) + ' op ' + Number(w.beste.van) +
       (w.keer ? ' · ' + w.keer + ' keer' : '') + '</span></li>';
   }).join('');
-  var meer = wp.length > WERKPUNTEN_MAX ? '<p class="paneelnotitie">En nog ' + (wp.length - WERKPUNTEN_MAX) + ' andere.</p>' : '';
+  var meer = wp.length > WERKPUNTEN_MAX ? '<p class="sectieuitleg">En nog ' + (wp.length - WERKPUNTEN_MAX) + ' andere.</p>' : '';
   return '<div class="ouderkaart" data-sleutel="' + p.sleutel + '" data-naam="' + p.naam + '">' +
     '<div class="ouderkop"><span class="avatar" aria-hidden="true">' + hoofdletter(Array.from(p.naam)[0] || '') + '</span>' +
     '<span class="profielinfo"><b>' + p.naam + '</b><span class="profielvoortgang">' + jaarNaam(leerjaarVoor(p.sleutel)) + ' · ' +
@@ -732,7 +732,7 @@ function ouderKindHtml(p) {
     '</span></span></div>' +
     '<p class="ouderlabel">Waar je kan helpen</p>' +
     (wp.length ? '<ul class="werkpunten">' + rijen + '</ul>' + meer
-      : '<p class="paneelnotitie">Niets: elk gespeeld hoofdstuk heeft 3 sterren.</p>') +
+      : '<p class="sectieuitleg">Niets: elk gespeeld hoofdstuk heeft 3 sterren.</p>') +
     '<div class="paneelacties ouderacties"><button class="aantal deelKind">📤 Deel ' + p.naam + '</button>' +
     '<button class="aantal wisKind">Verwijderen</button></div></div>';
 }
@@ -741,7 +741,7 @@ function toonOuders() {
   sluitProfielPaneel();
   var lijst = profielen();
   $('ouderKinderen').innerHTML = lijst.map(ouderKindHtml).join('') ||
-    '<p class="paneelnotitie">Nog geen kinderen op dit toestel. Maak een profiel via de naamknop bovenaan, of zet hieronder een bestand terug.</p>';
+    '<p class="sectieuitleg">Nog geen kinderen op dit toestel. Maak een profiel via de naamknop bovenaan, of zet hieronder een bestand terug.</p>';
   Array.prototype.forEach.call($('ouderKinderen').querySelectorAll('.ouderkaart'), function (kaart) {
     var sleutel = kaart.dataset.sleutel, wie = kaart.dataset.naam;
     kaart.querySelector('.deelKind').onclick = function () {
@@ -790,7 +790,7 @@ function vraagHerstel(plaatsen) {
       '<span class="paneelnotitie">' + (pl.nieuw ? 'Nieuw op dit toestel.' : 'Wordt samengevoegd met ' + pl.doel.naam + ' hier.') + '</span></li>';
   }).join('');
   $('herstelVraag').innerHTML = '<p class="ouderlabel">In dit bestand</p><ul class="herstellijst">' + rijen + '</ul>' +
-    '<p class="paneelnotitie">Er gaat niets verloren: van elk hoofdstuk blijft de beste score staan, en een gouden sticker blijft goud.</p>' +
+    '<p class="sectieuitleg">Er gaat niets verloren: van elk hoofdstuk blijft de beste score staan, en een gouden sticker blijft goud.</p>' +
     '<div class="paneelacties"><button class="aantal" id="herstelJa">Zet terug</button><button class="aantal" id="herstelNee">Annuleer</button></div>';
   $('herstelVraag').hidden = false;
   $('herstelJa').onclick = function () {

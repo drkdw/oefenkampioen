@@ -6,7 +6,9 @@ build, geen dependencies, geen framework.
 ## Spelen
 
 **[drkdw.github.io/oefenkampioen](https://drkdw.github.io/oefenkampioen/)**. Die link werkt
-gewoon, in elke browser, op elke computer of tablet. Niets te installeren.
+gewoon, in elke browser, op elke computer, tablet of gsm. Niets te installeren, geen account.
+Ouders vinden onderaan het startscherm **Voor ouders**, met de voortgang per kind, de
+bewaarbestanden en antwoorden op de vragen die het vaakst terugkomen.
 
 ## Aan de code werken
 
@@ -22,7 +24,7 @@ python3 -m http.server 8000
 en ga naar `http://localhost:8000`. Alleen nodig om te testen voor je pusht; wie het spel
 gewoon speelt, heeft dit nooit nodig en gebruikt de link hierboven.
 
-De tests draaien zonder installatie, enkel met Node:
+De tests draaien zonder installatie, enkel met Node (`npm test` doet hetzelfde):
 
 ```sh
 node --import ./test/pre.mjs test/alles.mjs
@@ -30,7 +32,9 @@ node --import ./test/pre.mjs test/alles.mjs
 
 Dat bouwt elke vraag van elk spel en rekent ze daarna nog eens onafhankelijk na, vanuit wat het
 kind ziet: de tekening, de som en de vraagtekst (`test/<spel>.test.mjs`). Het controleert ook de
-beloningslogica en of elke import echt bestaat. In de browser meet
+sterren, stickerniveaus en het voorstel van de dag (`beloning.test.mjs`), het formaat van de
+bewaarbestanden en het samenvoegen (`bewaren.test.mjs`), de tekst die wordt voorgelezen
+(`voorlezen.test.mjs`) en of elke import echt bestaat. In de browser meet
 `(await import('/test/layout-meting.js')).meet()` of vraag, keuzes en de volgende-knop op het
 huidige scherm passen zonder te scrollen.
 
@@ -39,8 +43,8 @@ zodat de opmaak, de puntentelling, de opslag en de zelfcheck maar op een plaats 
 
 ## Leerjaren
 
-Elk hoofdstuk hoort bij het leerjaar waarin het wordt aangebracht. Op het startscherm kies je
-met de rij **Welk leerjaar?** je niveau, en die keuze blijft bewaard.
+Elk hoofdstuk hoort bij het leerjaar waarin het wordt aangebracht. Het leerjaar kies je in de
+instellingen op het startscherm (**Welk leerjaar?**), per kind, en die keuze blijft bewaard.
 
 Een leerjaar is cumulatief. Kies je het derde, dan zie je alles tot en met het derde: de hele
 uren van het eerste, de kwartieren van het tweede en de tijdsduur van het derde. Wie in het derde
@@ -59,29 +63,38 @@ in het eerste 17. Elk hoofdstuk hoort bij het leerjaar waarin het in de klas aan
 
 Bovenaan staat **Voor jou vandaag**, eerst uit je eigen leerjaar: een hoofdstuk dat je al speelde
 maar waar je nog geen 3 sterren voor hebt, anders een hoofdstuk dat je nog nooit speelde. Is je
-eigen leerjaar helemaal 3 sterren, dan zoekt het een leerjaar lager. Elke dag begint het zoeken bij een ander spel. Daaronder
-één regel met leerjaar, aantal vragen en tempo, die openklapt, en dan de spellen als tegels.
+eigen leerjaar helemaal 3 sterren, dan zoekt het een leerjaar lager. Elke dag begint het zoeken
+bij een ander spel. Daaronder staat één regel met leerjaar, aantal vragen, tempo en voorlezen;
+tik erop en de instellingen klappen open. Dan volgen de spellen als tegels, en onderaan een korte
+tekst over de app met de links **Voor ouders** en **Broncode op GitHub**.
 
 Elk hoofdstuk heeft 0 tot 3 sterren volgens je beste score: 1 vanaf 50%, 2 vanaf 70%, 3 vanaf
 90%. Drie sterren geeft een sticker in **Mijn stickers**, een vast figuurtje per hoofdstuk. De
-teller telt de hoofdstukken tot je eigen leerjaar, plus elke sticker die je hoger al haalde. Per kind telt de app op hoeveel dagen er deze maand
-geoefend is; er is geen reeks die breekt als je een dag overslaat.
+teller telt de hoofdstukken tot je eigen leerjaar, plus elke sticker die je hoger al haalde. Per
+kind telt de app op hoeveel dagen er deze maand geoefend is; er is geen reeks die breekt als je
+een dag overslaat.
 
 Een sticker heeft drie niveaus, volgens de langste toets waarin je 3 sterren haalde: 10 vragen
 geeft een gewone sticker, 15 een zilveren rand, 20 een gouden rand die zacht glanst. Een niveau
 gaat nooit omlaag. Wie al 20 op 20 als beste score had, krijgt meteen goud. Is alles tot je
 leerjaar 3 sterren, dan stelt **Voor jou vandaag** een sticker voor die nog geen goud is, en die
 knop start meteen een toets van 20 vragen, los van de instelling. Bij een gelijke verhouding telt
-de langere toets als beste score. Op het startscherm wordt een speltegel groen met "✅ Alles klaar" zodra
-elk hoofdstuk 3 sterren heeft; het balkje begint dan opnieuw en vult zich eerst in goud per gouden
-sticker, daarachter in zilver per zilveren sticker. Is alles minstens zilver, dan wordt de tegel
-zilver met "🥈 Alles zilver"; is alles goud, dan krijgt de tegel een gouden rand met glans en
-"🏆 Alles goud!".
+de langere toets als beste score.
 
-In de lijst van hoofdstukken zie je meteen hoe ver je staat. Een hoofdstuk met 3 sterren is groen
-met een vinkje. Een hoofdstuk dat je speelde maar waarin je fouten maakte, krijgt een oranje rand
-en je beste score. Een hoofdstuk dat je nog nooit speelde, heeft grijze lege sterren. Op elke
-speltegel staat hoeveel hoofdstukken klaar zijn, met een balkje; is alles klaar, dan wordt de tegel groen.
+In de lijst van hoofdstukken zie je meteen hoe ver je staat. Een hoofdstuk met 3 sterren is groen,
+met ✅ op het icoon en "Klaar!" bij de score. Een hoofdstuk dat je speelde maar waarin je fouten
+maakte, krijgt een oranje rand en je beste score met "Nog eens?". Een hoofdstuk dat je nog nooit
+speelde, heeft grijze lege sterren. Op een smal scherm staan de sterren onder de tekst, zodat de
+titel de volle breedte krijgt.
+
+Een speltegel op het startscherm groeit in dezelfde stappen als de stickers:
+
+| tegel | wanneer |
+| --- | --- |
+| "3 van 8 klaar" met een groen balkje | nog bezig |
+| groen, "✅ Alles klaar" | elk hoofdstuk 3 sterren; het balkje begint opnieuw en vult zich eerst in goud per gouden sticker, daarachter in zilver |
+| zilver met glans, "🥈 Alles zilver" | elke sticker minstens zilver |
+| goud met glans, "🏆 Alles goud!" | elke sticker goud |
 
 Tijdens een toets past alles op het scherm, ook op een kleine gsm en liggend. Na een juist
 antwoord gaat het na 3,5 seconden vanzelf verder; na een fout blijft de uitleg staan.
@@ -111,12 +124,12 @@ sticker. Wie opnieuw fouten maakt, kan die weer oefenen, of de hele toets opnieu
 | Meetkunde | omtrek, oppervlakte, hoeken, volume, driehoek, ruimtefiguren, hoeken meten |
 | Verhoudingen | procent, schaal, btw en korting, verhoudingstabel, snelheid, gemiddelde, diagrammen |
 
-Elk spel heeft zeven tot dertig hoofdstukken, afhankelijk van hoeveel leerjaren het dekt.
-Een toets telt 10, 15 of 20 vragen, te kiezen op
-het startscherm, en evenveel punten. Twintig is de bovengrens: langer houdt een kind van acht
+Elk spel heeft zeven tot eenendertig hoofdstukken, afhankelijk van hoeveel leerjaren het dekt.
+Een toets telt 10, 15 of 20 vragen, te kiezen in de instellingen op het startscherm, en evenveel
+punten. Twintig is de bovengrens: langer houdt een kind van acht
 niet vol. De verdeling over de vraagtypes schaalt mee met het gekozen aantal.
 
-Op het startscherm staat ook een schakelaar **op tempo**. Staat die aan, dan loopt er per vraag
+In de instellingen staat ook een schakelaar **Op tempo?**. Staat die aan, dan loopt er per vraag
 een balk leeg en telt te traag als fout. Elk spel heeft zijn eigen tijd: de tafels krijgen 8
 seconden, want automatiseren betekent niet uitrekenen, en het winkeltje 30, want daar moet je
 eerst munten tellen. Tempotoetsen voor de tafels lopen in Vlaanderen al vanaf het tweede
@@ -132,7 +145,10 @@ scherm.
 
 Het scherm **Voor ouders** open je met de link onderaan het startscherm, of met
 `index.html#admin`. Verlaat je het, dan verdwijnt `#admin` uit de adresbalk,
-zodat herladen gewoon op het startscherm begint. Er staan drie delen op.
+zodat herladen gewoon op het startscherm begint. Er staan drie delen op, en onderaan
+**Vragen van ouders**: antwoorden die je openklapt, over waar de gegevens staan, overzetten naar
+een ander toestel, back-ups, de sterren en stickers, en voorlezen. Verandert er iets aan hoe de app
+werkt, pas die antwoorden dan mee aan: ze staan in `index.html`.
 
 **Kinderen.** Per kind een kaart met **Waar je kan helpen**: de hoofdstukken die het speelde zonder
 3 sterren te halen, het zwakste eerst, met de beste score en hoe vaak de hele toets gespeeld is,
