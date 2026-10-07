@@ -1,6 +1,6 @@
 import { shuffle, pad2, $, reduced, hoofdletter, voorleestekst } from './gereedschap.js';
 import { SPELLEN } from './spellen/index.js';
-import { datumVan, mengDagen, sterrenVoor, stickerVoor, voorstelVoor, dagenDezeMaand, dagNummer, boekVoor, INDELING, naarIndeling2, opVolgorde, werkpunten, mengGespeeld, GOUD, niveauVan, randVoor } from './beloning.js';
+import { datumVan, mengDagen, sterrenVoor, stickerVoor, voorstelVoor, dagenDezeMaand, dagNummer, boekVoor, INDELING, naarIndeling2, opVolgorde, werkpunten, mengGespeeld, GOUD, niveauVan, randVoor, bewaardRegel } from './beloning.js';
 
 // an eight-year-old cannot keep going for more than twenty questions
 var AANTALLEN = [10, 15, 20];
@@ -733,13 +733,24 @@ function ouderOverzichtHtml() {
         : '<p class="paneelnotitie">Niets om te helpen: elk gespeeld hoofdstuk heeft 3 sterren.</p>') + '</div>';
   }).join('') + '<p class="paneelnotitie">De beste poging per hoofdstuk, en hoe vaak de hele toets gespeeld is (oefenrondes met fouten tellen niet mee). Hoofdstukken die nog niet gespeeld zijn, staan er niet bij.</p>';
 }
+// one date for the whole device: the backup file holds every profile at once
+function toonBewaard() {
+  var laatst;
+  try { laatst = localStorage.getItem('oefenkampioen-laatstbewaard'); } catch (e) { laatst = null; }
+  var r = bewaardRegel(laatst, vandaag());
+  $('bewaardInfo').textContent = r.tekst + (r.oud ? '. Tijd voor een nieuw bestand.' : '');
+  $('bewaardInfo').classList.toggle('oud', r.oud);
+}
+// the footer link opens the parent panel without typing #admin; closing it ends admin mode again,
+// so the device a child plays on does not stay in it
+var viaOuderLink = false;
 function opentProfielPaneel() {
   // checked here, not only at startup: adding #admin to the address bar later does not reload
   // the page, so a check at startup alone would never pick it up
   adminModus = location.hash === '#admin';
   $('paneelacties').hidden = !adminModus;
   $('ouderOverzicht').hidden = !adminModus;
-  if (adminModus) $('ouderOverzicht').innerHTML = ouderOverzichtHtml();
+  if (adminModus) { $('ouderOverzicht').innerHTML = ouderOverzichtHtml(); toonBewaard(); }
   toonMelding('');
   toonProfielPaneel();
   $('profielPaneel').hidden = false;
@@ -749,6 +760,11 @@ function opentProfielPaneel() {
 }
 function sluitProfielPaneel() {
   var wasOpen = !$('profielPaneel').hidden;
+  if (viaOuderLink) {
+    viaOuderLink = false;
+    adminModus = false;
+    history.replaceState(null, '', location.pathname + location.search);
+  }
   $('profielPaneel').hidden = true;
   $('profielBackdrop').hidden = true;
   $('profielBtn').setAttribute('aria-expanded', 'false');
@@ -1081,11 +1097,20 @@ function vraagBlijvendeOpslag() {
 $('bewaarBtn').onclick = function () {
   vraagBlijvendeOpslag();
   exporteerData();
+  try { localStorage.setItem('oefenkampioen-laatstbewaard', vandaag()); } catch (e) { /* may fail */ }
+  toonBewaard();
   // the browser saves the file silently, without its own notice: without this text it looks
   // as if nothing happens
   $('bewaarBtn').textContent = 'Bewaard ✓';
   clearTimeout($('bewaarBtn').timer);
   $('bewaarBtn').timer = setTimeout(function () { $('bewaarBtn').textContent = 'Bewaar als bestand'; }, 2500);
+};
+$('ouderLink').onclick = function (e) {
+  e.preventDefault();
+  viaOuderLink = true;
+  history.replaceState(null, '', '#admin');
+  window.scrollTo(0, 0);
+  opentProfielPaneel();
 };
 $('herstelBtn').onclick = function () { $('herstelInput').click(); };
 $('herstelInput').onchange = function () {

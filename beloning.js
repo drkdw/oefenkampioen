@@ -167,3 +167,15 @@ export function niveauVan(niveaus, beste, k) {
 export function randVoor(niveau) {
   return niveau >= GOUD ? 'goud' : niveau >= ZILVER ? 'zilver' : niveau > 0 ? 'gewoon' : '';
 }
+
+// for the reminder in the parent panel: how long ago the last backup file was made. After a
+// month, or never, the line is meant to stand out
+export var BEWAAR_HERINNERING = 30;
+export function bewaardRegel(laatst, vandaag) {
+  if (!DATUM.test(laatst || '')) return { tekst: 'Laatst bewaard: nog nooit', oud: true };
+  var dagen = dagNummer(vandaag) - dagNummer(laatst);
+  return {
+    tekst: 'Laatst bewaard: ' + (dagen <= 0 ? 'vandaag' : dagen === 1 ? 'gisteren' : dagen + ' dagen geleden'),
+    oud: dagen >= BEWAAR_HERINNERING
+  };
+}

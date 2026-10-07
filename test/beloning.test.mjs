@@ -1,5 +1,5 @@
 import { SPELLEN } from '../spellen/index.js';
-import { STICKERS, sterrenVoor, stickerVoor, datumVan, mengDagen, dagenDezeMaand, dagNummer, voorstelVoor, boekVoor, naarIndeling2, opVolgorde, werkpunten, mengGespeeld, niveauVan, randVoor }
+import { STICKERS, sterrenVoor, stickerVoor, datumVan, mengDagen, dagenDezeMaand, dagNummer, voorstelVoor, boekVoor, naarIndeling2, opVolgorde, werkpunten, mengGespeeld, niveauVan, randVoor, bewaardRegel }
   from '../beloning.js';
 
 export function beloningTests(check) {
@@ -127,4 +127,10 @@ export function beloningTests(check) {
   SPELLEN.forEach(function (s) { s.hoofdstukken.forEach(function (h, i) { if (h.leerjaar <= 2) nog[s.id + ':' + i] = { score: 10, van: 10 }; }); });
   nog['klok:0'] = { score: 5, van: 10 };
   check(voorstelVoor(SPELLEN, nog, 2, 5, {}).reden === 'verbeter', 'verbeteren gaat voor op goud');
+  // backup reminder
+  check(bewaardRegel(null, '2026-10-08').tekst === 'Laatst bewaard: nog nooit' && bewaardRegel(null, '2026-10-08').oud, 'bewaard: nooit valt op');
+  check(bewaardRegel('2026-10-08', '2026-10-08').tekst === 'Laatst bewaard: vandaag' && !bewaardRegel('2026-10-08', '2026-10-08').oud, 'bewaard: vandaag');
+  check(bewaardRegel('2026-10-07', '2026-10-08').tekst === 'Laatst bewaard: gisteren', 'bewaard: gisteren');
+  check(bewaardRegel('2026-09-08', '2026-10-08').tekst === 'Laatst bewaard: 30 dagen geleden' && bewaardRegel('2026-09-08', '2026-10-08').oud, 'bewaard: na 30 dagen valt op');
+  check(!bewaardRegel('2026-09-09', '2026-10-08').oud && bewaardRegel('kapot', '2026-10-08').oud, 'bewaard: 29 dagen nog niet, rommel telt als nooit');
 }

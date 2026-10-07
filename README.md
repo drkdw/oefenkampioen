@@ -127,6 +127,12 @@ er per profiel een kruisje bij dat de keuze geeft tussen **uit de lijst** (de sc
 staan, typ de naam later opnieuw en ze staan er terug) en **écht wissen** (naam, leerjaar en
 scores voorgoed weg, met een expliciete bevestiging ertussen).
 
+Onderaan het startscherm opent **Voor ouders** hetzelfde paneel als `#admin`, zonder dat je iets
+in de adresbalk moet typen. Sluit je het paneel, dan staat de admin-stand weer uit, zodat het
+toestel van een kind er niet in blijft hangen. Onder de bewaarknoppen staat wanneer er op dit
+toestel laatst een bewaarbestand gemaakt is; na 30 dagen, of als het nog nooit gebeurde, valt die
+regel op in oranje.
+
 Achter `#admin` staat onderaan het paneel ook **Waar je kan helpen**: per kind de hoofdstukken
 die het speelde zonder 3 sterren te halen, het zwakste eerst, met de beste score erbij. Omdat
 alleen de beste poging bewaard wordt, betekent 3 op 10 daar dat geen enkele poging beter was.

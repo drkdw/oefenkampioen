@@ -230,6 +230,8 @@
   .paneelnotitie { margin: 0; font-size: 12px; color: var(--ink-soft); }
   .paneelacties { display: flex; gap: 8px; flex-wrap: wrap; }
   .paneelacties .aantal { font-size: 13px; padding: 7px 12px; }
+  .bewaardinfo { flex-basis: 100%; }
+  .bewaardinfo.oud { color: var(--accent); font-family: Fredoka, sans-serif; }
   .ouderoverzicht { border-top: 2px solid var(--line); padding-top: 10px; display: flex; flex-direction: column; gap: 10px; }
   .ouderoverzicht h3 { margin: 0; font-family: Fredoka, sans-serif; font-size: 16px; }
   .ouderkind ul { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
@@ -787,6 +789,7 @@
       <button class="aantal" id="bewaarBtn">Bewaar als bestand</button>
       <button class="aantal" id="herstelBtn">Herstel van bestand</button>
       <input type="file" id="herstelInput" accept=".json,application/json" hidden>
+      <p class="paneelnotitie bewaardinfo" id="bewaardInfo"></p>
     </div>
     <p class="paneelnotitie" id="paneelmelding" role="status" hidden></p>
     <div class="ouderoverzicht" id="ouderOverzicht" hidden></div>
@@ -821,7 +824,7 @@
         zesde leerjaar: klokkijken, maaltafels, rekenen met geld, meten en wegen, de kalender,
         optellen en aftrekken, spiegelen, breuken, meetkunde en verhoudingen. Zonder account en
         zonder reclame: de scores blijven op dit toestel.</p>
-      <p><a href="https://github.com/drkdw/oefenkampioen">Broncode op GitHub</a> · MIT-licentie</p>
+      <p><a href="#admin" id="ouderLink">Voor ouders</a> · <a href="https://github.com/drkdw/oefenkampioen">Broncode op GitHub</a> · MIT-licentie</p>
     </footer>
   </div>
 
