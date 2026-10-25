@@ -29,6 +29,7 @@ function schoonKind(ruw, indeling) {
     beste: mengBeste(hoofdstukken(ruw.beste), {}),
     gespeeld: mengGespeeld(hoofdstukken(ruw.gespeeld), {}),
     niveau: mengGespeeld(hoofdstukken(ruw.niveau), {}),
+    behaald: mengGespeeld(hoofdstukken(ruw.behaald), {}),
     dagen: mengDagen(ruw.dagen, [])
   };
 }
@@ -37,7 +38,7 @@ export function maakKindBestand(kind, vandaag) {
   return {
     app: 'oefenkampioen', soort: 'kind', versie: KIND_VERSIE, indeling: INDELING, gemaakt: vandaag,
     naam: kind.naam, instellingen: kind.instellingen,
-    beste: kind.beste, gespeeld: kind.gespeeld, niveau: kind.niveau, dagen: kind.dagen
+    beste: kind.beste, gespeeld: kind.gespeeld, niveau: kind.niveau, behaald: kind.behaald, dagen: kind.dagen
   };
 }
 
@@ -58,7 +59,8 @@ function uitVolledig(data) {
         voorlezen: data['oefenkampioen-voorlezen' + pf] === undefined ? undefined : data['oefenkampioen-voorlezen' + pf] === 'aan'
       },
       beste: lees('oefenkampioen-beste' + pf, {}), gespeeld: lees('oefenkampioen-gespeeld' + pf, {}),
-      niveau: lees('oefenkampioen-niveau' + pf, {}), dagen: lees('oefenkampioen-dagen' + pf, [])
+      niveau: lees('oefenkampioen-niveau' + pf, {}), behaald: lees('oefenkampioen-behaald' + pf, {}),
+      dagen: lees('oefenkampioen-dagen' + pf, [])
     }, indeling);
   });
 }
@@ -100,6 +102,7 @@ export function voegKindSamen(hier, daar) {
     beste: mengBeste(hier.beste, daar.beste),
     gespeeld: mengGespeeld(hier.gespeeld, daar.gespeeld),
     niveau: mengGespeeld(hier.niveau, daar.niveau),
+    behaald: mengGespeeld(hier.behaald, daar.behaald),
     dagen: mengDagen(hier.dagen, daar.dagen)
   };
 }

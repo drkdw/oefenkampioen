@@ -1,7 +1,8 @@
 import { shuffle, pad2, $, reduced, hoofdletter, voorleestekst } from './gereedschap.js';
 import { SPELLEN } from './spellen/index.js';
 import { maakKindBestand, maakVolledigBestand, leesBestand, samenvatting, voegKindSamen } from './bewaren.js';
-import { datumVan, mengDagen, sterrenVoor, stickerVoor, voorstelVoor, dagenDezeMaand, dagNummer, boekVoor, INDELING, naarIndeling2, opVolgorde, werkpunten, mengGespeeld, GOUD, niveauVan, randVoor, bewaardRegel, mengBeste } from './beloning.js';
+import { datumVan, mengDagen, sterrenVoor, stickerVoor, voorstelVoor, dagenDezeMaand, dagNummer, boekVoor, INDELING, naarIndeling2, opVolgorde, werkpunten, mengGespeeld, GOUD, ZILVER, niveauVan, randVoor, bewaardRegel, mengBeste } from './beloning.js';
+import { WEETJES } from './weetjes.js';
 
 // an eight-year-old cannot keep going for more than twenty questions
 var AANTALLEN = [10, 15, 20];
@@ -102,7 +103,7 @@ function verwijderProfiel(sleutel) {
 function verwijderProfielEcht(sleutel) {
   var lijst = profielen().filter(function (p) { return p.sleutel !== sleutel; });
   zetProfielen(lijst);
-  ['oefenkampioen-leerjaar', 'oefenkampioen-aantal', 'oefenkampioen-tempo', 'oefenkampioen-voorlezen', 'oefenkampioen-beste', 'oefenkampioen-gespeeld', 'oefenkampioen-niveau', 'oefenkampioen-dagen'].forEach(function (k) {
+  ['oefenkampioen-leerjaar', 'oefenkampioen-aantal', 'oefenkampioen-tempo', 'oefenkampioen-voorlezen', 'oefenkampioen-beste', 'oefenkampioen-gespeeld', 'oefenkampioen-niveau', 'oefenkampioen-behaald', 'oefenkampioen-dagen'].forEach(function (k) {
     try { localStorage.removeItem(k + postfixVoor(sleutel)); } catch (e) { /* may fail */ }
   });
   // the old name would otherwise hand key '' back to whoever types it again
@@ -153,7 +154,7 @@ function kindUitOpslag(sleutel, naamVanKind) {
   if (leesWaarde('oefenkampioen-voorlezen' + pf) !== null) instellingen.voorlezen = leesWaarde('oefenkampioen-voorlezen' + pf) === 'aan';
   return {
     naam: naamVanKind, instellingen: instellingen, beste: leesBesteVoor(sleutel), gespeeld: leesGespeeld(sleutel),
-    niveau: leesNiveaus(sleutel), dagen: leesDagen(sleutel)
+    niveau: leesNiveaus(sleutel), behaald: leesBehaald(sleutel), dagen: leesDagen(sleutel)
   };
 }
 // who in the file goes where on this device: matched on the name, not the key, because key ''
@@ -179,6 +180,7 @@ function pasToe(plaatsen) {
     schrijf['oefenkampioen-beste' + pf] = JSON.stringify(samen.beste);
     schrijf['oefenkampioen-gespeeld' + pf] = JSON.stringify(samen.gespeeld);
     schrijf['oefenkampioen-niveau' + pf] = JSON.stringify(samen.niveau);
+    schrijf['oefenkampioen-behaald' + pf] = JSON.stringify(samen.behaald);
     schrijf['oefenkampioen-dagen' + pf] = JSON.stringify(samen.dagen);
     if (!pl.nieuw) return;
     var i = pl.kind.instellingen;
@@ -217,6 +219,18 @@ function zetNiveau(profiel, sleutel, n) {
   if (nv[sleutel] >= n) return;
   nv[sleutel] = n;
   try { localStorage.setItem('oefenkampioen-niveau' + postfixVoor(profiel), JSON.stringify(nv)); } catch (e) { /* may fail */ }
+}
+// how many full tests of a chapter ended with 3 stars: the count on its sticker in the book
+function leesBehaald(sleutel) {
+  try { return mengGespeeld(JSON.parse(localStorage.getItem('oefenkampioen-behaald' + postfixVoor(sleutel)) || '{}'), {}); }
+  catch (e) { return {}; }
+}
+// al: the sticker was already earned before this test. Counting started later than the stickers,
+// so such a sticker counts as earned once at least, and this test makes it twice
+function telBehaald(profiel, sleutel, al) {
+  var g = leesBehaald(profiel);
+  g[sleutel] = Math.max(g[sleutel] || 0, al ? 1 : 0) + 1;
+  try { localStorage.setItem('oefenkampioen-behaald' + postfixVoor(profiel), JSON.stringify(g)); } catch (e) { /* may fail */ }
 }
 function telGespeeld(profiel, sleutel) {
   var g = leesGespeeld(profiel);
@@ -650,7 +664,7 @@ function zetInstellingen(open) {
   if (open) $('leerjaren').querySelector('[aria-pressed="true"]').focus();
 }
 function toonStickerboek() {
-  var beste = lees(), niveaus = leesNiveaus(actief()), st = stickersVoorLeerjaar(beste);
+  var beste = lees(), niveaus = leesNiveaus(actief()), behaald = leesBehaald(actief()), st = stickersVoorLeerjaar(beste);
   $('stickerTeller').textContent = st.n + ' / ' + st.totaal;
   $('stickerBoek').innerHTML = SPELLEN.map(function (s) {
     var lijst = boekVoor(s, beste, state.leerjaar);
@@ -661,13 +675,44 @@ function toonStickerboek() {
       (goud ? ' · ' + goud + ' goud' : '') + '</h3>' +
       '<div class="boek">' + lijst.map(function (r, j) {
         var rand = randen[j], soort = rand === 'goud' ? 'Gouden sticker' : rand === 'zilver' ? 'Zilveren sticker' : 'Sticker';
+        var keer = keerBehaald(behaald, s.id + ':' + r.i, rand), meer = keer > 1 ? ', ' + keer + ' keer behaald' : '';
         return rand
-          ? '<span class="vak ' + rand + '" role="img" aria-label="' + soort + ' van ' + r.h.titel + '" title="' + r.h.titel + '">' + stickerVoor(s.id, r.i) + '</span>'
+          ? '<span class="met-teller"><button class="vak ' + rand + '" data-spel="' + s.id + '" data-i="' + r.i + '" aria-label="' + soort + ' van ' +
+            r.h.titel + meer + '. Bekijk hem groot." title="' + r.h.titel + meer + '">' + stickerVoor(s.id, r.i) + '</button>' +
+            (keer > 1 ? '<span class="vak-teller" aria-hidden="true">×' + keer + '</span>' : '') + '</span>'
           : '<span class="vak leeg" role="img" aria-label="' + r.h.titel + ': nog 3 sterren halen" title="' + r.h.titel + '">?</span>';
       }).join('') + '</div></section>';
   }).join('');
+  Array.prototype.forEach.call($('stickerBoek').querySelectorAll('button.vak'), function (b) {
+    b.onclick = function () { toonStickerGroot(SPELLEN.filter(function (s) { return s.id === b.dataset.spel; })[0], Number(b.dataset.i)); };
+  });
   $('kop').innerHTML = 'Oefen<span class="tick">kampioen</span>';
   toonScherm('stickers');
+}
+// an earned sticker counts once at least, also when it was earned before counting began
+function keerBehaald(behaald, k, rand) { return rand ? Math.max(behaald[k] || 0, 1) : 0; }
+// the words under a sticker up close: gold gets the game's own champion line, the rest praise
+// for how often it was earned and the next step up
+function lofVoor(spel, rand, keer) {
+  if (rand === 'goud') return (spel.top || 'Jij bent een echte kampioen!') + ' 🏆';
+  var lof = keer >= 5 ? 'Al ' + keer + ' keer! Jij geeft nooit op.' : keer > 1 ? 'Knap, al ' + keer + ' keer gehaald!' : 'Goed gedaan, deze is van jou!';
+  return lof + ' Speel eens ' + (rand === 'zilver' ? GOUD + ' vragen voor goud.' : ZILVER + ' vragen voor zilver.');
+}
+// one earned sticker up close, with a fun fact; a sticker not earned yet stays a surprise
+function toonStickerGroot(spel, i) {
+  var k = spel.id + ':' + i, rand = randVoor(niveauVan(leesNiveaus(actief()), lees(), k));
+  if (!rand) return;
+  var keer = keerBehaald(leesBehaald(actief()), k, rand), sticker = stickerVoor(spel.id, i);
+  $('sdSticker').textContent = sticker;
+  $('sdSticker').className = 'sticker-groot ' + rand;
+  $('sdKeer').textContent = '×' + keer;
+  $('sdKeer').hidden = keer < 2;
+  $('sdTitel').textContent = spel.ico + ' ' + spel.hoofdstukken[i].titel;
+  $('sdNiveau').textContent = (rand === 'goud' ? 'Gouden sticker' : rand === 'zilver' ? 'Zilveren sticker' : 'Sticker') +
+    ' · ' + keer + ' keer behaald';
+  $('sdLof').textContent = lofVoor(spel, rand, keer);
+  $('sdWeetje').textContent = WEETJES[sticker] || '';
+  $('stickerDialoog').showModal();
 }
 /* ==================== profiles panel ==================== */
 function toonProfielPaneel() {
@@ -1095,19 +1140,26 @@ function toonToetsResultaat() {
     return '<span class="ster' + (k < n ? ' aan' : '') + '" style="animation-delay:' + (k * 0.35) + 's">★</span>';
   }).join('') : '💪';
   $('stars').setAttribute('aria-label', n + ' van 3 sterren');
-  if (n === 3) zetNiveau(state.profiel, sleutel, state.lengte);
+  if (n === 3) { zetNiveau(state.profiel, sleutel, state.lengte); telBehaald(state.profiel, sleutel, voor === 3); }
   var rand = randVoor(niveauVan(leesNiveaus(state.profiel), leesBesteVoor(state.profiel), sleutel));
   var RANGEN = ['', 'gewoon', 'zilver', 'goud'];
   var nieuw = voor < 3 && na === 3, beter = !nieuw && RANGEN.indexOf(rand) > RANGEN.indexOf(randVoorAf);
-  $('nieuweSticker').hidden = !nieuw && !beter;
-  if (nieuw || beter) {
-    $('stickerGroot').textContent = stickerVoor(state.spel.id, state.hfd);
-    $('stickerGroot').className = 'sticker-groot ' + rand;
-    var metaal = rand === 'goud' ? 'gouden' : rand === 'zilver' ? 'zilveren' : '';
-    $('stickerTekst').textContent = nieuw
-      ? 'Nieuwe ' + (metaal ? metaal + ' ' : '') + 'sticker! Hij zit in je stickerboek.'
-      : 'Je sticker is nu van ' + rand + '!' + (rand === 'goud' ? ' 🏆' : '');
-  }
+  // the sticker of this chapter is always shown: faded while not earned, with the same count
+  // as in the sticker book once it was earned more than once
+  var keer = keerBehaald(leesBehaald(state.profiel), sleutel, rand);
+  var metaal = rand === 'goud' ? 'gouden' : rand === 'zilver' ? 'zilveren' : '';
+  $('nieuweSticker').hidden = false;
+  $('stickerGroot').textContent = stickerVoor(state.spel.id, state.hfd);
+  $('stickerGroot').className = 'sticker-groot ' + (rand || 'nog');
+  $('stickerGroot').disabled = !rand;
+  $('stickerGroot').setAttribute('aria-label', rand ? 'Bekijk je sticker groot' : 'Deze sticker heb je nog niet');
+  $('stickerKeer').textContent = '×' + keer;
+  $('stickerKeer').hidden = keer < 2;
+  $('stickerTekst').textContent = nieuw ? 'Nieuwe ' + (metaal ? metaal + ' ' : '') + 'sticker! Hij zit in je stickerboek.'
+    : beter ? 'Je sticker is nu van ' + rand + '!' + (rand === 'goud' ? ' 🏆' : '')
+    : !rand ? 'Haal 3 sterren, dan is deze sticker van jou.'
+    : n === 3 ? 'Weer 3 sterren! Je hebt deze sticker nu ' + keer + ' keer behaald.'
+    : 'Deze sticker heb je al' + (keer > 1 ? ' ' + keer + ' keer behaald.' : '.');
   $('resultTitle').textContent = metNaam(deel >= 0.7 ? 'Goed gedaan%!' : 'Volgende keer beter%!', state.profiel);
   $('resultScore').textContent = s + ' / ' + state.lengte;
   $('resultMsg').textContent = deel >= 0.9 ? (state.spel.top || 'Jij bent een echte kampioen!')
@@ -1140,6 +1192,10 @@ $('homeBtn').onclick = function () { toonMenu(state.spel); };
 $('terugBtn').onclick = toonStart;
 $('stickerTerugBtn').onclick = toonStart;
 $('naarBoekBtn').onclick = toonStickerboek;
+$('stickerGroot').onclick = function () { toonStickerGroot(state.spel, state.hfd); };
+$('sdSluit').onclick = function () { $('stickerDialoog').close(); };
+// a tap next to the card, on the dimmed backdrop, closes it too
+$('stickerDialoog').addEventListener('click', function (e) { if (e.target === this) this.close(); });
 $('instelRegel').onclick = function () { zetInstellingen(!state.instellingenOpen); };
 // no blur handler on purpose: blur rebuilt the list between mousedown and click, which swallowed
 // a tap on another profile and could end a running test

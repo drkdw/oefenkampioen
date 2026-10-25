@@ -1,6 +1,7 @@
 import { SPELLEN } from '../spellen/index.js';
 import { STICKERS, sterrenVoor, stickerVoor, datumVan, mengDagen, dagenDezeMaand, dagNummer, voorstelVoor, boekVoor, naarIndeling2, opVolgorde, werkpunten, mengGespeeld, niveauVan, randVoor, bewaardRegel }
   from '../beloning.js';
+import { WEETJES } from '../weetjes.js';
 
 export function beloningTests(check) {
   var alle = [];
@@ -14,6 +15,8 @@ export function beloningTests(check) {
     SPELLEN.map(function (s) { return s.hoofdstukken.map(function (h) { return h.ico; }); })));
   check(alle.every(function (e) { return !iconen.has(e); }), 'geen sticker is ook een icoon: ' + alle.filter(function (e) { return iconen.has(e); }).join(' '));
   check(alle.every(function (e) { return typeof e === 'string' && e.length > 0; }), 'geen lege sticker');
+  check(alle.every(function (e) { return WEETJES[e]; }), 'elke sticker heeft een weetje: ' + alle.filter(function (e) { return !WEETJES[e]; }).join(' '));
+  check(Object.keys(WEETJES).every(function (e) { return alle.indexOf(e) > -1; }), 'geen weetje zonder sticker: ' + Object.keys(WEETJES).filter(function (e) { return alle.indexOf(e) < 0; }).join(' '));
   // layout 2: Sprongen tellen moved from maal:0 to brug:4, nothing is lost or overwritten
   var oud = { 'maal:0': 1, 'maal:1': 2, 'maal:10': 3, 'brug:3': 4, 'brug:4': 5, 'brug:29': 6, 'klok:0': 7 };
   var nieuw = naarIndeling2(oud);

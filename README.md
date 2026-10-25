@@ -72,7 +72,10 @@ Elk hoofdstuk heeft 0 tot 3 sterren volgens je beste score: 1 vanaf 50%, 2 vanaf
 90%. Drie sterren geeft een sticker in **Mijn stickers**, een vast figuurtje per hoofdstuk. De
 teller telt de hoofdstukken tot je eigen leerjaar, plus elke sticker die je hoger al haalde. Een
 hoofdstuk dat al gespeeld is, toont zijn sticker in de lijst (grijs tot hij verdiend is) en hoe
-vaak de toets al gemaakt is. Per
+vaak de toets al gemaakt is. Haal je een sticker opnieuw, dan krijgt hij in het stickerboek en op
+het resultaat een badge met het aantal keer behaald (×3); dat telt enkel toetsen met 3 sterren,
+dus het kan lager zijn dan het aantal keer gemaakt. Tik op een verdiende sticker om hem groot te
+zien, met zijn niveau, een aanmoediging en een weetje (`weetjes.js`, één per sticker). Per
 kind telt de app op hoeveel dagen er deze maand geoefend is; er is geen reeks die breekt als je
 een dag overslaat.
 
@@ -111,6 +114,7 @@ Na een toets met fouten verschijnt **Oefen je fouten**: een korte ronde met per 
 vraag van hetzelfde soort. Die ronde telt niet voor de sterren, anders gaf 3 op 3 meteen een
 sticker. Wie opnieuw fouten maakt, kan die weer oefenen, of de hele toets opnieuw doen.
 Bovenaan het resultaat staat het hoofdstuk en de hoeveelste keer, bv. "Kwartieren · 3de keer".
+Na een toets staat de sticker van het hoofdstuk er altijd bij, grijs zolang hij nog niet verdiend is.
 Na elke toets staat er ook **Volgende: …** met de titel van het volgende hoofdstuk, in de
 volgorde van de lijst; na een toets zonder fouten is dat de grote knop.
 
@@ -189,6 +193,7 @@ Terugzetten **voegt altijd samen** en verlaagt nooit iets, hoe oud het bestand o
 | Stickerniveau | het hoogste blijft, goud blijft goud |
 | Dagen geoefend | alle dagen van beide |
 | Aantal keer gespeeld | het hoogste getal blijft, zodat hetzelfde bestand twee keer terugzetten niets dubbel telt |
+| Aantal keer behaald | idem, het hoogste getal blijft |
 | Instellingen | enkel voor een kind dat nog niet op dit toestel staat |
 
 Kinderen worden op naam herkend, niet op hun interne sleutel. Speelt een kind op twee toestellen,
@@ -222,6 +227,7 @@ De bestanden:
 | `spellen/*.js` | een spel per bestand |
 | `zelfcheck.js` | de controles, alleen binnengehaald bij `#test` |
 | `beloning.js` | sterren, stickers, het voorstel van de dag en de dagen geoefend, zonder scherm of opslag |
+| `weetjes.js` | één weetje per sticker, getoond als je een verdiende sticker aantikt |
 | `bewaren.js` | het formaat van de bewaarbestanden: lezen, opkuisen en samenvoegen, zonder scherm of opslag |
 | `test/` | de Node-tests en de layoutmeting |
 

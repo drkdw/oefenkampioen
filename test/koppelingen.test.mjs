@@ -11,6 +11,10 @@ var bestanden = readdirSync(wortel).filter(function (f) { return f.endsWith('.js
 function exportsVan(pad) {
   var t = readFileSync(pad, 'utf8'), uit = new Set();
   t.replace(/export\s+(?:function|var|let|const)\s+([\w$]+)/g, function (m, n) { uit.add(n); });
+  // more names on one line, as in "export var GOUD = 20, ZILVER = 15;"
+  t.replace(/export\s+(?:var|let|const)\s+[^;\n]*/g, function (regel) {
+    regel.replace(/,\s*([\w$]+)\s*=/g, function (m, n) { uit.add(n); });
+  });
   t.replace(/export\s*\{([^}]*)\}/g, function (m, lijst) {
     lijst.split(',').forEach(function (d) { var n = d.trim().split(/\s+as\s+/).pop(); if (n) uit.add(n); });
   });
