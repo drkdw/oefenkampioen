@@ -70,7 +70,9 @@ tekst over de app met de links **Voor ouders** en **Broncode op GitHub**.
 
 Elk hoofdstuk heeft 0 tot 3 sterren volgens je beste score: 1 vanaf 50%, 2 vanaf 70%, 3 vanaf
 90%. Drie sterren geeft een sticker in **Mijn stickers**, een vast figuurtje per hoofdstuk. De
-teller telt de hoofdstukken tot je eigen leerjaar, plus elke sticker die je hoger al haalde. Per
+teller telt de hoofdstukken tot je eigen leerjaar, plus elke sticker die je hoger al haalde. Een
+hoofdstuk dat al gespeeld is, toont zijn sticker in de lijst (grijs tot hij verdiend is) en hoe
+vaak de toets al gemaakt is. Per
 kind telt de app op hoeveel dagen er deze maand geoefend is; er is geen reeks die breekt als je
 een dag overslaat.
 
@@ -108,6 +110,9 @@ het toestel geen Nederlandse stem, dan verschijnen knop en instelling niet.
 Na een toets met fouten verschijnt **Oefen je fouten**: een korte ronde met per fout een nieuwe
 vraag van hetzelfde soort. Die ronde telt niet voor de sterren, anders gaf 3 op 3 meteen een
 sticker. Wie opnieuw fouten maakt, kan die weer oefenen, of de hele toets opnieuw doen.
+Bovenaan het resultaat staat het hoofdstuk en de hoeveelste keer, bv. "Kwartieren · 3de keer".
+Na elke toets staat er ook **Volgende: …** met de titel van het volgende hoofdstuk, in de
+volgorde van de lijst; na een toets zonder fouten is dat de grote knop.
 
 ## De spellen
 

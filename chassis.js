@@ -267,7 +267,10 @@ function zetLeerjaar(lj) {
   state.leerjaar = lj;
   try { localStorage.setItem('oefenkampioen-leerjaar' + postfix(), String(lj)); } catch (e) { /* may fail */ }
 }
-function jaarNaam(lj) { return (lj === 1 ? '1ste' : lj + 'de') + ' leerjaar'; }
+// Dutch ordinals: 1ste, 2de ... 8ste ... 19de, and from 20 on always "ste"
+// ponytail: 102de and the like come out as 102ste, fine until a child plays a chapter 100 times
+function rangtal(n) { return n + (n === 1 || n === 8 || n >= 20 ? 'ste' : 'de'); }
+function jaarNaam(lj) { return rangtal(lj) + ' leerjaar'; }
 function leesAantal() {
   var a;
   try { a = parseInt(localStorage.getItem('oefenkampioen-aantal' + postfix()), 10); } catch (e) { a = NaN; }
@@ -550,14 +553,17 @@ function staatVan(beste) {
   if (!(Number(beste && beste.van) > 0)) return 'nieuw';
   return sterrenVoor(beste) === 3 ? 'klaar' : 'bijna';
 }
-function kaart(ico, nr, titel, tekst, beste, badge, sticker, rand) {
+// keer: how many full tests of this chapter were played. A played chapter shows its sticker too,
+// faded until it is earned, so a child sees what it is playing for
+function kaart(ico, nr, titel, tekst, beste, badge, sticker, rand, keer) {
   var n = sterrenVoor(beste), staat = staatVan(beste);
   var regel = staat === 'nieuw' ? ''
     : '<span class="hfd-score">' + (staat === 'klaar' ? 'Klaar! ' : '') + Number(beste.score) + ' op ' + Number(beste.van) +
-      (staat === 'bijna' ? '. Nog eens?' : '') + '</span>';
+      (staat === 'bijna' ? '. Nog eens?' : '') + (keer ? ' · ' + keer + ' keer gemaakt' : '') + '</span>';
+  var stickerKlas = rand ? 'rand-' + rand : staat !== 'nieuw' ? 'nog' : '';
   return '<span class="ico">' + ico + '</span>' +
     '<span class="tekst"><span class="hfd-titel">' + (nr ? nr + '. ' : '') + titel + '</span><span class="hfd-uitleg">' + tekst + '</span>' + regel + '</span>' +
-    '<span class="hfd-rechts">' + (sticker && rand ? '<span class="hfd-sticker rand-' + rand + '" aria-hidden="true">' + sticker + '</span>' : '') +
+    '<span class="hfd-rechts">' + (sticker && stickerKlas ? '<span class="hfd-sticker ' + stickerKlas + '" aria-hidden="true">' + sticker + '</span>' : '') +
     '<span class="sterren" role="img" aria-label="' + n + ' van 3 sterren">' + sterrenTekst(n) + '</span>' +
     (badge ? '<span class="badge ' + badge + '">' + badge + '</span>' : '') + '</span>';
 }
@@ -820,7 +826,7 @@ function verlaatOuders() {
 function toonMenu(spel) {
   stopKlok();
   state.spel = spel;
-  var beste = lees(), niveaus = leesNiveaus(actief());
+  var beste = lees(), niveaus = leesNiveaus(actief()), gespeeld = leesGespeeld(actief());
   // the child's own school year on top, the earlier years below as revision. With chapters from
   // several years a heading goes in between, so a child always sees which ones are its own
   var lijst = opVolgorde(spel, state.leerjaar);
@@ -834,7 +840,7 @@ function toonMenu(spel) {
     nr++;
     html += '<button class="hfd ' + staatVan(beste[spel.id + ':' + r.i]) + '" data-i="' + r.i + '">' +
       kaart(r.h.ico, nr, r.h.titel, r.h.tekst, beste[spel.id + ':' + r.i], r.h.badge, stickerVoor(spel.id, r.i),
-        randVoor(niveauVan(niveaus, beste, spel.id + ':' + r.i))) + '</button>';
+        randVoor(niveauVan(niveaus, beste, spel.id + ':' + r.i)), gespeeld[spel.id + ':' + r.i]) + '</button>';
   });
   $('menu').innerHTML = html;
   Array.prototype.forEach.call($('menu').querySelectorAll('.hfd'), function (b) {
@@ -1043,6 +1049,10 @@ function toonOefenResultaat() {
 }
 function toonResultaat() {
   if (state.oefenen) toonOefenResultaat(); else toonToetsResultaat();
+  // which chapter this was, and for a full test the how-manieth time, read after it was counted
+  var keer = leesGespeeld(state.profiel)[state.spel.id + ':' + state.hfd];
+  $('resultHfd').textContent = state.spel.hoofdstukken[state.hfd].titel +
+    (state.oefenen ? ' · je fouten' : keer ? ' · ' + rangtal(keer) + ' keer' : '');
   if (state.fouten.length) {
     $('review').innerHTML = '<h3>Deze mag je nog eens bekijken</h3>' + state.fouten.map(function (f) {
       return '<div class="rv"><b>' + f.vraag + '</b><em><span class="jouw">' + f.jouw +
@@ -1054,10 +1064,23 @@ function toonResultaat() {
   }
   $('oefenBtn').hidden = !state.fouten.length;
   $('oefenBtn').textContent = '🎯 Oefen je ' + (state.fouten.length === 1 ? 'fout' : state.fouten.length + ' fouten');
-  $('againBtn').textContent = state.oefenen ? '🔁 De hele toets' : '🔁 Nog een toets';
-  // one big button at a time: practising the mistakes first when there are any
-  $('againBtn').className = 'big-btn' + (state.fouten.length ? ' stil' : '');
+  // the chapter title on both buttons, so "again" and "next" read as a pair
+  $('againBtn').textContent = (state.oefenen ? '🔁 De hele toets: ' : '🔁 Nog eens: ') + state.spel.hoofdstukken[state.hfd].titel;
+  var volgend = volgendHoofdstuk();
+  $('volgendBtn').hidden = !volgend;
+  if (volgend) $('volgendBtn').textContent = '➡️ Volgende: ' + volgend.h.titel;
+  // one big button at a time: practising the mistakes first when there are any, then the next
+  // chapter after a full test, else the same test again
+  var groot = state.fouten.length ? 'oefenBtn' : volgend && !state.oefenen ? 'volgendBtn' : 'againBtn';
+  $('againBtn').className = 'big-btn' + (groot === 'againBtn' ? '' : ' stil');
+  $('volgendBtn').className = 'big-btn' + (groot === 'volgendBtn' ? '' : ' stil');
   toonScherm('result');
+}
+// the chapter after this one in the menu's own order, or nothing after the last one
+function volgendHoofdstuk() {
+  var lijst = opVolgorde(state.spel, state.leerjaar);
+  for (var p = 0; p < lijst.length; p++) if (lijst[p].i === state.hfd) return lijst[p + 1];
+  return undefined;
 }
 function toonToetsResultaat() {
   var s = state.score, sleutel = state.spel.id + ':' + state.hfd;
@@ -1111,6 +1134,7 @@ $('againBtn').onclick = function () { startHoofdstuk(state.hfd); };
 $('oefenBtn').onclick = function () {
   startHoofdstuk(state.hfd, state.fouten.map(function (f) { return f.soort; }));
 };
+$('volgendBtn').onclick = function () { startHoofdstuk(volgendHoofdstuk().i); };
 $('menuBtn').onclick = function () { toonMenu(state.spel); };
 $('homeBtn').onclick = function () { toonMenu(state.spel); };
 $('terugBtn').onclick = toonStart;

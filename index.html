@@ -575,6 +575,7 @@
     font-variant-numeric: tabular-nums;
   }
   .result p { margin: 0; color: var(--ink-soft); }
+  .result .result-hfd { font-family: Fredoka, sans-serif; font-size: 18px; color: var(--ink); }
   .review { text-align: left; display: flex; flex-direction: column; gap: 8px; }
   .review h3 { font-family: Fredoka, sans-serif; font-size: 17px; margin: 6px 0 0; color: var(--ink); }
   .rv {
@@ -741,6 +742,7 @@
   }
   .sterren { color: var(--gold); font-size: 16px; letter-spacing: 1px; }
   .hfd-sticker { font-size: 24px; }
+  .hfd-sticker.nog { filter: grayscale(1); opacity: .45; }
   /* sticker levels: a test of 15 questions with 3 stars gives a silver rim, 20 a gold one */
   .hfd-sticker.rand-zilver, .hfd-sticker.rand-goud {
     display: inline-flex; align-items: center; justify-content: center;
@@ -1027,6 +1029,7 @@
   </div>
 
   <div class="result" id="result" hidden>
+    <p class="result-hfd" id="resultHfd"></p>
     <div class="stars" id="stars" role="img" aria-live="polite"></div>
     <h2 id="resultTitle">Goed gedaan!</h2>
     <div class="big-score" id="resultScore">0 / 10</div>
@@ -1038,7 +1041,8 @@
     </div>
     <div class="review" id="review" hidden></div>
     <button class="big-btn" id="oefenBtn" hidden>🎯 Oefen je fouten</button>
-    <button class="big-btn" id="againBtn">&#128257; Nog een toets</button>
+    <button class="big-btn stil" id="volgendBtn" hidden></button>
+    <button class="big-btn" id="againBtn">&#128257; Nog eens</button>
     <button class="big-btn stil" id="menuBtn">&#127968; Naar de hoofdstukken</button>
   </div>
 </div>
