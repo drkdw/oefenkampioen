@@ -50,8 +50,12 @@ Een leerjaar is cumulatief. Kies je het derde, dan zie je alles tot en met het d
 uren van het eerste, de kwartieren van het tweede en de tijdsduur van het derde. Wie in het derde
 zit moet de kwartieren immers nog kunnen oefenen.
 
-- binnen een spel staat je eigen leerjaar bovenaan, daaronder de vorige leerjaren onder het kopje
-  **Herhaling**, van recent naar vroeger; je hoeft het leerjaar niet nog eens te kiezen
+- binnen een spel staat enkel **Mijn 2de leerjaar** (je eigen leerjaar); de vorige leerjaren zitten
+  achter één knop, **↩️ Ook oefenen van het 1ste leerjaar**, en verschijnen dan van recent naar
+  vroeger. Na een hoofdstuk van vroeger blijven ze open; via het startscherm begint de lijst weer
+  met enkel je eigen leerjaar. Is er niets van je eigen leerjaar, dan staan ze meteen open
+- een hoofdstuk van een lager leerjaar draagt tijdens de toets en op het resultaat het label
+  **↩️ Van het 1ste leerjaar**; je eigen werk krijgt geen label
 - een spel zonder iets voor het gekozen niveau staat niet op het startscherm
 - een kind dat vooruit wil, zet het leerjaar een stapje hoger
 
@@ -117,7 +121,10 @@ sticker. Wie opnieuw fouten maakt, kan die weer oefenen, of de hele toets opnieu
 Bovenaan het resultaat staat het hoofdstuk en de hoeveelste keer, bv. "Kwartieren · 3de keer".
 Na een toets staat de sticker van het hoofdstuk er altijd bij, grijs zolang hij nog niet verdiend is.
 Na elke toets staat er ook **Volgende: …** met de titel van het volgende hoofdstuk, in de
-volgorde van de lijst; na een toets zonder fouten is dat de grote knop.
+volgorde van de lijst; na een toets zonder fouten is dat de grote knop. Volgende springt nooit
+ongemerkt naar een ander leerjaar: na het laatste hoofdstuk van een leerjaar staat er "🎉 Dat was
+het laatste hoofdstuk van het 2de leerjaar!" en opent **↩️ Oefen het 1ste leerjaar** dat deel van
+de lijst, waar het kind zelf kiest.
 
 ## De spellen
 

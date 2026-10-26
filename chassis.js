@@ -374,7 +374,7 @@ function bewaar(profiel, sleutel, score, van) {
 var state = {
   spel: null, hfd: 0, leerjaar: 3, aantal: 10, q: 0, score: 0, results: [], fouten: [],
   current: null, answered: false, sound: true, tempo: false, klok: null, verder: null, instellingenOpen: false, profiel: '',
-  plan: [], decks: {}, jassen: {}, vorigJasje: null, vorigeSleutel: null
+  plan: [], decks: {}, jassen: {}, vorigJasje: null, vorigeSleutel: null, vroegerOpen: null
 };
 var ac = null;
 
@@ -586,6 +586,8 @@ function kaart(ico, nr, titel, tekst, beste, badge, sticker, rand, keer, behaald
 function toonStart() {
   // a running tempo timer would otherwise fire a fail beep on the start screen
   stopKlok();
+  // a game opened from here starts tidy again, with only the child's own school year
+  state.vroegerOpen = null;
   var beste = lees();
   // a game with nothing for the chosen school year is not listed: a child should not have to
   // open a game first to find out it is empty there
@@ -879,15 +881,21 @@ function toonMenu(spel) {
   stopKlok();
   state.spel = spel;
   var beste = lees(), niveaus = leesNiveaus(actief()), gespeeld = leesGespeeld(actief()), behaald = leesBehaald(actief());
-  // the child's own school year on top, the earlier years below as revision. With chapters from
-  // several years a heading goes in between, so a child always sees which ones are its own
+  // the child's own school year on top; the earlier years wait behind one button, so a child sees
+  // only its own work until it asks for more. They are open right away when there is nothing of
+  // its own, or after it played one of them
   var lijst = opVolgorde(spel, state.leerjaar);
-  var meerJaren = lijst.some(function (r) { return r.h.leerjaar !== lijst[0].h.leerjaar; });
+  var eigen = lijst.some(function (r) { return r.h.leerjaar === state.leerjaar; });
+  var jaren = [];
+  lijst.forEach(function (r) { if (r.h.leerjaar < state.leerjaar && jaren.indexOf(r.h.leerjaar) < 0) jaren.push(r.h.leerjaar); });
+  var open = !eigen || state.vroegerOpen === spel.id;
   var html = '', huidigJaar = null, nr = 0;
   lijst.forEach(function (r) {
+    if (r.h.leerjaar < state.leerjaar && !open) return;
     if (r.h.leerjaar !== huidigJaar) {
       huidigJaar = r.h.leerjaar;
-      if (meerJaren) html += '<p class="jaarkop">' + (huidigJaar === state.leerjaar ? '' : 'Herhaling: ') + jaarNaam(huidigJaar) + '</p>';
+      html += '<p class="jaarkop' + (huidigJaar < state.leerjaar ? ' vroeger' : '') + '" data-jaar="' + huidigJaar + '">' +
+        (huidigJaar === state.leerjaar ? 'Mijn ' + jaarNaam(huidigJaar) : '↩️ Van het ' + jaarNaam(huidigJaar)) + '</p>';
     }
     nr++;
     var k = spel.id + ':' + r.i, rand = randVoor(niveauVan(niveaus, beste, k));
@@ -895,10 +903,15 @@ function toonMenu(spel) {
       kaart(r.h.ico, nr, r.h.titel, r.h.tekst, beste[k], r.h.badge, stickerVoor(spel.id, r.i), rand, gespeeld[k],
         keerBehaald(behaald, k, rand)) + '</button>';
   });
+  if (jaren.length && !open) {
+    html += '<button class="vroeger-knop" id="vroegerKnop">↩️ Ook oefenen van ' +
+      (jaren.length === 1 ? 'het ' + jaarNaam(jaren[0]) : 'vorige leerjaren') + '</button>';
+  }
   $('menu').innerHTML = html;
   Array.prototype.forEach.call($('menu').querySelectorAll('.hfd'), function (b) {
     b.onclick = function () { startHoofdstuk(Number(b.dataset.i)); };
   });
+  if ($('vroegerKnop')) $('vroegerKnop').onclick = function () { toonVroeger(jaren[0]); };
   $('kop').innerHTML = spel.ico + ' ' + spel.naam;
   $('spelTitel').textContent = spel.naam;
   $('spelLead').textContent = lijst.length
@@ -907,6 +920,18 @@ function toonMenu(spel) {
       '. Kies bovenaan een ander leerjaar, of een ander spel.';
   stopVerder();
   toonScherm('menu');
+}
+// the chapter list with the earlier years open, scrolled to the given year
+function toonVroeger(jaar) {
+  state.vroegerOpen = state.spel.id;
+  toonMenu(state.spel);
+  var kop = $('menu').querySelector('[data-jaar="' + jaar + '"]');
+  if (kop) kop.scrollIntoView({ block: 'start', behavior: reduced ? 'auto' : 'smooth' });
+}
+// only a chapter from an earlier school year says so; the child's own work needs no label
+function vroegerTekst(i) {
+  var lj = state.spel.hoofdstukken[i].leerjaar;
+  return lj < state.leerjaar ? '↩️ Van het ' + jaarNaam(lj) : '';
 }
 // soorten given: a short round with a new question of the same kind for every mistake. That
 // round never counts for stars, or three right answers out of three would earn a sticker
@@ -924,6 +949,10 @@ function startHoofdstuk(i, soorten, aantal) {
   state.lengte = soorten ? soorten.length : aantal || state.aantal;
   bouwToets(soorten, state.lengte);
   $('hfdTitel').textContent = state.spel.hoofdstukken[i].titel + (soorten ? ': je fouten' : '');
+  $('vroegerLabel').textContent = vroegerTekst(i);
+  $('vroegerLabel').hidden = !vroegerTekst(i);
+  // back in the list after an earlier year's chapter, those chapters stay open
+  if (vroegerTekst(i)) state.vroegerOpen = state.spel.id;
   $('spelNaam').textContent = naam();
   $('spelNaam').hidden = !naam();
   stopVerder();
@@ -1119,9 +1148,17 @@ function toonResultaat() {
   $('oefenBtn').textContent = '🎯 Oefen je ' + (state.fouten.length === 1 ? 'fout' : state.fouten.length + ' fouten');
   // the chapter title on both buttons, so "again" and "next" read as a pair
   $('againBtn').textContent = (state.oefenen ? '🔁 De hele toets: ' : '🔁 Nog eens: ') + state.spel.hoofdstukken[state.hfd].titel;
-  var volgend = volgendHoofdstuk();
+  $('resultVroeger').textContent = vroegerTekst(state.hfd);
+  $('resultVroeger').hidden = !vroegerTekst(state.hfd);
+  // "Volgende" never slips into another school year unnoticed: the end of a year is said out loud,
+  // and the button then opens the earlier year in the list, where the child picks for itself
+  var volgend = volgendHoofdstuk(), jaar = state.spel.hoofdstukken[state.hfd].leerjaar;
+  var eindeJaar = !volgend || volgend.h.leerjaar !== jaar;
+  $('eindeJaar').hidden = !eindeJaar || state.oefenen;
+  $('eindeJaar').textContent = '🎉 Dat was het laatste hoofdstuk van het ' + jaarNaam(jaar) + '!';
   $('volgendBtn').hidden = !volgend;
-  if (volgend) $('volgendBtn').textContent = '➡️ Volgende: ' + volgend.h.titel;
+  if (volgend) $('volgendBtn').textContent = eindeJaar ? '↩️ Oefen het ' + jaarNaam(volgend.h.leerjaar)
+    : '➡️ Volgende: ' + volgend.h.titel;
   // one big button at a time: practising the mistakes first when there are any, then the next
   // chapter after a full test, else the same test again
   var groot = state.fouten.length ? 'oefenBtn' : volgend && !state.oefenen ? 'volgendBtn' : 'againBtn';
@@ -1194,7 +1231,10 @@ $('againBtn').onclick = function () { startHoofdstuk(state.hfd); };
 $('oefenBtn').onclick = function () {
   startHoofdstuk(state.hfd, state.fouten.map(function (f) { return f.soort; }));
 };
-$('volgendBtn').onclick = function () { startHoofdstuk(volgendHoofdstuk().i); };
+$('volgendBtn').onclick = function () {
+  var v = volgendHoofdstuk();
+  if (v.h.leerjaar !== state.spel.hoofdstukken[state.hfd].leerjaar) toonVroeger(v.h.leerjaar); else startHoofdstuk(v.i);
+};
 $('menuBtn').onclick = function () { toonMenu(state.spel); };
 $('homeBtn').onclick = function () { toonMenu(state.spel); };
 $('terugBtn').onclick = toonStart;

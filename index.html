@@ -326,6 +326,18 @@
      only to keep the list readable once it spans several school years */
   .jaarkop { font-family: Fredoka, sans-serif; font-size: 14px; color: var(--ink-soft); margin: 6px 4px -2px; }
   .jaarkop:first-child { margin-top: 0; }
+  .jaarkop.vroeger { margin-top: 14px; }
+  /* earlier school years: one calm button under the child's own chapters, and the same calm
+     colour on the label during a test from such a year */
+  .vroeger-knop {
+    font: inherit; font-family: Fredoka, sans-serif; font-size: 16px; cursor: pointer; margin-top: 6px; padding: 14px;
+    border-radius: 18px; border: 3px dashed var(--zilver); background: var(--zilver-bg); color: var(--zilver-ink);
+  }
+  .vroeger-label {
+    align-self: center; justify-self: center; width: fit-content; margin: 0 auto; padding: 3px 12px; border-radius: 999px;
+    font-family: Fredoka, sans-serif; font-size: 14px; background: var(--zilver-bg); color: var(--zilver-ink); border: 2px solid var(--zilver);
+  }
+  .result .einde-jaar { font-family: Fredoka, sans-serif; font-size: 18px; color: var(--ink); }
   .badge {
     flex: none;
     font-family: Fredoka, sans-serif;
@@ -1041,6 +1053,7 @@
       <span class="naampil" id="spelNaam" hidden></span>
       <button class="icon-btn geluid" id="soundBtn2" aria-label="Geluid aan of uit">&#128266;</button>
     </div>
+    <p class="vroeger-label" id="vroegerLabel" hidden></p>
     <div class="dots" id="dots" role="list" aria-label="Voortgang van je toets"></div>
     <div class="tempobalk" id="tempobalk" hidden><span id="tempovulling"></span></div>
 
@@ -1075,11 +1088,13 @@
   </div>
 
   <div class="result" id="result" hidden>
+    <p class="vroeger-label" id="resultVroeger" hidden></p>
     <p class="result-hfd" id="resultHfd"></p>
     <div class="stars" id="stars" role="img" aria-live="polite"></div>
     <h2 id="resultTitle">Goed gedaan!</h2>
     <div class="big-score" id="resultScore">0 / 10</div>
     <p id="resultMsg"></p>
+    <p class="einde-jaar" id="eindeJaar" hidden></p>
     <div class="nieuwe-sticker" id="nieuweSticker" hidden>
       <span class="met-teller"><button class="sticker-groot" id="stickerGroot"></button><span class="vak-teller" id="stickerKeer" aria-hidden="true" hidden></span></span>
       <span id="stickerTekst">Nieuwe sticker! Hij zit in je stickerboek.</span>
