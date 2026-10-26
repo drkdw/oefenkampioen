@@ -692,12 +692,14 @@ function toonStickerboek() {
 // an earned sticker counts once at least, also when it was earned before counting began
 function keerBehaald(behaald, k, rand) { return rand ? Math.max(behaald[k] || 0, 1) : 0; }
 // the words under a sticker up close: gold gets the game's own champion line, the rest praise
-// for how often it was earned and the next step up
+// for how often it was earned; the next step up is the play button below it
 function lofVoor(spel, rand, keer) {
   if (rand === 'goud') return (spel.top || 'Jij bent een echte kampioen!') + ' 🏆';
-  var lof = keer >= 5 ? 'Al ' + keer + ' keer! Jij geeft nooit op.' : keer > 1 ? 'Knap, al ' + keer + ' keer gehaald!' : 'Goed gedaan, deze is van jou!';
-  return lof + ' Speel eens ' + (rand === 'zilver' ? GOUD + ' vragen voor goud.' : ZILVER + ' vragen voor zilver.');
+  return keer >= 5 ? 'Al ' + keer + ' keer! Jij geeft nooit op.' : keer > 1 ? 'Knap, al ' + keer + ' keer gehaald!' : 'Goed gedaan, deze is van jou!';
 }
+// what the play button in the sticker view starts: the test that makes the sticker one step
+// better, or for gold simply the chapter again at the usual length
+var stickerDoel = null;
 // one earned sticker up close, with a fun fact; a sticker not earned yet stays a surprise
 function toonStickerGroot(spel, i) {
   var k = spel.id + ':' + i, rand = randVoor(niveauVan(leesNiveaus(actief()), lees(), k));
@@ -712,6 +714,9 @@ function toonStickerGroot(spel, i) {
     ' · ' + keer + ' keer behaald';
   $('sdLof').textContent = lofVoor(spel, rand, keer);
   $('sdWeetje').textContent = WEETJES[sticker] || '';
+  stickerDoel = { spel: spel, i: i, aantal: rand === 'goud' ? null : rand === 'zilver' ? GOUD : ZILVER };
+  $('sdSpeel').textContent = rand === 'goud' ? '▶️ Nog eens spelen'
+    : '▶️ ' + stickerDoel.aantal + ' vragen voor ' + (rand === 'zilver' ? 'goud' : 'zilver');
   $('stickerDialoog').showModal();
 }
 /* ==================== profiles panel ==================== */
@@ -1194,6 +1199,11 @@ $('stickerTerugBtn').onclick = toonStart;
 $('naarBoekBtn').onclick = toonStickerboek;
 $('stickerGroot').onclick = function () { toonStickerGroot(state.spel, state.hfd); };
 $('sdSluit').onclick = function () { $('stickerDialoog').close(); };
+$('sdSpeel').onclick = function () {
+  $('stickerDialoog').close();
+  state.spel = stickerDoel.spel;
+  startHoofdstuk(stickerDoel.i, null, stickerDoel.aantal);
+};
 // a tap next to the card, on the dimmed backdrop, closes it too
 $('stickerDialoog').addEventListener('click', function (e) { if (e.target === this) this.close(); });
 $('instelRegel').onclick = function () { zetInstellingen(!state.instellingenOpen); };

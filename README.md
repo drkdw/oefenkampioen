@@ -75,7 +75,8 @@ hoofdstuk dat al gespeeld is, toont zijn sticker in de lijst (grijs tot hij verd
 vaak de toets al gemaakt is. Haal je een sticker opnieuw, dan krijgt hij in het stickerboek en op
 het resultaat een badge met het aantal keer behaald (×3); dat telt enkel toetsen met 3 sterren,
 dus het kan lager zijn dan het aantal keer gemaakt. Tik op een verdiende sticker om hem groot te
-zien, met zijn niveau, een aanmoediging en een weetje (`weetjes.js`, één per sticker). Per
+zien, met zijn niveau, een aanmoediging en een weetje (`weetjes.js`, één per sticker). Een knop
+start daar meteen de toets die hem beter maakt: 15 vragen voor zilver, 20 voor goud. Per
 kind telt de app op hoeveel dagen er deze maand geoefend is; er is geen reeks die breekt als je
 een dag overslaat.
 
