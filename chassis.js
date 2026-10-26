@@ -568,8 +568,9 @@ function staatVan(beste) {
   return sterrenVoor(beste) === 3 ? 'klaar' : 'bijna';
 }
 // keer: how many full tests of this chapter were played. A played chapter shows its sticker too,
-// faded until it is earned, so a child sees what it is playing for
-function kaart(ico, nr, titel, tekst, beste, badge, sticker, rand, keer) {
+// faded until it is earned, so a child sees what it is playing for; behaald: how often it was
+// earned, the same ×N as in the sticker book
+function kaart(ico, nr, titel, tekst, beste, badge, sticker, rand, keer, behaald) {
   var n = sterrenVoor(beste), staat = staatVan(beste);
   var regel = staat === 'nieuw' ? ''
     : '<span class="hfd-score">' + (staat === 'klaar' ? 'Klaar! ' : '') + Number(beste.score) + ' op ' + Number(beste.van) +
@@ -577,7 +578,8 @@ function kaart(ico, nr, titel, tekst, beste, badge, sticker, rand, keer) {
   var stickerKlas = rand ? 'rand-' + rand : staat !== 'nieuw' ? 'nog' : '';
   return '<span class="ico">' + ico + '</span>' +
     '<span class="tekst"><span class="hfd-titel">' + (nr ? nr + '. ' : '') + titel + '</span><span class="hfd-uitleg">' + tekst + '</span>' + regel + '</span>' +
-    '<span class="hfd-rechts">' + (sticker && stickerKlas ? '<span class="hfd-sticker ' + stickerKlas + '" aria-hidden="true">' + sticker + '</span>' : '') +
+    '<span class="hfd-rechts">' + (sticker && stickerKlas ? '<span class="met-teller"><span class="hfd-sticker ' + stickerKlas + '" aria-hidden="true">' + sticker + '</span>' +
+      (behaald > 1 ? '<span class="vak-teller" aria-hidden="true">×' + behaald + '</span>' : '') + '</span>' : '') +
     '<span class="sterren" role="img" aria-label="' + n + ' van 3 sterren">' + sterrenTekst(n) + '</span>' +
     (badge ? '<span class="badge ' + badge + '">' + badge + '</span>' : '') + '</span>';
 }
@@ -876,7 +878,7 @@ function verlaatOuders() {
 function toonMenu(spel) {
   stopKlok();
   state.spel = spel;
-  var beste = lees(), niveaus = leesNiveaus(actief()), gespeeld = leesGespeeld(actief());
+  var beste = lees(), niveaus = leesNiveaus(actief()), gespeeld = leesGespeeld(actief()), behaald = leesBehaald(actief());
   // the child's own school year on top, the earlier years below as revision. With chapters from
   // several years a heading goes in between, so a child always sees which ones are its own
   var lijst = opVolgorde(spel, state.leerjaar);
@@ -888,9 +890,10 @@ function toonMenu(spel) {
       if (meerJaren) html += '<p class="jaarkop">' + (huidigJaar === state.leerjaar ? '' : 'Herhaling: ') + jaarNaam(huidigJaar) + '</p>';
     }
     nr++;
-    html += '<button class="hfd ' + staatVan(beste[spel.id + ':' + r.i]) + '" data-i="' + r.i + '">' +
-      kaart(r.h.ico, nr, r.h.titel, r.h.tekst, beste[spel.id + ':' + r.i], r.h.badge, stickerVoor(spel.id, r.i),
-        randVoor(niveauVan(niveaus, beste, spel.id + ':' + r.i)), gespeeld[spel.id + ':' + r.i]) + '</button>';
+    var k = spel.id + ':' + r.i, rand = randVoor(niveauVan(niveaus, beste, k));
+    html += '<button class="hfd ' + staatVan(beste[k]) + '" data-i="' + r.i + '">' +
+      kaart(r.h.ico, nr, r.h.titel, r.h.tekst, beste[k], r.h.badge, stickerVoor(spel.id, r.i), rand, gespeeld[k],
+        keerBehaald(behaald, k, rand)) + '</button>';
   });
   $('menu').innerHTML = html;
   Array.prototype.forEach.call($('menu').querySelectorAll('.hfd'), function (b) {

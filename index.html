@@ -743,6 +743,9 @@
   .sterren { color: var(--gold); font-size: 16px; letter-spacing: 1px; }
   .hfd-sticker { font-size: 24px; }
   .hfd-sticker.nog { filter: grayscale(1); opacity: .45; }
+  /* beside the small sticker rather than on it, with room before the stars */
+  .hfd-rechts .met-teller:has(.vak-teller) { margin-right: 12px; }
+  .hfd-sticker + .vak-teller { font-size: 11px; line-height: 15px; min-width: 18px; padding: 0 4px; right: -16px; bottom: -4px; }
   /* sticker levels: a test of 15 questions with 3 stars gives a silver rim, 20 a gold one */
   .hfd-sticker.rand-zilver, .hfd-sticker.rand-goud {
     display: inline-flex; align-items: center; justify-content: center;
@@ -779,6 +782,8 @@
   @keyframes twinkel { 0%, 100% { transform: scale(.3); opacity: 0; } 45%, 60% { transform: scale(1) rotate(20deg); opacity: 1; } }
   #stickerScherm { display: flex; flex-direction: column; gap: 14px; }
   .boekspel h3 { font-family: Fredoka, sans-serif; font-size: 17px; margin: 4px 0 8px; color: var(--ink); }
+  /* room under each row for the ×N badges that hang below the stickers */
+  .boekspel { margin-bottom: 22px; }
   .boek { display: grid; grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)); gap: 12px; }
   .vak {
     aspect-ratio: 1; border-radius: 16px; background: var(--card); border: 3px solid var(--line);
@@ -812,6 +817,7 @@
   .weetje { background: var(--bg); border-radius: 16px; padding: 12px 14px; text-align: left; display: flex; flex-direction: column; gap: 4px; }
   .weetje b { font-family: Fredoka, sans-serif; color: var(--ink); }
   .sticker-dialoog .big-btn { margin-top: 4px; }
+  .sticker-dialoog .sd-sluit { position: absolute; top: 12px; right: 12px; }
   .vak.leeg { background: none; border-style: dashed; color: var(--line); font-family: Fredoka, sans-serif; font-size: 20px; }
   .result .stars .ster { display: inline-block; color: var(--line); animation: sterIn .35s ease-out both; }
   .result .stars .ster.aan { color: var(--gold); }
@@ -918,13 +924,13 @@
 
   <!-- one sticker up close: tapped in the sticker book or on the result -->
   <dialog class="sticker-dialoog" id="stickerDialoog" aria-labelledby="sdTitel">
+    <button class="icon-btn sd-sluit" id="sdSluit" aria-label="Sluiten">✕</button>
     <span class="met-teller"><span class="sticker-groot" id="sdSticker" aria-hidden="true"></span><span class="vak-teller" id="sdKeer" aria-hidden="true" hidden></span></span>
     <h3 id="sdTitel"></h3>
     <p class="sd-niveau" id="sdNiveau"></p>
     <p class="sd-lof" id="sdLof"></p>
     <p class="weetje"><b>💡 Weetje</b><span id="sdWeetje"></span></p>
     <button class="big-btn" id="sdSpeel"></button>
-    <button class="big-btn stil" id="sdSluit">Sluiten</button>
   </dialog>
 
   <div id="ouderScherm" hidden>

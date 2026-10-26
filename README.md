@@ -72,8 +72,8 @@ Elk hoofdstuk heeft 0 tot 3 sterren volgens je beste score: 1 vanaf 50%, 2 vanaf
 90%. Drie sterren geeft een sticker in **Mijn stickers**, een vast figuurtje per hoofdstuk. De
 teller telt de hoofdstukken tot je eigen leerjaar, plus elke sticker die je hoger al haalde. Een
 hoofdstuk dat al gespeeld is, toont zijn sticker in de lijst (grijs tot hij verdiend is) en hoe
-vaak de toets al gemaakt is. Haal je een sticker opnieuw, dan krijgt hij in het stickerboek en op
-het resultaat een badge met het aantal keer behaald (×3); dat telt enkel toetsen met 3 sterren,
+vaak de toets al gemaakt is. Haal je een sticker opnieuw, dan krijgt hij in het stickerboek, in de
+lijst van hoofdstukken en op het resultaat een badge met het aantal keer behaald (×3); dat telt enkel toetsen met 3 sterren,
 dus het kan lager zijn dan het aantal keer gemaakt. Tik op een verdiende sticker om hem groot te
 zien, met zijn niveau, een aanmoediging en een weetje (`weetjes.js`, één per sticker). Een knop
 start daar meteen de toets die hem beter maakt: 15 vragen voor zilver, 20 voor goud. Per
