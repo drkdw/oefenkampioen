@@ -667,34 +667,32 @@ function toonStart() {
 }
 /* ==================== settings ==================== */
 // everything a child can change about how it plays, on its own screen behind the name menu
+// one row of choice pills; data-<naam> carries the value for tests and styling
+function toonKeuzes(plek, naam, opties, gekozen, kies) {
+  plek.innerHTML = opties.map(function (o, i) {
+    return '<button class="aantal" data-i="' + i + '" data-' + naam + '="' + o.w + '" aria-pressed="' + (o.w === gekozen) + '"' +
+      (o.label ? ' aria-label="' + o.label + '"' : '') + '>' + o.tekst + '</button>';
+  }).join('');
+  Array.prototype.forEach.call(plek.children, function (b) {
+    b.onclick = function () { kies(opties[Number(b.dataset.i)].w); };
+  });
+}
+var JAAR_KEUZES = LEERJAREN.map(function (lj) { return { w: lj, tekst: lj, label: jaarNaam(lj) }; });
+var AANTAL_KEUZES = AANTALLEN.map(function (a) { return { w: a, tekst: a }; });
+var TEMPO_KEUZES = [{ w: false, tekst: 'nee, rustig' }, { w: true, tekst: 'ja, met klok' }];
+var VOORLEES_KEUZES = [{ w: false, tekst: 'nee, enkel als ik tik' }, { w: true, tekst: 'ja, elke vraag' }];
+// what a longer test is worth: the sticker level it can earn
+function aantalUitleg(a) {
+  return a >= GOUD ? 'Met 3 sterren wordt je sticker goud.'
+    : a >= ZILVER ? 'Met 3 sterren wordt je sticker zilver. Kies ' + GOUD + ' voor goud.'
+    : 'Kort oefenen. Met 3 sterren krijg je een sticker. Kies ' + ZILVER + ' voor zilver, ' + GOUD + ' voor goud.';
+}
 function toonInstelKnoppen() {
-  $('leerjaren').innerHTML = LEERJAREN.map(function (lj) {
-    return '<button class="aantal" data-lj="' + lj + '" aria-pressed="' + (lj === state.leerjaar) +
-      '" aria-label="' + jaarNaam(lj) + '">' + lj + '</button>';
-  }).join('');
-  Array.prototype.forEach.call($('leerjaren').children, function (b) {
-    b.onclick = function () { zetLeerjaar(Number(b.dataset.lj)); toonInstelKnoppen(); };
-  });
-  $('aantallen').innerHTML = AANTALLEN.map(function (a) {
-    return '<button class="aantal" data-a="' + a + '" aria-pressed="' + (a === state.aantal) + '">' + a + '</button>';
-  }).join('');
-  Array.prototype.forEach.call($('aantallen').children, function (b) {
-    b.onclick = function () { zetAantal(Number(b.dataset.a)); toonInstelKnoppen(); };
-  });
-  $('tempoKnop').innerHTML = [false, true].map(function (aan) {
-    return '<button class="aantal" data-t="' + aan + '" aria-pressed="' + (aan === state.tempo) + '">' +
-      (aan ? 'ja, met klok' : 'nee, rustig') + '</button>';
-  }).join('');
-  Array.prototype.forEach.call($('tempoKnop').children, function (b) {
-    b.onclick = function () { zetTempo(b.dataset.t === 'true'); toonInstelKnoppen(); };
-  });
-  $('voorleesKnop').innerHTML = [false, true].map(function (aan) {
-    return '<button class="aantal" data-v="' + aan + '" aria-pressed="' + (aan === state.voorlezen) + '">' +
-      (aan ? 'ja, elke vraag' : 'nee, enkel als ik tik') + '</button>';
-  }).join('');
-  Array.prototype.forEach.call($('voorleesKnop').children, function (b) {
-    b.onclick = function () { zetVoorlezen(b.dataset.v === 'true'); toonInstelKnoppen(); };
-  });
+  toonKeuzes($('leerjaren'), 'lj', JAAR_KEUZES, state.leerjaar, function (w) { zetLeerjaar(w); toonInstelKnoppen(); });
+  toonKeuzes($('aantallen'), 'a', AANTAL_KEUZES, state.aantal, function (w) { zetAantal(w); toonInstelKnoppen(); });
+  $('aantalUitleg').textContent = aantalUitleg(state.aantal);
+  toonKeuzes($('tempoKnop'), 't', TEMPO_KEUZES, state.tempo, function (w) { zetTempo(w); toonInstelKnoppen(); });
+  toonKeuzes($('voorleesKnop'), 'v', VOORLEES_KEUZES, state.voorlezen, function (w) { zetVoorlezen(w); toonInstelKnoppen(); });
   $('voorleesKaart').hidden = !kanVoorlezen();
   var p = profielen().filter(function (q) { return q.sleutel === actief(); })[0];
   $('kleurKaart').hidden = !p;
@@ -766,7 +764,7 @@ function toonStickerGroot(spel, i) {
 /* ==================== who is playing ==================== */
 // the first screen when more than one child plays on this device, like the profile picker of a
 // streaming app; also the only place to add a child
-var nieuweKleur = 0, nieuwJaar = null;
+var nieuweKleur = 0, nieuwJaar = null, nieuwAantal, nieuwTempo, nieuwVoorlezen;
 function toonWie(nieuw) {
   sluitProfielPaneel();
   stopKlok();
@@ -792,18 +790,21 @@ function toonWie(nieuw) {
   toonKleuren($('wieKleuren'), nieuweKleur, function (i) { nieuweKleur = i; });
   // no year preselected: a wrong guess would hand a first grader the sums of the third
   nieuwJaar = null;
-  toonNieuwJaren();
+  nieuwAantal = AANTALLEN[0]; nieuwTempo = false; nieuwVoorlezen = false;
+  toonNieuwKeuzes();
   zetKlaar();
   toonScherm('wie');
   if (open) $('naam').focus();
 }
-function toonNieuwJaren() {
-  $('wieJaren').innerHTML = LEERJAREN.map(function (lj) {
-    return '<button class="aantal" data-lj="' + lj + '" aria-pressed="' + (lj === nieuwJaar) + '" aria-label="' + jaarNaam(lj) + '">' + lj + '</button>';
-  }).join('');
-  Array.prototype.forEach.call($('wieJaren').children, function (b) {
-    b.onclick = function () { nieuwJaar = Number(b.dataset.lj); toonNieuwJaren(); zetKlaar(); };
-  });
+// child and parent usually fill this in together: every setting is visible with what it does,
+// only the school year has no default
+function toonNieuwKeuzes() {
+  toonKeuzes($('wieJaren'), 'lj', JAAR_KEUZES, nieuwJaar, function (w) { nieuwJaar = w; toonNieuwKeuzes(); zetKlaar(); });
+  toonKeuzes($('wieAantallen'), 'a', AANTAL_KEUZES, nieuwAantal, function (w) { nieuwAantal = w; toonNieuwKeuzes(); });
+  $('wieAantalUitleg').textContent = aantalUitleg(nieuwAantal);
+  toonKeuzes($('wieTempo'), 't', TEMPO_KEUZES, nieuwTempo, function (w) { nieuwTempo = w; toonNieuwKeuzes(); });
+  toonKeuzes($('wieVoorlezen'), 'v', VOORLEES_KEUZES, nieuwVoorlezen, function (w) { nieuwVoorlezen = w; toonNieuwKeuzes(); });
+  $('wieVoorleesKaart').hidden = !kanVoorlezen();
 }
 // a child can only start once everything the games need is there
 function zetKlaar() { $('naamOk').disabled = !sleutelVan($('naam').value) || !nieuwJaar; }
@@ -1342,6 +1343,7 @@ function bevestigNieuwProfiel() {
   if ($('naamOk').disabled) return;
   nieuwProfiel($('naam').value, nieuweKleur);
   zetLeerjaar(nieuwJaar);
+  zetAantal(nieuwAantal); zetTempo(nieuwTempo); zetVoorlezen(nieuwVoorlezen);
   $('naam').value = '';
   toonStart();
 }

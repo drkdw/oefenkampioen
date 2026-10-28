@@ -174,6 +174,7 @@ async function acties() {
   check(opslag('leerjaar', 'Emma') === '1', 'het gekozen leerjaar is niet bewaard');
   check(profielen()[0].kleur === 4, 'de gekozen kleur is niet bewaard');
   check(state.leerjaar === 1, 'de spellen tonen niet het gekozen leerjaar');
+  check(opslag('aantal', 'Emma') === '10' && opslag('tempo', 'Emma') === 'uit', 'de standaardinstellingen van Nieuw kind worden niet bewaard');
   f = await laadVers(); d = f.contentDocument;
   check(d.body.dataset.scherm === 'start', 'met één kind opent de app niet meteen op de spellen');
   f.remove();
@@ -188,6 +189,17 @@ async function acties() {
   check(d.querySelectorAll('.wiekies[data-sleutel]').length === 2, 'Wie speelt er? toont niet twee kinderen');
   f.remove();
 
+  // the settings in the new child form are kept for that child
+  $('profielBtn').click(); $('wisselBtn').click(); $('wieNieuw').click();
+  $('naam').value = 'Bas'; $('naam').dispatchEvent(new Event('input'));
+  $('wieJaren').querySelector('[data-lj="4"]').click();
+  $('wieAantallen').querySelector('[data-a="15"]').click();
+  check(/zilver/.test($('wieAantalUitleg').textContent), 'bij 15 vragen staat niet dat de sticker zilver wordt');
+  $('wieTempo').querySelector('[data-t="true"]').click();
+  $('naamOk').click();
+  check(opslag('aantal', 'Bas') === '15' && opslag('tempo', 'Bas') === 'aan', 'de instellingen bij Nieuw kind worden niet bewaard');
+  check(state.aantal === 15 && state.tempo === true, 'Bas start niet met zijn eigen instellingen');
+
   // switching keeps each child's own settings
   kiesKind('Emma');
   check(state.leerjaar === 1 && $('profielBtn').textContent.indexOf('Emma') === 0, 'wisselen naar Emma lukt niet');
@@ -196,6 +208,7 @@ async function acties() {
   $('tempoKnop').querySelector('[data-t="true"]').click();
   $('instelKleuren').children[6].click();
   check(opslag('aantal', 'Emma') === '20', 'aantal vragen niet bewaard');
+  check(/goud/.test($('aantalUitleg').textContent), 'bij 20 vragen staat niet dat de sticker goud wordt');
   check(opslag('tempo', 'Emma') === 'aan', 'op tempo niet bewaard');
   check(profielen().filter(function (p) { return p.naam === 'Emma'; })[0].kleur === 6, 'kleur wijzigen in Instellingen niet bewaard');
   kiesKind('Noor');

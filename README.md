@@ -193,9 +193,11 @@ Elk kind heeft een eigen profiel: naam, gekozen leerjaar, instellingen en beste 
 hoofdstuk, en een eigen kleur voor de letter van de naam.
 
 Spelen er twee of meer kinderen op een toestel, dan opent de app met **Wie speelt er?**: een grote
-tegel per kind en **Nieuw kind** om er een toe te voegen. Nieuw kind vraagt de naam, het
-leerjaar en een kleur; **Klaar, start!** kan pas als naam en leerjaar ingevuld zijn, en brengt je
-meteen naar de spellen. Op een nieuw toestel, nog zonder kind, opent de app met **Welkom!**,
+tegel per kind en **Nieuw kind** om er een toe te voegen. Nieuw kind vul je meestal samen in,
+ouder en kind: naam, leerjaar en kleur, en daaronder hoeveel vragen, op tempo en voorlezen, elk
+met een korte uitleg (bij het aantal vragen: welke sticker je kan verdienen). Alleen het leerjaar
+heeft geen standaardwaarde; **Klaar, start!** kan pas als naam en leerjaar ingevuld zijn, en brengt
+je meteen naar de spellen. Op een nieuw toestel, nog zonder kind, opent de app met **Welkom!**,
 een zin uitleg en meteen dat formulier. Met één kind opent ze meteen op de spellen.
 
 Tik op de naam naast het geluidsicoon voor een klein menu: wie nu speelt, **Wissel van speler**

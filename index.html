@@ -252,8 +252,8 @@
   /* label 8px above its control, 16px between the groups */
   .wienieuwkaart { width: min(420px, 100%); flex-direction: column; align-items: stretch; gap: 8px; padding: 24px 16px; }
   .wienieuwkaart input, .wienieuwkaart .aantallen { flex: none; margin-bottom: 8px; }
-  .wienieuwkaart .aantallen { gap: 8px; flex-wrap: nowrap; }
-  .wienieuwkaart .aantallen .aantal { flex: 1 1 0; min-width: 0; padding: 8px 0; }
+  .wienieuwkaart .aantallen { gap: 8px; }
+  #wieJaren .aantal { flex: 1 1 0; min-width: 0; padding: 8px 0; }
   .wienieuwkaart .kleuren { margin: 0 0 16px; }
   body[data-scherm="wie"] .profielBtn { visibility: hidden; }
   .profielinfo { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
@@ -716,6 +716,10 @@
   .instellingen { display: flex; flex-direction: column; gap: 16px; }
   .instellingen .naamkaart { flex-direction: column; align-items: stretch; }
   .instellingen .kleuren { margin: 0; }
+  .kaartuitleg { margin: 0; font-size: 14px; line-height: 1.5; color: var(--ink-soft); }
+  /* each setting explains what it does: pills, then a short line, then 16px to the next group */
+  .wienieuwkaart .kaartuitleg { margin-bottom: 8px; }
+  .wievoorlees { display: flex; flex-direction: column; gap: 8px; }
   /* six school years always on one row, also on a small phone */
   #leerjaren, #wieJaren { flex-wrap: nowrap; }
   #leerjaren .aantal { flex: 1 1 0; min-width: 0; padding: 8px 0; }
@@ -906,15 +910,26 @@
 
   <div id="wieScherm" hidden>
     <h2 class="wiekop" id="wieKop">Wie speelt er?</h2>
-    <p class="lead wieuitleg" id="wieUitleg" hidden>Vul je naam en je leerjaar in, dan kan je meteen beginnen.</p>
+    <p class="lead wieuitleg" id="wieUitleg" hidden>Maak een profiel, gerust samen. Alles kan je later nog aanpassen in Instellingen.</p>
     <div class="wielijst" id="wieLijst"></div>
     <div class="naamkaart wienieuwkaart" id="wieNieuwKaart" hidden>
-      <label for="naam">Hoe heet je?</label>
-      <input id="naam" type="text" maxlength="16" placeholder="Typ je naam" autocomplete="off">
-      <span class="kaartlabel" id="wieJaarLabel">In welk leerjaar zit je?</span>
+      <label for="naam">Naam</label>
+      <input id="naam" type="text" maxlength="16" placeholder="Typ een naam" autocomplete="off">
+      <span class="kaartlabel" id="wieJaarLabel">Leerjaar</span>
       <div class="aantallen" id="wieJaren" role="group" aria-labelledby="wieJaarLabel"></div>
-      <span class="kaartlabel">Kies je kleur</span>
+      <span class="kaartlabel">Kleur</span>
       <div class="kleuren" id="wieKleuren"></div>
+      <span class="kaartlabel" id="wieAantalLabel">Hoeveel vragen?</span>
+      <div class="aantallen" id="wieAantallen" role="group" aria-labelledby="wieAantalLabel"></div>
+      <p class="kaartuitleg" id="wieAantalUitleg"></p>
+      <span class="kaartlabel" id="wieTempoLabel">Op tempo?</span>
+      <div class="aantallen" id="wieTempo" role="group" aria-labelledby="wieTempoLabel"></div>
+      <p class="kaartuitleg">Met klok loopt er bij elke vraag een balk leeg. Te traag telt als fout. Elk spel heeft zijn eigen tijd.</p>
+      <div class="wievoorlees" id="wieVoorleesKaart">
+        <span class="kaartlabel" id="wieVoorleesLabel">Vragen voorlezen?</span>
+        <div class="aantallen" id="wieVoorlezen" role="group" aria-labelledby="wieVoorleesLabel"></div>
+        <p class="kaartuitleg">Elke vraag wordt hardop voorgelezen. Anders tik je op 🗣️ naast de vraag.</p>
+      </div>
       <button class="big-btn" id="naamOk" disabled>Klaar, start!</button>
     </div>
   </div>
@@ -932,14 +947,17 @@
       <div class="naamkaart" role="group" aria-label="Aantal vragen per toets">
         <span class="kaartlabel">Hoeveel vragen?</span>
         <span class="aantallen" id="aantallen"></span>
+        <p class="kaartuitleg" id="aantalUitleg"></p>
       </div>
       <div class="naamkaart" role="group" aria-label="Oefenen op tempo">
         <span class="kaartlabel">Op tempo?</span>
         <span class="aantallen" id="tempoKnop"></span>
+        <p class="kaartuitleg">Met klok loopt er bij elke vraag een balk leeg. Te traag telt als fout. Elk spel heeft zijn eigen tijd.</p>
       </div>
       <div class="naamkaart" id="voorleesKaart" role="group" aria-label="Vragen voorlezen">
         <span class="kaartlabel">Vragen voorlezen?</span>
         <span class="aantallen" id="voorleesKnop"></span>
+        <p class="kaartuitleg">Elke vraag wordt hardop voorgelezen. Anders tik je op 🗣️ naast de vraag.</p>
       </div>
       <div class="naamkaart" id="kleurKaart" role="group" aria-label="Jouw kleur">
         <span class="kaartlabel">Jouw kleur</span>
