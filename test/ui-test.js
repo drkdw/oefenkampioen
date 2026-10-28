@@ -155,11 +155,10 @@ async function schermen() {
 
 /* ==================== actions ==================== */
 async function acties() {
-  // an empty device opens on the games, and the name button asks for a first child
+  // an empty device opens on the welcome with the form for a first child
   var f = await laadVers(), d = f.contentDocument;
-  check(d.body.dataset.scherm === 'start', 'leeg toestel opent niet op de spellen maar op ' + d.body.dataset.scherm);
-  d.getElementById('profielBtn').click();
-  check(d.body.dataset.scherm === 'wie' && !d.getElementById('wieNieuwKaart').hidden, 'naamknop zonder kind opent het formulier Nieuw kind niet');
+  check(d.body.dataset.scherm === 'wie' && !d.getElementById('wieNieuwKaart').hidden, 'leeg toestel opent niet op de onboarding maar op ' + d.body.dataset.scherm);
+  check(d.getElementById('wieKop').textContent === 'Welkom!' && !d.getElementById('wieUitleg').hidden, 'leeg toestel toont geen welkom');
   f.remove();
 
   // Klaar only works with a name and a school year
@@ -175,6 +174,9 @@ async function acties() {
   check(opslag('leerjaar', 'Emma') === '1', 'het gekozen leerjaar is niet bewaard');
   check(profielen()[0].kleur === 4, 'de gekozen kleur is niet bewaard');
   check(state.leerjaar === 1, 'de spellen tonen niet het gekozen leerjaar');
+  f = await laadVers(); d = f.contentDocument;
+  check(d.body.dataset.scherm === 'start', 'met één kind opent de app niet meteen op de spellen');
+  f.remove();
 
   // a second child gets a free color, and with two the app opens on Wie speelt er?
   $('profielBtn').click(); $('wisselBtn').click(); $('wieNieuw').click();

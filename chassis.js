@@ -779,8 +779,10 @@ function toonWie(nieuw) {
   Array.prototype.forEach.call($('wieLijst').querySelectorAll('.wiekies[data-sleutel]'), function (b) {
     b.onclick = function () { wisselProfiel(b.dataset.sleutel); toonStart(); };
   });
-  // without any child there is nothing to pick yet, so the name field is open straight away
+  // without any child there is nothing to pick yet: a welcome with the name field open
   var open = nieuw || !lijst.length;
+  $('wieKop').textContent = lijst.length ? 'Wie speelt er?' : 'Welkom!';
+  $('wieUitleg').hidden = !!lijst.length;
   $('wieNieuwKaart').hidden = !open;
   $('wieNieuw').hidden = open;
   $('wieNieuw').onclick = function () { toonWie(true); $('naam').focus(); };
@@ -1418,8 +1420,9 @@ state.leerjaar = leesLeerjaar();
 state.aantal = leesAantal();
 state.tempo = leesTempo();
 state.voorlezen = leesVoorlezen();
-// one child, or none yet, goes straight to the games; with more, the device asks who is playing
-if (profielen().length > 1) toonWie(); else toonStart();
+// a new device starts with the welcome and a first child; one child goes straight to the games,
+// more children are asked who is playing
+if (profielen().length === 1) toonStart(); else toonWie();
 if (location.hash === '#admin') toonOuders();
 
 // offline play and an installable app; the installed app may keep its data without asking, so

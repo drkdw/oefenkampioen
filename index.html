@@ -238,7 +238,8 @@
   .ouderrij small { order: 3; flex: 1 1 100%; font-family: Nunito, sans-serif; font-size: 13px; }
   /* who is playing: big tiles a child finds without reading */
   #wieScherm { display: flex; flex-direction: column; align-items: center; gap: 24px; padding-top: 24px; }
-  .wiekop { margin: 0; font-family: Fredoka, sans-serif; font-size: 30px; }
+  .wiekop { margin: 0; font-family: Fredoka, sans-serif; font-size: 30px; text-align: center; }
+  .wieuitleg { margin-top: -16px; text-align: center; }
   .wielijst { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; }
   .wiekies {
     display: flex; flex-direction: column; align-items: center; gap: 8px; width: 120px;
@@ -904,7 +905,8 @@
   </div>
 
   <div id="wieScherm" hidden>
-    <h2 class="wiekop">Wie speelt er?</h2>
+    <h2 class="wiekop" id="wieKop">Wie speelt er?</h2>
+    <p class="lead wieuitleg" id="wieUitleg" hidden>Vul je naam en je leerjaar in, dan kan je meteen beginnen.</p>
     <div class="wielijst" id="wieLijst"></div>
     <div class="naamkaart wienieuwkaart" id="wieNieuwKaart" hidden>
       <label for="naam">Hoe heet je?</label>

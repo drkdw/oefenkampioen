@@ -64,6 +64,7 @@ Vindt een test een fout: eerst nagaan of het de app of de test is (bv. namen bev
 
 - "Vragen voorlezen" staat standaard uit, ook in het 1ste leerjaar (beslist 28-10-2026).
 - Geen pincode of wachtwoord op profielen: kinderen, niets te beveiligen (28-10-2026).
+- Openen: geen kind = welkom met formulier Nieuw kind, één kind = meteen de spellen, twee of meer = Wie speelt er? (28-10-2026).
 - "Voor ouders" niet in het naammenu van het kind; het staat onderaan Instellingen en in de footer (28-10-2026).
 
 ## Valkuilen
