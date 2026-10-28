@@ -1,0 +1,16 @@
+{
+  "name": "Oefenkampioen",
+  "short_name": "Oefenkampioen",
+  "description": "Gratis oefenspellen wiskunde voor leerjaar 1 tot 6",
+  "lang": "nl-BE",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#EDF3FF",
+  "theme_color": "#EDF3FF",
+  "icons": [
+    { "src": "icoon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icoon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icoon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
