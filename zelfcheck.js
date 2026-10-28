@@ -22,6 +22,8 @@ var schoon = schoonProfielen([{ sleutel: 'k"><img src=z onerror=alert(1)>', naam
 check(schoon.length === 2, 'een importlijst houdt enkel geldige, unieke profielen over (nu ' + schoon.length + ')');
 check(JSON.stringify(schoon).indexOf('<') === -1 && JSON.stringify(schoon).indexOf('"k"') === -1, 'geen markup in een geïmporteerd profiel');
 check(!schoonProfielen({ sleutel: 'x', naam: 'X' }).length && !schoonProfielen('onzin').length, 'geen lijst betekent geen profielen');
+var kleuren = schoonProfielen([{ sleutel: 'a', naam: 'A', kleur: 2 }, { sleutel: 'b', naam: 'B', kleur: 'red;x' }, { sleutel: 'c', naam: 'C', kleur: 99 }]);
+check(kleuren[0].kleur === 2 && !('kleur' in kleuren[1]) && !('kleur' in kleuren[2]), 'enkel een bestaande kleur blijft bij een profiel');
 var beste = mengBeste({ 'klok:0': { score: 9, van: 10 } }, { 'klok:0': { score: 3, van: 10 }, 'klok:1': { score: 15, van: 20 },
   'x"><img': { score: 1, van: 2 }, 'maal:2': { score: '<img>', van: 10 }, 'maal:3': { score: 12, van: 10 } });
 check(beste['klok:0'].score === 9, 'herstellen overschrijft een betere score niet');

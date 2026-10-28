@@ -59,7 +59,9 @@ function schoonProfielen(lijst) {
     var naam = hoofdletter(schoonNaam(p.naam)), sleutel = p.sleutel === '' ? '' : sleutelVan(p.sleutel);
     if (!naam || (p.sleutel !== '' && !sleutel)) return;
     if (uit.some(function (q) { return q.sleutel === sleutel; })) return;
-    uit.push({ sleutel: sleutel, naam: naam });
+    var schoon = { sleutel: sleutel, naam: naam };
+    if (KLEUREN[p.kleur]) schoon.kleur = p.kleur;
+    uit.push(schoon);
   });
   return uit;
 }
@@ -71,7 +73,29 @@ function profielen() {
 function zetProfielen(lijst) {
   try { localStorage.setItem('oefenkampioen-profielen', JSON.stringify(lijst)); } catch (e) { /* may fail */ }
 }
-function nieuwProfiel(t) {
+// a child picks one of these for its avatar; stored as the index, so nothing else can get in
+var KLEUREN = [
+  { naam: 'rood', hex: '#E03131' }, { naam: 'oranje', hex: '#E8590C' }, { naam: 'groen', hex: '#2F9E44' },
+  { naam: 'blauw', hex: '#1971C2' }, { naam: 'paars', hex: '#7048E8' }, { naam: 'roze', hex: '#D6336C' },
+  { naam: 'turkoois', hex: '#0C8599' }, { naam: 'bruin', hex: '#A0522D' }
+];
+// a child that never picked a color still gets its own, the same one every time
+function kleurVan(p) {
+  if (KLEUREN[p.kleur]) return p.kleur;
+  var som = 0;
+  Array.from(sleutelVan(p.naam)).forEach(function (c) { som += c.codePointAt(0); });
+  return som % KLEUREN.length;
+}
+function avatarHtml(p) {
+  return '<span class="avatar" aria-hidden="true" style="background:' + KLEUREN[kleurVan(p)].hex + '">' +
+    hoofdletter(Array.from(p.naam)[0] || '') + '</span>';
+}
+function zetKleur(sleutel, kleur) {
+  var lijst = profielen();
+  lijst.forEach(function (p) { if (p.sleutel === sleutel) p.kleur = kleur; });
+  zetProfielen(lijst);
+}
+function nieuwProfiel(t, kleur) {
   var sleutel = sleutelVan(t), weergave = hoofdletter(schoonNaam(t));
   if (!sleutel) return;
   var lijst = profielen();
@@ -88,6 +112,7 @@ function nieuwProfiel(t) {
     if (erfOud && !oudeNaam()) try { localStorage.setItem('oefenkampioen-naam', weergave); } catch (e) { /* may fail */ }
   }
   bestaand.naam = weergave;
+  if (KLEUREN[kleur]) bestaand.kleur = kleur;
   zetProfielen(lijst);
   wisselProfiel(bestaand.sleutel);
 }
@@ -373,7 +398,7 @@ function bewaar(profiel, sleutel, score, van) {
 /* ==================== state ==================== */
 var state = {
   spel: null, hfd: 0, leerjaar: 3, aantal: 10, q: 0, score: 0, results: [], fouten: [],
-  current: null, answered: false, sound: true, tempo: false, klok: null, verder: null, instellingenOpen: false, profiel: '',
+  current: null, answered: false, sound: true, tempo: false, klok: null, verder: null, profiel: '',
   plan: [], decks: {}, jassen: {}, vorigJasje: null, vorigeSleutel: null, vroegerOpen: null
 };
 var ac = null;
@@ -477,10 +502,20 @@ function maakVraag(soort) {
 }
 
 /* ==================== screens ==================== */
-var SCHERMEN = { start: 'startScherm', menu: 'menuScherm', game: 'game', result: 'result', stickers: 'stickerScherm', ouders: 'ouderScherm' };
+var SCHERMEN = { wie: 'wieScherm', instellingen: 'instelScherm', start: 'startScherm', menu: 'menuScherm', game: 'game', result: 'result', stickers: 'stickerScherm', ouders: 'ouderScherm' };
 // one place decides what is visible; the body attribute lets CSS hide the big header in a test
+// Android's back button: every screen below the start screen gets one history step, so back
+// returns to the start screen instead of closing the installed app
+var WORTELS = ['start', 'wie'];
+// history.back() lands a moment later: until then history.state is stale, so a second back
+// would leave the page and a new screen would skip its step. The popstate handler settles it
+var terugBezig = false;
 function toonScherm(naam) {
   if (naam !== 'game') stilte();
+  var binnen = history.state && history.state.binnen;
+  if (WORTELS.indexOf(naam) === -1 && !binnen && !terugBezig) history.pushState({ binnen: true }, '', location.href);
+  // back on its own through a button: drop the step again, or back would need two presses later
+  if (WORTELS.indexOf(naam) > -1 && binnen && !terugBezig) { terugBezig = true; history.back(); }
   Object.keys(SCHERMEN).forEach(function (k) { $(SCHERMEN[k]).hidden = k !== naam; });
   document.body.dataset.scherm = naam;
   // keyboard and screen reader users otherwise start again from the top of the page
@@ -545,7 +580,7 @@ function stickersVoorLeerjaar(beste) {
   return { n: n, totaal: totaal };
 }
 function voorJouHtml(v) {
-  var kop = '<span class="vj-kop">⭐ Voor jou vandaag</span>';
+  var kop = '<span class="vj-kop">Voor jou vandaag</span>';
   var dagen = dagenDezeMaand(leesDagen(actief()), vandaag());
   var regel = dagen ? '<span class="vj-dagen">Al ' + dagen + (dagen === 1 ? ' dag' : ' dagen') + ' geoefend in ' +
     MAANDEN[Number(vandaag().slice(5, 7)) - 1] + '</span>' : '';
@@ -620,52 +655,57 @@ function toonStart() {
   var voorstel = voorstelVoor(SPELLEN, beste, state.leerjaar, dagNummer(vandaag()), leesNiveaus(actief()));
   $('voorJou').innerHTML = voorJouHtml(voorstel);
   $('voorJou').onclick = function () {
-    if (voorstel.reden === 'alles') { zetInstellingen(true); return; }
+    if (voorstel.reden === 'alles') { toonInstellingen(); return; }
     state.spel = voorstel.spel;
     startHoofdstuk(voorstel.index, null, voorstel.reden === 'goud' ? GOUD : null);
   };
-  $('instelRegel').innerHTML = '<span>' + jaarNaam(state.leerjaar) + ' · ' + state.aantal + ' vragen · ' +
-    (state.tempo ? 'met klok' : 'rustig') + (state.voorlezen ? ' · voorlezen' : '') + '</span><span aria-hidden="true">' + (state.instellingenOpen ? '✕' : '⚙') + '</span>';
-  $('instelRegel').setAttribute('aria-expanded', String(state.instellingenOpen));
-  $('instellingen').hidden = !state.instellingenOpen;
   $('profielBtn').innerHTML = (naam() || 'Wie speelt er?') + ' <span class="chev">&#9662;</span>';
+  $('lead').textContent = lead();
+  $('kop').innerHTML = 'Oefen<span class="tick">kampioen</span>';
+  stopVerder();
+  toonScherm('start');
+}
+/* ==================== settings ==================== */
+// everything a child can change about how it plays, on its own screen behind the name menu
+function toonInstelKnoppen() {
   $('leerjaren').innerHTML = LEERJAREN.map(function (lj) {
     return '<button class="aantal" data-lj="' + lj + '" aria-pressed="' + (lj === state.leerjaar) +
       '" aria-label="' + jaarNaam(lj) + '">' + lj + '</button>';
   }).join('');
   Array.prototype.forEach.call($('leerjaren').children, function (b) {
-    b.onclick = function () { zetLeerjaar(Number(b.dataset.lj)); toonStart(); };
+    b.onclick = function () { zetLeerjaar(Number(b.dataset.lj)); toonInstelKnoppen(); };
   });
   $('aantallen').innerHTML = AANTALLEN.map(function (a) {
     return '<button class="aantal" data-a="' + a + '" aria-pressed="' + (a === state.aantal) + '">' + a + '</button>';
   }).join('');
   Array.prototype.forEach.call($('aantallen').children, function (b) {
-    b.onclick = function () { zetAantal(Number(b.dataset.a)); toonStart(); };
+    b.onclick = function () { zetAantal(Number(b.dataset.a)); toonInstelKnoppen(); };
   });
   $('tempoKnop').innerHTML = [false, true].map(function (aan) {
     return '<button class="aantal" data-t="' + aan + '" aria-pressed="' + (aan === state.tempo) + '">' +
       (aan ? 'ja, met klok' : 'nee, rustig') + '</button>';
   }).join('');
   Array.prototype.forEach.call($('tempoKnop').children, function (b) {
-    b.onclick = function () { zetTempo(b.dataset.t === 'true'); toonStart(); };
+    b.onclick = function () { zetTempo(b.dataset.t === 'true'); toonInstelKnoppen(); };
   });
   $('voorleesKnop').innerHTML = [false, true].map(function (aan) {
     return '<button class="aantal" data-v="' + aan + '" aria-pressed="' + (aan === state.voorlezen) + '">' +
       (aan ? 'ja, elke vraag' : 'nee, enkel als ik tik') + '</button>';
   }).join('');
   Array.prototype.forEach.call($('voorleesKnop').children, function (b) {
-    b.onclick = function () { zetVoorlezen(b.dataset.v === 'true'); toonStart(); };
+    b.onclick = function () { zetVoorlezen(b.dataset.v === 'true'); toonInstelKnoppen(); };
   });
   $('voorleesKaart').hidden = !kanVoorlezen();
-  $('lead').textContent = lead();
-  $('kop').innerHTML = 'Oefen<span class="tick">kampioen</span>';
-  stopVerder();
-  toonScherm('start');
+  var p = profielen().filter(function (q) { return q.sleutel === actief(); })[0];
+  $('kleurKaart').hidden = !p;
+  if (p) toonKleuren($('instelKleuren'), kleurVan(p), function (i) { zetKleur(p.sleutel, i); });
 }
-function zetInstellingen(open) {
-  state.instellingenOpen = open;
-  toonStart();
-  if (open) $('leerjaren').querySelector('[aria-pressed="true"]').focus();
+function toonInstellingen() {
+  sluitProfielPaneel();
+  stopKlok();
+  toonInstelKnoppen();
+  toonScherm('instellingen');
+  $('leerjaren').querySelector('[aria-pressed="true"]').focus();
 }
 function toonStickerboek() {
   var beste = lees(), niveaus = leesNiveaus(actief()), behaald = leesBehaald(actief()), st = stickersVoorLeerjaar(beste);
@@ -719,30 +759,71 @@ function toonStickerGroot(spel, i) {
   $('sdLof').textContent = lofVoor(spel, rand, keer);
   $('sdWeetje').textContent = WEETJES[sticker] || '';
   stickerDoel = { spel: spel, i: i, aantal: rand === 'goud' ? null : rand === 'zilver' ? GOUD : ZILVER };
-  $('sdSpeel').textContent = rand === 'goud' ? '▶️ Nog eens spelen'
-    : '▶️ ' + stickerDoel.aantal + ' vragen voor ' + (rand === 'zilver' ? 'goud' : 'zilver');
+  $('sdSpeel').textContent = rand === 'goud' ? 'Nog eens spelen'
+    : stickerDoel.aantal + ' vragen voor ' + (rand === 'zilver' ? 'goud' : 'zilver');
   $('stickerDialoog').showModal();
 }
-/* ==================== profiles panel ==================== */
-function toonProfielPaneel() {
-  var actiefSleutel = actief();
-  $('profielLijst').innerHTML = profielen().map(function (p) {
-    var n = geoefendVoor(p.sleutel), g = leesGespeeld(p.sleutel), toetsen = 0;
-    Object.keys(g).forEach(function (k) { toetsen += g[k]; });
-    return '<div class="profielrij' + (p.sleutel === actiefSleutel ? ' actief' : '') + '">' +
-      '<button class="profielkies" data-sleutel="' + p.sleutel + '">' +
-      '<span class="avatar" aria-hidden="true">' + hoofdletter(Array.from(p.naam)[0] || '') + '</span>' +
-      '<span class="profielinfo"><span>' + p.naam + '</span>' +
-      '<span class="profielvoortgang">' + jaarNaam(leerjaarVoor(p.sleutel)) + ' · ' + n +
-      (n === 1 ? ' hoofdstuk' : ' hoofdstukken') + ' geoefend' +
-      (toetsen ? ' · ' + toetsen + (toetsen === 1 ? ' toets' : ' toetsen') : '') + '</span></span></button></div>';
-  }).join('') || '<p class="lead">Nog geen profiel. Typ hieronder een naam.</p>';
-  Array.prototype.forEach.call($('profielLijst').querySelectorAll('.profielkies'), function (b) {
-    b.onclick = function () { wisselProfiel(b.dataset.sleutel); sluitProfielPaneel(); toonStart(); };
+/* ==================== who is playing ==================== */
+// the first screen when more than one child plays on this device, like the profile picker of a
+// streaming app; also the only place to add a child
+var nieuweKleur = 0, nieuwJaar = null;
+function toonWie(nieuw) {
+  sluitProfielPaneel();
+  stopKlok();
+  var lijst = profielen();
+  $('wieLijst').innerHTML = lijst.map(function (p) {
+    return '<button class="wiekies" data-sleutel="' + p.sleutel + '">' + avatarHtml(p) +
+      '<span class="wienaam">' + p.naam + '</span></button>';
+  }).join('') + '<button class="wiekies" id="wieNieuw"><span class="avatar nieuw" aria-hidden="true">+</span>' +
+    '<span class="wienaam">Nieuw kind</span></button>';
+  Array.prototype.forEach.call($('wieLijst').querySelectorAll('.wiekies[data-sleutel]'), function (b) {
+    b.onclick = function () { wisselProfiel(b.dataset.sleutel); toonStart(); };
+  });
+  // without any child there is nothing to pick yet, so the name field is open straight away
+  var open = nieuw || !lijst.length;
+  $('wieNieuwKaart').hidden = !open;
+  $('wieNieuw').hidden = open;
+  $('wieNieuw').onclick = function () { toonWie(true); $('naam').focus(); };
+  // the first color nobody here has yet, so two children never look alike by default
+  var bezet = lijst.map(kleurVan);
+  nieuweKleur = Math.max(0, KLEUREN.findIndex(function (k, i) { return bezet.indexOf(i) === -1; }));
+  toonKleuren($('wieKleuren'), nieuweKleur, function (i) { nieuweKleur = i; });
+  // no year preselected: a wrong guess would hand a first grader the sums of the third
+  nieuwJaar = null;
+  toonNieuwJaren();
+  zetKlaar();
+  toonScherm('wie');
+  if (open) $('naam').focus();
+}
+function toonNieuwJaren() {
+  $('wieJaren').innerHTML = LEERJAREN.map(function (lj) {
+    return '<button class="aantal" data-lj="' + lj + '" aria-pressed="' + (lj === nieuwJaar) + '" aria-label="' + jaarNaam(lj) + '">' + lj + '</button>';
+  }).join('');
+  Array.prototype.forEach.call($('wieJaren').children, function (b) {
+    b.onclick = function () { nieuwJaar = Number(b.dataset.lj); toonNieuwJaren(); zetKlaar(); };
   });
 }
+// a child can only start once everything the games need is there
+function zetKlaar() { $('naamOk').disabled = !sleutelVan($('naam').value) || !nieuwJaar; }
+function toonKleuren(plek, gekozen, kies) {
+  plek.innerHTML = KLEUREN.map(function (k, i) {
+    return '<button class="kleurkeuze" data-k="' + i + '" style="background:' + k.hex + '" aria-label="' + k.naam +
+      '" aria-pressed="' + (i === gekozen) + '"></button>';
+  }).join('');
+  Array.prototype.forEach.call(plek.children, function (b) {
+    b.onclick = function () { kies(Number(b.dataset.k)); toonKleuren(plek, Number(b.dataset.k), kies); };
+  });
+}
+
+/* ==================== the name menu ==================== */
+// only the child that is playing now: switching and adding happen on the who-is-playing screen
+function toonProfielPaneel() {
+  var p = profielen().filter(function (q) { return q.sleutel === actief(); })[0];
+  $('profielNu').innerHTML = p ? avatarHtml(p) + '<span class="profielinfo"><span>' + p.naam + '</span>' +
+    '<span class="profielvoortgang">' + jaarNaam(leerjaarVoor(p.sleutel)) + '</span></span>' : '';
+}
 function focusPaneel() {
-  ($('profielLijst').querySelector('.profielkies') || $('naam')).focus();
+  $('wisselBtn').focus();
 }
 function sluitProfielPaneel() {
   var wasOpen = !$('profielPaneel').hidden;
@@ -786,22 +867,22 @@ function ouderKindHtml(p) {
   }).join('');
   var meer = wp.length > WERKPUNTEN_MAX ? '<p class="sectieuitleg">En nog ' + (wp.length - WERKPUNTEN_MAX) + ' andere.</p>' : '';
   return '<div class="ouderkaart" data-sleutel="' + p.sleutel + '" data-naam="' + p.naam + '">' +
-    '<div class="ouderkop"><span class="avatar" aria-hidden="true">' + hoofdletter(Array.from(p.naam)[0] || '') + '</span>' +
+    '<div class="ouderkop">' + avatarHtml(p) +
     '<span class="profielinfo"><b>' + p.naam + '</b><span class="profielvoortgang">' + jaarNaam(leerjaarVoor(p.sleutel)) + ' · ' +
     n + (n === 1 ? ' hoofdstuk' : ' hoofdstukken') + ' geoefend' + (toetsen ? ' · ' + toetsen + (toetsen === 1 ? ' toets' : ' toetsen') : '') +
     '</span></span></div>' +
     '<p class="ouderlabel">Waar je kan helpen</p>' +
     (wp.length ? '<ul class="werkpunten">' + rijen + '</ul>' + meer
       : '<p class="sectieuitleg">Niets: elk gespeeld hoofdstuk heeft 3 sterren.</p>') +
-    '<div class="paneelacties ouderacties"><button class="aantal deelKind">📤 Deel ' + p.naam + '</button>' +
-    '<button class="aantal wisKind">Verwijderen</button></div></div>';
+    '<div class="paneelacties ouderacties"><button class="knop deelKind">📤 Deel ' + p.naam + '</button>' +
+    '<button class="knop gevaar wisKind">🗑️ Verwijderen</button></div></div>';
 }
 function toonOuders() {
   stopKlok();
   sluitProfielPaneel();
   var lijst = profielen();
   $('ouderKinderen').innerHTML = lijst.map(ouderKindHtml).join('') ||
-    '<p class="sectieuitleg">Nog geen kinderen op dit toestel. Maak een profiel via de naamknop bovenaan, of zet hieronder een bestand terug.</p>';
+    '<p class="sectieuitleg">Nog geen kinderen op dit toestel. Voeg een kind toe via de naamknop bovenaan, of zet hieronder een bestand terug.</p>';
   Array.prototype.forEach.call($('ouderKinderen').querySelectorAll('.ouderkaart'), function (kaart) {
     var sleutel = kaart.dataset.sleutel, wie = kaart.dataset.naam;
     kaart.querySelector('.deelKind').onclick = function () {
@@ -816,10 +897,12 @@ function toonOuders() {
     kaart.querySelector('.wisKind').onclick = function () {
       var acties = kaart.querySelector('.ouderacties');
       acties.classList.add('bevestig');
-      acties.innerHTML = '<span class="profielvraag">' + wie + ' verwijderen?</span>' +
-        '<button class="aantal profiellijst">Uit de lijst, scores blijven</button>' +
-        '<button class="aantal profielja">Écht wissen, voorgoed weg</button>' +
-        '<button class="aantal profielnee">Nee</button>';
+      // safe answer first, the irreversible one last and red
+      acties.innerHTML = '<span class="profielvraag">' + wie + ' verwijderen?' +
+        '<small>Uit de lijst: de scores blijven bewaard, typ de naam later opnieuw en ze staan er terug.</small></span>' +
+        '<button class="knop profielnee">Nee, laat staan</button>' +
+        '<button class="knop profiellijst">Uit de lijst</button>' +
+        '<button class="knop gevaar vol profielja">Écht wissen, voorgoed weg</button>';
       acties.querySelector('.profiellijst').onclick = function () { verwijderProfiel(sleutel); toonOuders(); };
       acties.querySelector('.profielja').onclick = function () { verwijderProfielEcht(sleutel); toonOuders(); };
       acties.querySelector('.profielnee').onclick = function () { toonOuders(); };
@@ -859,7 +942,7 @@ function vraagHerstel(plaatsen, gemaakt) {
   }).join('');
   $('herstelVraag').innerHTML = '<p class="ouderlabel">In dit bestand</p>' + wanneer + '<ul class="herstellijst">' + rijen + '</ul>' +
     '<p class="sectieuitleg">Er gaat niets verloren: van elk hoofdstuk blijft de beste score staan, en een gouden sticker blijft goud.</p>' +
-    '<div class="paneelacties"><button class="aantal" id="herstelJa">Zet terug</button><button class="aantal" id="herstelNee">Annuleer</button></div>';
+    '<div class="paneelacties"><button class="knop primair" id="herstelJa">Zet terug</button><button class="knop" id="herstelNee">Annuleer</button></div>';
   $('herstelVraag').hidden = false;
   $('herstelJa').onclick = function () {
     try { pasToe(plaatsen); } catch (e) {
@@ -874,7 +957,7 @@ function vraagHerstel(plaatsen, gemaakt) {
 }
 function verlaatOuders() {
   // reloading should not land on this screen again
-  if (location.hash === '#admin') history.replaceState(null, '', location.pathname + location.search);
+  if (location.hash === '#admin') history.replaceState(history.state, '', location.pathname + location.search);
   toonStart();
 }
 function toonMenu(spel) {
@@ -1249,22 +1332,27 @@ $('sdSpeel').onclick = function () {
 };
 // a tap next to the card, on the dimmed backdrop, closes it too
 $('stickerDialoog').addEventListener('click', function (e) { if (e.target === this) this.close(); });
-$('instelRegel').onclick = function () { zetInstellingen(!state.instellingenOpen); };
+$('instelTerugBtn').onclick = toonStart;
+$('instelBtn').onclick = toonInstellingen;
 // no blur handler on purpose: blur rebuilt the list between mousedown and click, which swallowed
 // a tap on another profile and could end a running test
 function bevestigNieuwProfiel() {
-  if (!sleutelVan($('naam').value)) return;
-  nieuwProfiel($('naam').value);
+  if ($('naamOk').disabled) return;
+  nieuwProfiel($('naam').value, nieuweKleur);
+  zetLeerjaar(nieuwJaar);
   $('naam').value = '';
   toonStart();
-  toonProfielPaneel();
-  focusPaneel();
 }
+$('naam').addEventListener('input', zetKlaar);
 $('naam').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); bevestigNieuwProfiel(); } });
 $('naamOk').onclick = bevestigNieuwProfiel;
 $('profielBtn').onclick = function () {
+  // no child yet: the menu would be empty, so go straight to adding one
+  if (!naam()) { toonWie(true); return; }
   if ($('profielPaneel').hidden) opentProfielPaneel(); else sluitProfielPaneel();
 };
+$('wisselBtn').onclick = function () { toonWie(); };
+$('instelOuderBtn').onclick = toonOuders;
 $('profielBackdrop').onclick = sluitProfielPaneel;
 document.addEventListener('keydown', function (e) {
   if (e.key === 'Escape' && !$('profielPaneel').hidden) sluitProfielPaneel();
@@ -1290,6 +1378,16 @@ $('ouderLink').onclick = function (e) {
 };
 $('ouderTerugBtn').onclick = verlaatOuders;
 window.addEventListener('hashchange', function () { if (location.hash === '#admin') toonOuders(); });
+window.addEventListener('popstate', function () {
+  var opWortel = WORTELS.indexOf(document.body.dataset.scherm) > -1;
+  if (terugBezig) {
+    // our own back from a button; a screen opened meanwhile still needs its step
+    terugBezig = false;
+    if (!opWortel) history.pushState({ binnen: true }, '', location.href);
+    return;
+  }
+  if (!opWortel) toonStart();
+});
 $('herstelBtn').onclick = function () { $('herstelInput').click(); };
 $('herstelInput').onchange = function () {
   var bestand = $('herstelInput').files[0];
@@ -1320,8 +1418,14 @@ state.leerjaar = leesLeerjaar();
 state.aantal = leesAantal();
 state.tempo = leesTempo();
 state.voorlezen = leesVoorlezen();
-toonStart();
+// one child, or none yet, goes straight to the games; with more, the device asks who is playing
+if (profielen().length > 1) toonWie(); else toonStart();
 if (location.hash === '#admin') toonOuders();
+
+// offline play and an installable app; the installed app may keep its data without asking, so
+// only there is permanent storage requested on start (a browser tab would show a prompt to a child)
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) vraagBlijvendeOpslag();
 
 // the self-check is for the developer, so it is only loaded with #test
 if (location.hash === '#test') import('./zelfcheck.js');

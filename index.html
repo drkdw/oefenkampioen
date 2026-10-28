@@ -21,6 +21,7 @@
 <!-- a real file, not a data URI: search engines only show a favicon they can fetch -->
 <link rel="icon" href="icoon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -47,15 +48,17 @@
     --card: #FFFFFF;
     --card-2: #F7F9FF;
     --ink: #1F2A44;
-    --ink-soft: #66739B;
+    --ink-soft: #5F6C94;
     --line: #DCE3F7;
     --accent: #FF7A45;
-    --accent-ink: #FFFFFF;
+    /* dark text on the orange and a deeper orange for small text: both at least 4.5:1 (WCAG AA) */
+    --accent-ink: #1F2A44;
+    --accent-tekst: #C2410C;
     --hand-hour: #2B3A67;
     --hand-min: #FF7A45;
     --good: #12A06B;
     --good-bg: #DFF6EC;
-    --bad: #DB4545;
+    --bad: #C92A2A;
     --bad-bg: #FDE6E6;
     --gold: #FFC43D;
     --zilver: #AEB8C6;
@@ -77,6 +80,7 @@
       --line: #33405F;
       --accent: #FF9160;
       --accent-ink: #1B2337;
+      --accent-tekst: #FF9160;
       --hand-hour: #CBD7FA;
       --hand-min: #FF9160;
       --good: #35D69B;
@@ -113,14 +117,14 @@
     max-width: 560px;
     margin: 0 auto;
     padding-inline: 16px;
-    padding-block: 18px 40px;
+    padding-block: 24px 40px;
     display: flex;
     flex-direction: column;
     gap: 16px;
     position: relative;
   }
 
-  header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  header { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   h1 {
     font-family: Fredoka, Nunito, sans-serif;
     font-weight: normal;
@@ -136,23 +140,23 @@
     background: var(--card);
     color: var(--ink);
     border-radius: 999px;
-    width: 42px; height: 42px;
+    width: 40px; height: 40px;
     font-size: 19px;
     cursor: pointer;
     line-height: 1;
     flex: none;
   }
   .lead { margin: 0; color: var(--ink-soft); font-size: 15px; }
-  #startScherm, #menuScherm { display: flex; flex-direction: column; gap: 14px; }
+  #startScherm, #menuScherm { display: flex; flex-direction: column; gap: 16px; }
   .naamkaart {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     flex-wrap: wrap;
     background: var(--card);
     border: 3px solid var(--line);
     border-radius: 20px;
-    padding: 12px 16px;
+    padding: 16px;
   }
   .naamkaart label, .kaartlabel { font-family: Fredoka, sans-serif; font-size: 16px; }
   .aantallen { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -163,9 +167,11 @@
     background: var(--card-2);
     color: var(--ink-soft);
     border-radius: 999px;
+    min-height: 40px;
     padding: 8px 16px;
     cursor: pointer;
   }
+  .aantal:hover { border-color: var(--ink-soft); }
   .aantal[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--card); }
   .naamkaart input {
     flex: 1 1 140px;
@@ -176,7 +182,8 @@
     background: var(--card-2);
     border: 2px solid var(--line);
     border-radius: 14px;
-    padding: 8px 12px;
+    min-height: 40px;
+    padding: 8px 16px;
   }
   .naamkaart input::placeholder { color: var(--ink-soft); }
   .profielBtn { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -198,112 +205,127 @@
     background: var(--card);
     border: 3px solid var(--line);
     border-radius: 20px;
-    padding: 12px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
   }
-  .profielrij { display: flex; align-items: center; gap: 8px; }
-  .profielkies {
-    flex: 1 1 auto;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    text-align: left;
-    font-family: Fredoka, sans-serif;
-    font-size: 15px;
-    border: 2px solid var(--line);
-    background: var(--card-2);
-    color: var(--ink);
-    border-radius: 14px;
-    padding: 8px 10px;
-    cursor: pointer;
+  .profielnu { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; font-family: Fredoka, sans-serif; font-size: 17px; }
+  .avatar {
+    display: inline-flex; align-items: center; justify-content: center; flex: none;
+    width: 40px; height: 40px; border-radius: 999px; background: var(--ink); color: #FFFFFF;
+    font-family: Fredoka, sans-serif; font-size: 18px;
   }
-  .profielrij.actief .profielkies { background: var(--ink); color: var(--card); border-color: var(--ink); }
-  .profielrij.actief .profielkies .avatar { background: var(--card); color: var(--ink); }
-  .profielrij.actief .profielvoortgang { color: var(--card); opacity: 0.8; }
-  .profielkies .avatar {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 26px; height: 26px;
-    flex: none;
-    border-radius: 999px;
-    background: var(--ink);
-    color: var(--card);
-    font-size: 14px;
+  /* eight colors always on one row: they shrink on a small phone instead of wrapping */
+  .kleuren { display: grid; grid-template-columns: repeat(8, 40px); gap: 8px; margin: 8px 0; }
+  /* eight in a row would shrink below 40px on a phone: two rows of four, big enough for a finger */
+  @media (max-width: 460px) { .kleuren { grid-template-columns: repeat(4, 48px); } }
+  .kleurkeuze {
+    width: 100%; aspect-ratio: 1; padding: 0; border-radius: 999px; border: 3px solid var(--card); cursor: pointer;
+    box-shadow: 0 0 0 2px var(--line);
   }
-  .profielinfo { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .kleurkeuze[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--ink); }
+  .menuknop {
+    text-align: left; font-family: Fredoka, sans-serif; font-size: 16px; color: var(--ink);
+    background: var(--card-2); border: 2px solid var(--line); border-radius: 14px; min-height: 48px; padding: 12px 16px; cursor: pointer;
+  }
+  .menuknop:hover { border-color: var(--ink-soft); }
+  /* every item opens a screen: the arrow says so */
+  .menuknop { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .menuknop::after { content: '›'; flex: none; font-size: 22px; line-height: 1; color: var(--ink-soft); }
+  /* for the grown-ups: quieter than the child's settings above it */
+  .ouderrij { flex-wrap: wrap; margin-top: 8px; background: none; color: var(--ink-soft); }
+  .ouderrij small { order: 3; flex: 1 1 100%; font-family: Nunito, sans-serif; font-size: 13px; }
+  /* who is playing: big tiles a child finds without reading */
+  #wieScherm { display: flex; flex-direction: column; align-items: center; gap: 24px; padding-top: 24px; }
+  .wiekop { margin: 0; font-family: Fredoka, sans-serif; font-size: 30px; }
+  .wielijst { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; }
+  .wiekies {
+    display: flex; flex-direction: column; align-items: center; gap: 8px; width: 120px;
+    background: none; border: 0; padding: 8px; border-radius: 22px; cursor: pointer; color: var(--ink);
+  }
+  .wiekies .avatar { width: 96px; height: 96px; border-radius: 28px; font-size: 46px; box-shadow: var(--shadow); }
+  .wiekies .avatar.nieuw { background: var(--card); color: var(--ink-soft); border: 3px dashed var(--line); box-shadow: none; }
+  .wiekies:hover .avatar, .wiekies:focus-visible .avatar { outline: 4px solid var(--ink); outline-offset: 3px; }
+  .wienaam { font-family: Fredoka, sans-serif; font-size: 19px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* label 8px above its control, 16px between the groups */
+  .wienieuwkaart { width: min(420px, 100%); flex-direction: column; align-items: stretch; gap: 8px; padding: 24px 16px; }
+  .wienieuwkaart input, .wienieuwkaart .aantallen { flex: none; margin-bottom: 8px; }
+  .wienieuwkaart .aantallen { gap: 8px; flex-wrap: nowrap; }
+  .wienieuwkaart .aantallen .aantal { flex: 1 1 0; min-width: 0; padding: 8px 0; }
+  .wienieuwkaart .kleuren { margin: 0 0 16px; }
+  body[data-scherm="wie"] .profielBtn { visibility: hidden; }
+  .profielinfo { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
   .profielvoortgang { font-size: 12px; color: var(--ink-soft); }
   .paneelnotitie { margin: 0; font-size: 12px; color: var(--ink-soft); }
   .paneelacties { display: flex; gap: 8px; flex-wrap: wrap; }
-  .paneelacties .aantal { font-size: 13px; padding: 7px 12px; }
+  /* actions, not choices: secondary is outlined, primary filled, at most one primary per group */
+  .knop {
+    font-family: Fredoka, sans-serif; font-size: 16px; line-height: 1.25; cursor: pointer;
+    min-height: 40px; padding: 8px 16px; border-radius: 999px;
+    border: 2px solid var(--line); background: var(--card); color: var(--ink);
+  }
+  .knop:hover { border-color: var(--ink-soft); }
+  .knop.primair { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .knop.primair:hover { filter: brightness(1.06); }
+  .knop.gevaar { color: var(--bad); border-color: var(--bad); }
+  .knop.gevaar:hover { background: var(--bad-bg); }
+  .knop.gevaar.vol { background: var(--bad); color: var(--card); }
+  .knop.gevaar.vol:hover { filter: brightness(1.06); }
   .bewaardinfo { margin: 0; font-size: 14px; color: var(--ink); }
-  .bewaardinfo.oud { color: var(--accent); font-family: Fredoka, sans-serif; }
+  .bewaardinfo.oud { color: var(--accent-tekst); font-family: Fredoka, sans-serif; }
   /* the parents screen: calmer and roomier than the child screens, it is read, not tapped through */
   #ouderScherm { display: flex; flex-direction: column; gap: 32px; padding-bottom: 32px; }
   #ouderScherm > .lead { line-height: 1.55; }
-  .oudersectie { display: flex; flex-direction: column; gap: 14px; }
+  .oudersectie { display: flex; flex-direction: column; gap: 16px; }
   .oudersectie h2 { margin: 0; font-family: Fredoka, sans-serif; font-size: 21px; font-weight: 400; }
   .sectieuitleg { margin: 0; font-size: 14px; line-height: 1.55; color: var(--ink-soft); }
   .ouderkinderen { display: flex; flex-direction: column; gap: 16px; }
   .ouderkaart {
-    background: var(--card); border: 3px solid var(--line); border-radius: 22px; padding: 20px 20px 18px;
-    display: flex; flex-direction: column; gap: 14px;
+    background: var(--card); border: 3px solid var(--line); border-radius: 22px; padding: 24px;
+    display: flex; flex-direction: column; gap: 16px;
   }
   .ouderkop { display: flex; align-items: center; gap: 12px; font-family: Fredoka, sans-serif; font-size: 18px; }
-  .ouderkop .avatar {
-    display: inline-flex; align-items: center; justify-content: center; flex: none;
-    width: 38px; height: 38px; border-radius: 999px; background: var(--ink); color: var(--card); font-size: 17px;
-  }
   .ouderkop .profielvoortgang { font-family: Nunito, sans-serif; font-size: 13px; line-height: 1.4; }
-  .ouderlabel { margin: 4px 0 -6px; font-family: Fredoka, sans-serif; font-size: 14px; color: var(--ink-soft); }
+  .ouderlabel { margin: 8px 0 -8px; font-family: Fredoka, sans-serif; font-size: 14px; color: var(--ink-soft); }
   .werkpunten, .herstellijst { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; font-size: 15px; line-height: 1.4; }
-  .werkpunten li { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; }
+  .werkpunten li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; }
   .werkpunten li + li, .herstellijst li + li { border-top: 1px solid var(--line); }
-  .werkpunten .wp-score { flex: none; color: var(--accent); font-family: Fredoka, sans-serif; }
-  .herstellijst li { padding: 10px 0; }
-  .ouderkaart .paneelacties { gap: 10px; margin-top: 2px; }
-  .ouderkaart .paneelacties .aantal { font-size: 14px; padding: 9px 16px; }
+  .werkpunten .wp-score { flex: none; color: var(--accent-tekst); font-family: Fredoka, sans-serif; }
+  .herstellijst li { padding: 8px 0; }
+  .ouderkaart .paneelacties { gap: 8px; }
   .herstellijst .paneelnotitie { display: block; }
-  .ouderacties.bevestig { background: var(--bad-bg); border-radius: 16px; padding: 12px 14px; align-items: center; }
-  .herstelvraag { background: var(--card); border: 3px solid var(--accent); border-radius: 22px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+  .ouderacties.bevestig { background: var(--bad-bg); border-radius: 16px; padding: 16px; align-items: center; }
+  /* destructive, so it stands apart from Deel and looks different from it */
+  .ouderacties .wisKind { margin-left: auto; }
+  .herstelvraag { background: var(--card); border: 3px solid var(--accent); border-radius: 22px; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
   .melding { margin: 0; font-family: Fredoka, sans-serif; font-size: 15px; color: var(--good); }
-  .melding.fout { color: var(--accent); }
+  .melding.fout { color: var(--accent-tekst); }
   .faq { display: flex; flex-direction: column; background: var(--card); border: 3px solid var(--line); border-radius: 22px; overflow: hidden; }
   .faq details + details { border-top: 1px solid var(--line); }
   .faq summary {
-    cursor: pointer; list-style: none; padding: 16px 20px; display: flex; justify-content: space-between; gap: 12px;
+    cursor: pointer; list-style: none; padding: 16px 24px; display: flex; justify-content: space-between; gap: 12px;
     font-family: Fredoka, sans-serif; font-size: 16px; line-height: 1.35;
   }
   .faq summary::-webkit-details-marker { display: none; }
   .faq summary::after { content: '+'; flex: none; color: var(--ink-soft); font-size: 20px; line-height: 1; }
   .faq details[open] summary::after { content: '−'; }
-  .faq details p { margin: 0; padding: 0 20px 18px; font-size: 14px; line-height: 1.6; color: var(--ink-soft); }
+  .faq details p { margin: 0; padding: 0 24px 16px; font-size: 14px; line-height: 1.6; color: var(--ink-soft); }
   .faq details p b { color: var(--ink); font-weight: 400; font-family: Fredoka, sans-serif; }
-  .profielvraag { flex: 1 1 100%; font-size: 13px; color: var(--ink); }
-  .profielja, .profielnee, .profiellijst {
-    font-family: Fredoka, sans-serif;
-    font-size: 13px;
-    border-radius: 999px;
-    padding: 6px 12px;
-    cursor: pointer;
-    border: 2px solid var(--line);
-  }
-  .profielja { background: var(--bad); color: var(--card); border-color: var(--bad); }
-  .profielnee, .profiellijst { background: var(--card-2); color: var(--ink); }
+  .profielvraag { flex: 1 1 100%; font-family: Fredoka, sans-serif; font-size: 16px; color: var(--ink); }
+  .profielvraag small { display: block; font-family: Nunito, sans-serif; font-size: 13px; color: var(--ink); margin-top: 4px; }
 
   /* games and chapters share the same card */
-  .menu { display: flex; flex-direction: column; gap: 10px; }
+  .menu { display: flex; flex-direction: column; gap: 8px; }
   .hfd {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 16px;
     text-align: left;
     background: var(--card);
     border: 3px solid var(--line);
     border-radius: 22px;
-    padding: 14px 16px;
+    padding: 16px;
     cursor: pointer;
     font-family: Nunito, sans-serif;
     color: var(--ink);
@@ -313,7 +335,7 @@
   .hfd:active { transform: translateY(4px); box-shadow: none; }
   .hfd .ico {
     flex: none;
-    width: 50px; height: 50px;
+    width: 48px; height: 48px;
     border-radius: 16px;
     background: var(--card-2);
     display: flex; align-items: center; justify-content: center;
@@ -321,20 +343,20 @@
   }
   .hfd .tekst { flex: 1 1 auto; min-width: 0; }
   .hfd-titel { display: block; font-family: Fredoka, sans-serif; font-size: 18px; }
-  .hfd-uitleg { display: block; margin-top: 2px; font-size: 14px; color: var(--ink-soft); }
+  .hfd-uitleg { display: block; margin-top: 4px; font-size: 14px; color: var(--ink-soft); }
   /* heading between the chapters of two school years in a flat list; no interaction,
      only to keep the list readable once it spans several school years */
-  .jaarkop { font-family: Fredoka, sans-serif; font-size: 14px; color: var(--ink-soft); margin: 6px 4px -2px; }
+  .jaarkop { font-family: Fredoka, sans-serif; font-size: 14px; color: var(--ink-soft); margin: 8px 4px 0; }
   .jaarkop:first-child { margin-top: 0; }
-  .jaarkop.vroeger { margin-top: 14px; }
+  .jaarkop.vroeger { margin-top: 16px; }
   /* earlier school years: one calm button under the child's own chapters, and the same calm
      colour on the label during a test from such a year */
   .vroeger-knop {
-    font: inherit; font-family: Fredoka, sans-serif; font-size: 16px; cursor: pointer; margin-top: 6px; padding: 14px;
+    font: inherit; font-family: Fredoka, sans-serif; font-size: 16px; cursor: pointer; margin-top: 8px; padding: 16px;
     border-radius: 18px; border: 3px dashed var(--zilver); background: var(--zilver-bg); color: var(--zilver-ink);
   }
   .vroeger-label {
-    align-self: center; justify-self: center; width: fit-content; margin: 0 auto; padding: 3px 12px; border-radius: 999px;
+    align-self: center; justify-self: center; width: fit-content; margin: 0 auto; padding: 4px 12px; border-radius: 999px;
     font-family: Fredoka, sans-serif; font-size: 14px; background: var(--zilver-bg); color: var(--zilver-ink); border: 2px solid var(--zilver);
   }
   .result .einde-jaar { font-family: Fredoka, sans-serif; font-size: 18px; color: var(--ink); }
@@ -343,7 +365,7 @@
     font-family: Fredoka, sans-serif;
     font-size: 12px;
     border-radius: 999px;
-    padding: 4px 10px;
+    padding: 4px 8px;
     white-space: nowrap;
   }
   .badge.makkelijk { background: var(--good-bg); color: var(--good); }
@@ -358,13 +380,13 @@
   }
 
   /* game screen */
-  .scorebar { display: flex; align-items: center; gap: 10px; }
+  .scorebar { display: flex; align-items: center; gap: 8px; }
   .score-badge {
     font-family: Fredoka, sans-serif;
     background: var(--gold);
     color: #3A2B00;
     border-radius: 999px;
-    padding: 6px 14px;
+    padding: 4px 12px;
     font-size: 17px;
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
@@ -378,14 +400,14 @@
     white-space: nowrap;
   }
 
-  .dots { display: grid; gap: 6px; }
+  .dots { display: grid; gap: 4px; }
   .dot {
     min-width: 0;
     height: 26px;
     border-radius: 9px;
     background: var(--line);
     border: 2px solid transparent;
-    color: var(--ink-soft);
+    color: var(--ink);
     font-family: Fredoka, sans-serif;
     font-size: 13px;
     display: flex;
@@ -396,7 +418,7 @@
   }
   .dot.good { background: var(--good); color: var(--bg); }
   .dot.bad  { background: var(--bad);  color: var(--bg); }
-  .dot.now  { background: transparent; border-color: var(--accent); color: var(--accent); }
+  .dot.now  { background: transparent; border-color: var(--accent); color: var(--accent-tekst); }
 
   /* the canvas: each game draws its own thing here */
   .doek {
@@ -404,11 +426,11 @@
     background: var(--card);
     border: 3px solid var(--line);
     border-radius: 28px;
-    padding: 10px;
+    padding: 8px;
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     flex-wrap: wrap;
     overflow: hidden;
     min-height: 0;
@@ -469,7 +491,7 @@
     background: var(--screen);
     color: var(--screen-ink);
     border-radius: 22px;
-    padding: 16px 28px;
+    padding: 16px 24px;
     font-variant-numeric: tabular-nums;
     border: 4px solid var(--line);
     text-align: center;
@@ -483,9 +505,9 @@
   }
   .question:focus { outline: none; }
   #game { display: flex; flex-direction: column; gap: 12px; }
-  .qbox { display: flex; flex-direction: column; gap: 6px; }
+  .qbox { display: flex; flex-direction: column; gap: 8px; }
   /* the question stays centred; the read-aloud button sits beside it without pushing it */
-  .vraagrij { display: grid; grid-template-columns: 42px minmax(0, 1fr) 42px; align-items: center; gap: 8px; }
+  .vraagrij { display: grid; grid-template-columns: 40px minmax(0, 1fr) 40px; align-items: center; gap: 8px; }
   .vraagrij .question { grid-column: 2; }
   .vraagrij .icon-btn { grid-column: 3; }
   .subq {
@@ -496,7 +518,7 @@
     margin: 0;
   }
 
-  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .opt {
     font-family: Fredoka, sans-serif;
     font-size: clamp(17px, 4.6vw, 22px);
@@ -504,7 +526,7 @@
     color: var(--ink);
     border: 3px solid var(--line);
     border-radius: 20px;
-    padding: 16px 10px;
+    padding: 16px 8px;
     cursor: pointer;
     box-shadow: var(--shadow);
     transition: transform .1s;
@@ -517,13 +539,13 @@
   .opt.reveal    { border-color: var(--good); color: var(--good); }
 
   /* typing it in yourself */
-  .typen { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .typen { display: flex; flex-direction: column; align-items: center; gap: 16px; }
   .veld {
     display: flex; align-items: center; gap: 4px;
     background: var(--screen);
     border: 4px solid var(--line);
     border-radius: 22px;
-    padding: 10px 20px;
+    padding: 8px 16px;
     font-family: Fredoka, sans-serif;
     font-size: clamp(32px, 10vw, 46px);
     color: var(--screen-ink);
@@ -558,7 +580,7 @@
     color: var(--accent-ink);
     border: none;
     border-radius: 22px;
-    padding: 18px;
+    padding: 16px;
     width: 100%;
     cursor: pointer;
     box-shadow: var(--shadow);
@@ -567,16 +589,17 @@
   .big-btn:active:not(:disabled) { transform: translateY(4px); box-shadow: none; }
   .big-btn:disabled { opacity: .4; cursor: default; box-shadow: none; }
   .big-btn.stil { background: var(--card); color: var(--ink); border: 3px solid var(--line); }
+  .big-btn.stil:hover { border-color: var(--ink-soft); }
 
   .result {
     background: var(--card);
     border: 3px solid var(--line);
     border-radius: 28px;
-    padding: 26px 18px;
+    padding: 24px 16px;
     text-align: center;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
   }
   .result h2 { font-family: Fredoka, sans-serif; margin: 0; font-size: 26px; }
   .result .stars { font-size: 40px; letter-spacing: 4px; }
@@ -589,14 +612,14 @@
   .result p { margin: 0; color: var(--ink-soft); }
   .result .result-hfd { font-family: Fredoka, sans-serif; font-size: 18px; color: var(--ink); }
   .review { text-align: left; display: flex; flex-direction: column; gap: 8px; }
-  .review h3 { font-family: Fredoka, sans-serif; font-size: 17px; margin: 6px 0 0; color: var(--ink); }
+  .review h3 { font-family: Fredoka, sans-serif; font-size: 17px; margin: 8px 0 0; color: var(--ink); }
   .rv {
     background: var(--bad-bg);
     border-radius: 16px;
-    padding: 12px 14px;
+    padding: 12px 16px;
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 4px;
   }
   .rv b { font-family: Fredoka, sans-serif; font-weight: normal; font-size: 15px; color: var(--ink); }
   .rv .jouw { color: var(--bad); text-decoration: line-through; }
@@ -617,17 +640,17 @@
   body[data-scherm="game"] header { display: none; }
   .dot { height: 18px; font-size: 11px; border-radius: 6px; }
   .typhint { margin: 0; min-height: 18px; font-size: 14px; color: var(--bad); text-align: center; }
-  .scorebar .geluid { width: 38px; height: 38px; font-size: 17px; }
+  .scorebar .geluid { width: 40px; height: 40px; font-size: 17px; }
   /* who is playing stays in sight during a test, as on the start screen */
   .naampil {
     flex: none; max-width: 104px;
     font-family: Fredoka, sans-serif; font-size: 15px; color: var(--ink-soft);
-    border: 2px solid var(--line); background: var(--card-2); border-radius: 999px; padding: 5px 12px;
+    border: 2px solid var(--line); background: var(--card-2); border-radius: 999px; padding: 4px 12px;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   @media (max-width: 360px) {
-    #game .scorebar { gap: 6px; }
-    .naampil { max-width: 76px; padding: 5px 8px; font-size: 13px; }
+    #game .scorebar { gap: 4px; }
+    .naampil { max-width: 76px; padding: 4px 8px; font-size: 13px; }
   }
 
   /* the answer sheet slides up over the choices, which are disabled by then anyway */
@@ -636,8 +659,8 @@
     width: min(560px, 100%); transform: translateX(-50%);
     background: var(--card); border: 3px solid var(--line); border-bottom: none;
     border-radius: 24px 24px 0 0; box-shadow: 0 -6px 24px rgba(0, 0, 0, .18);
-    padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
-    display: flex; flex-direction: column; gap: 10px;
+    padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; gap: 8px;
     animation: opschuiven .22s ease-out;
   }
   .blad.goed { border-color: var(--good); }
@@ -664,11 +687,11 @@
     #schermCard { grid-area: scherm; }
     #game > .qbox { grid-area: vraag; }
     #options, #typen { grid-area: keuzes; }
-    .opt { padding: 10px 8px; }
+    .opt { padding: 8px; }
     /* the right column is short: a smaller answer box, button and little screen */
-    #typen { gap: 6px; }
-    .veld { font-size: 30px; padding: 6px 14px; }
-    #typen .big-btn, .blad .big-btn { padding: 10px; font-size: 18px; }
+    #typen { gap: 8px; }
+    .veld { font-size: 30px; padding: 8px 16px; }
+    #typen .big-btn, .blad .big-btn { padding: 8px; font-size: 18px; }
     .scherm { font-size: 26px; padding: 8px 16px; }
     .blad { left: auto; right: 0; width: 55%; transform: none; animation-name: opschuivenRechts; }
     @keyframes opschuivenRechts { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -676,43 +699,45 @@
   @media (prefers-reduced-motion: reduce) { .blad { animation: none; } }
   /* the start screen and the sticker book are wider, so four tiles fit on a laptop */
   body[data-scherm="start"] .wrap, body[data-scherm="stickers"] .wrap { max-width: 900px; }
-  #startScherm { gap: 12px; }
+  #startScherm { gap: 16px; }
   .voorjou {
-    display: flex; flex-direction: column; gap: 3px; text-align: left; cursor: pointer;
+    display: flex; flex-direction: column; gap: 4px; text-align: left; cursor: pointer;
     background: var(--card); color: var(--ink); border: 3px solid var(--accent);
-    border-radius: 22px; padding: 14px 16px; box-shadow: var(--shadow);
+    border-radius: 22px; padding: 16px; box-shadow: var(--shadow);
     font-family: Nunito, sans-serif; font-size: 15px;
   }
-  .voorjou .vj-kop { font-family: Fredoka, sans-serif; font-size: 14px; color: var(--accent); }
+  .voorjou .vj-kop { font-family: Fredoka, sans-serif; font-size: 14px; color: var(--accent-tekst); }
   .voorjou .vj-titel { font-family: Fredoka, sans-serif; font-size: 19px; }
   .voorjou .vj-tekst { color: var(--ink-soft); }
   .voorjou .vj-dagen { font-size: 13px; color: var(--good); }
   .voorjou:active { transform: translateY(4px); box-shadow: none; }
-  .instelregel {
-    display: flex; justify-content: space-between; align-items: center; cursor: pointer;
-    background: var(--card); color: var(--ink-soft); border: 3px solid var(--line);
-    border-radius: 18px; padding: 10px 16px; font-family: Fredoka, sans-serif; font-size: 15px;
-  }
-  .instellingen { display: flex; flex-direction: column; gap: 10px; }
-  .tegels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  #instelScherm { display: flex; flex-direction: column; gap: 16px; }
+  .instellingen { display: flex; flex-direction: column; gap: 16px; }
+  .instellingen .naamkaart { flex-direction: column; align-items: stretch; }
+  .instellingen .kleuren { margin: 0; }
+  /* six school years always on one row, also on a small phone */
+  #leerjaren, #wieJaren { flex-wrap: nowrap; }
+  #leerjaren .aantal { flex: 1 1 0; min-width: 0; padding: 8px 0; }
+  .tegels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
   @media (min-width: 600px) { .tegels { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
   @media (min-width: 860px), (orientation: landscape) and (max-height: 500px) {
     .tegels { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   }
   .tegel {
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
-    min-height: 118px; padding: 12px 8px; cursor: pointer; text-align: center;
+    min-height: 120px; padding: 16px 8px; cursor: pointer; text-align: center;
     background: var(--card); color: var(--ink); border: 3px solid var(--line);
     border-radius: 22px; box-shadow: var(--shadow); transition: transform .1s;
     font-family: Fredoka, sans-serif; font-size: 16px;
   }
   .tegel:active { transform: translateY(4px); box-shadow: none; }
   .tegel .tegel-ico { font-size: 38px; line-height: 1.1; }
-  .tegel .tegel-sterren { font-size: 14px; color: var(--gold); font-variant-numeric: tabular-nums; }
+  /* the count is text, so the deep gold of the stickers: plain gold on white is unreadable */
+  .tegel .tegel-sterren { font-size: 14px; color: var(--goud-ink); font-variant-numeric: tabular-nums; }
   .tegel.stickers { border-color: var(--gold); }
-  .over { margin-top: 18px; padding: 0 4px; color: var(--ink-soft); font-size: 13px; line-height: 1.5; }
+  .over { margin-top: 24px; padding: 0 4px; color: var(--ink-soft); font-size: 13px; line-height: 1.5; }
   .over h2 { margin: 0 0 4px; font-family: Fredoka, sans-serif; font-size: 15px; font-weight: 400; color: var(--ink); }
-  .over p { margin: 0 0 6px; }
+  .over p { margin: 0 0 8px; }
   .over a { color: inherit; }
   .tegel .tegel-klaar { font-family: Nunito, sans-serif; font-size: 13px; color: var(--ink-soft); }
   .tegel-balk { width: 70%; height: 6px; border-radius: 999px; background: var(--line); overflow: hidden; }
@@ -742,13 +767,13 @@
   .hfd.nieuw .sterren { color: var(--ink-soft); opacity: .45; }
   .hfd .ico { position: relative; }
   .hfd.klaar .ico::after { content: '✅'; position: absolute; right: -7px; bottom: -7px; font-size: 20px; line-height: 1; }
-  .hfd-score { display: block; margin-top: 4px; font-family: Fredoka, sans-serif; font-size: 14px; color: var(--accent); }
+  .hfd-score { display: block; margin-top: 4px; font-family: Fredoka, sans-serif; font-size: 14px; color: var(--accent-tekst); }
   .hfd.klaar .hfd-score { color: var(--good); }
   .hfd-rechts { flex: none; display: flex; align-items: center; gap: 8px; }
   /* on a phone the stars and the label go under the text, so a title gets the full width
      instead of breaking over four lines */
   @media (max-width: 520px) {
-    .hfd { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 14px; row-gap: 8px; }
+    .hfd { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 16px; row-gap: 8px; }
     .hfd .ico { grid-row: span 2; }
     .hfd-rechts { grid-column: 2; }
   }
@@ -792,10 +817,10 @@
   }
   .sticker-groot.goud::before { font-size: 22px; top: 4px; right: 6px; }
   @keyframes twinkel { 0%, 100% { transform: scale(.3); opacity: 0; } 45%, 60% { transform: scale(1) rotate(20deg); opacity: 1; } }
-  #stickerScherm { display: flex; flex-direction: column; gap: 14px; }
+  #stickerScherm { display: flex; flex-direction: column; gap: 16px; }
   .boekspel h3 { font-family: Fredoka, sans-serif; font-size: 17px; margin: 4px 0 8px; color: var(--ink); }
   /* room under each row for the ×N badges that hang below the stickers */
-  .boekspel { margin-bottom: 22px; }
+  .boekspel { margin-bottom: 24px; }
   .boek { display: grid; grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)); gap: 12px; }
   .vak {
     aspect-ratio: 1; border-radius: 16px; background: var(--card); border: 3px solid var(--line);
@@ -818,23 +843,22 @@
   button.sticker-groot:disabled { cursor: default; }
   .sticker-dialoog {
     border: 3px solid var(--line); border-radius: 28px; background: var(--card); color: var(--ink);
-    width: min(360px, calc(100vw - 32px)); padding: 28px 22px 20px; text-align: center;
+    width: min(360px, calc(100vw - 32px)); padding: 32px 24px 24px; text-align: center;
   }
-  .sticker-dialoog[open] { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .sticker-dialoog[open] { display: flex; flex-direction: column; align-items: center; gap: 16px; }
   .sticker-dialoog::backdrop { background: rgba(10, 16, 30, .6); }
   .sticker-dialoog .sticker-groot { width: 140px; height: 140px; border-radius: 32px; font-size: 84px; animation: none; transform: rotate(-6deg); }
-  .sticker-dialoog h3 { font-family: Fredoka, sans-serif; font-size: 22px; margin: 6px 0 0; }
+  .sticker-dialoog h3 { font-family: Fredoka, sans-serif; font-size: 22px; margin: 8px 0 0; }
   .sticker-dialoog p { margin: 0; color: var(--ink-soft); }
-  .sticker-dialoog .sd-lof { color: var(--accent); font-family: Fredoka, sans-serif; font-size: 17px; }
-  .weetje { background: var(--bg); border-radius: 16px; padding: 12px 14px; text-align: left; display: flex; flex-direction: column; gap: 4px; }
+  .sticker-dialoog .sd-lof { color: var(--accent-tekst); font-family: Fredoka, sans-serif; font-size: 17px; }
+  .weetje { background: var(--bg); border-radius: 16px; padding: 12px 16px; text-align: left; display: flex; flex-direction: column; gap: 4px; }
   .weetje b { font-family: Fredoka, sans-serif; color: var(--ink); }
-  .sticker-dialoog .big-btn { margin-top: 4px; }
-  .sticker-dialoog .sd-sluit { position: absolute; top: 12px; right: 12px; }
+  .sticker-dialoog .sd-sluit { position: absolute; top: 16px; right: 16px; }
   .vak.leeg { background: none; border-style: dashed; color: var(--line); font-family: Fredoka, sans-serif; font-size: 20px; }
   .result .stars .ster { display: inline-block; color: var(--line); animation: sterIn .35s ease-out both; }
   .result .stars .ster.aan { color: var(--gold); }
   @keyframes sterIn { from { transform: scale(.2); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-  .nieuwe-sticker { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .nieuwe-sticker { display: flex; flex-direction: column; align-items: center; gap: 8px; }
   .sticker-groot {
     width: 96px; height: 96px; border-radius: 24px; background: #fff; box-shadow: 0 0 0 5px var(--gold);
     display: flex; align-items: center; justify-content: center; font-size: 56px;
@@ -854,38 +878,51 @@
   header { flex-wrap: nowrap; }
   h1 { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   @media (max-width: 420px) {
-    .profielBtn { max-width: 124px; padding: 7px 10px; font-size: 14px; }
+    .profielBtn { max-width: 124px; padding: 8px 12px; font-size: 14px; }
     h1 { font-size: 22px; }
   }
   @media (max-width: 360px) {
-    header { gap: 6px; }
-    header .icon-btn { width: 36px; height: 36px; font-size: 16px; }
+    header { gap: 4px; }
+    header .icon-btn { width: 40px; height: 40px; font-size: 16px; }
     h1 { font-size: 17px; }
-    .profielBtn { max-width: 116px; font-size: 13px; padding: 7px 8px; }
+    .profielBtn { max-width: 116px; font-size: 13px; padding: 8px; }
   }
 </style>
 
 <div class="wrap">
   <header>
     <h1 id="kop">Oefen<span class="tick">kampioen</span></h1>
-    <button class="aantal profielBtn" id="profielBtn" aria-haspopup="dialog" aria-expanded="false"></button>
+    <button class="knop profielBtn" id="profielBtn" aria-haspopup="dialog" aria-expanded="false"></button>
     <button class="icon-btn" id="soundBtn" aria-label="Geluid aan of uit">&#128266;</button>
   </header>
 
   <div id="profielBackdrop" hidden></div>
-  <div class="paneel" id="profielPaneel" hidden role="dialog" aria-label="Profielen">
-    <div id="profielLijst"></div>
-    <div class="naamkaart">
-      <label for="naam">Nieuw profiel</label>
-      <input id="naam" type="text" maxlength="16" placeholder="Typ een naam" autocomplete="off">
-      <button class="aantal" id="naamOk">Voeg toe</button>
+  <div class="paneel" id="profielPaneel" hidden role="dialog" aria-label="Speler">
+    <div class="profielnu" id="profielNu"></div>
+    <button class="menuknop" id="wisselBtn">Wissel van speler</button>
+    <button class="menuknop" id="instelBtn">Instellingen</button>
+  </div>
+
+  <div id="wieScherm" hidden>
+    <h2 class="wiekop">Wie speelt er?</h2>
+    <div class="wielijst" id="wieLijst"></div>
+    <div class="naamkaart wienieuwkaart" id="wieNieuwKaart" hidden>
+      <label for="naam">Hoe heet je?</label>
+      <input id="naam" type="text" maxlength="16" placeholder="Typ je naam" autocomplete="off">
+      <span class="kaartlabel" id="wieJaarLabel">In welk leerjaar zit je?</span>
+      <div class="aantallen" id="wieJaren" role="group" aria-labelledby="wieJaarLabel"></div>
+      <span class="kaartlabel">Kies je kleur</span>
+      <div class="kleuren" id="wieKleuren"></div>
+      <button class="big-btn" id="naamOk" disabled>Klaar, start!</button>
     </div>
   </div>
 
-  <div id="startScherm">
-    <button class="voorjou" id="voorJou"></button>
-    <button class="instelregel" id="instelRegel" aria-expanded="false" aria-controls="instellingen"></button>
-    <div class="instellingen" id="instellingen" hidden>
+  <div id="instelScherm" hidden>
+    <div class="scorebar">
+      <button class="icon-btn" id="instelTerugBtn" aria-label="Terug naar de spellen">&#127968;</button>
+      <span class="titel">Instellingen</span>
+    </div>
+    <div class="instellingen">
       <div class="naamkaart" role="group" aria-label="Leerjaar">
         <span class="kaartlabel">Welk leerjaar?</span>
         <span class="aantallen" id="leerjaren"></span>
@@ -902,7 +939,16 @@
         <span class="kaartlabel">Vragen voorlezen?</span>
         <span class="aantallen" id="voorleesKnop"></span>
       </div>
+      <div class="naamkaart" id="kleurKaart" role="group" aria-label="Jouw kleur">
+        <span class="kaartlabel">Jouw kleur</span>
+        <div class="kleuren" id="instelKleuren"></div>
+      </div>
     </div>
+    <button class="menuknop ouderrij" id="instelOuderBtn">Voor ouders<small>Voortgang per kind, back-up en kinderen verwijderen</small></button>
+  </div>
+
+  <div id="startScherm">
+    <button class="voorjou" id="voorJou"></button>
     <p class="lead" id="lead"></p>
     <div class="tegels" id="spellen"></div>
     <footer class="over">
@@ -948,7 +994,7 @@
   <div id="ouderScherm" hidden>
     <div class="scorebar">
       <button class="icon-btn" id="ouderTerugBtn" aria-label="Terug naar de spellen">&#127968;</button>
-      <span class="titel">📋 Voor ouders</span>
+      <span class="titel">Voor ouders</span>
     </div>
     <p class="lead">Alles staat enkel op dit toestel, in deze browser: geen account, geen cloud.
       Browsergegevens wissen of een ander toestel gebruiken, wist ook dit. Bewaar daarom af en toe een bestand.</p>
@@ -963,14 +1009,14 @@
       <div class="ouderkaart">
         <p class="sectieuitleg">Eén bestand met alle kinderen. Bewaar het op een plek buiten dit toestel, bv. in iCloud Drive, Google Drive of je mail.</p>
         <p class="bewaardinfo" id="bewaardInfo"></p>
-        <div class="paneelacties"><button class="aantal" id="bewaarBtn">📤 Bewaar alles als bestand</button></div>
+        <div class="paneelacties"><button class="knop primair" id="bewaarBtn">📤 Bewaar alles als bestand</button></div>
       </div>
     </section>
     <section class="oudersectie">
       <h2>Terugzetten</h2>
       <div class="ouderkaart">
         <p class="sectieuitleg">Een bestand van één kind of van iedereen. Je ziet eerst wat erin zit, en er gaat nooit iets verloren.</p>
-        <div class="paneelacties"><button class="aantal" id="herstelBtn">📥 Kies een bestand</button></div>
+        <div class="paneelacties"><button class="knop" id="herstelBtn">📥 Kies een bestand</button></div>
         <input type="file" id="herstelInput" accept=".json,application/json" hidden>
         <p class="melding" id="ouderMelding" role="status" hidden></p>
       </div>

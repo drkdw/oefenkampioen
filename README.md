@@ -7,6 +7,14 @@ build, geen dependencies, geen framework.
 
 **[drkdw.github.io/oefenkampioen](https://drkdw.github.io/oefenkampioen/)**. Die link werkt
 gewoon, in elke browser, op elke computer, tablet of gsm. Niets te installeren, geen account.
+
+Wie wil, zet de app op het beginscherm: in Chrome op Android via **App installeren**, op een iPad
+of iPhone in Safari via **Deel → Zet op beginscherm**, op een computer via het installeericoon in
+de adresbalk van Chrome of Edge. Dan opent ze zonder adresbalk, met een eigen icoon, en speelt ze
+ook offline alles wat al eens geopend werd. Let op: op een iPad of iPhone heeft de app op het
+beginscherm een eigen opslag, los van Safari. Zet scores over met **Voor ouders → Back-up van
+iedereen** en **Terugzetten**.
+
 Ouders vinden onderaan het startscherm **Voor ouders**, met de voortgang per kind, de
 bewaarbestanden en antwoorden op de vragen die het vaakst terugkomen.
 
@@ -34,17 +42,47 @@ Dat bouwt elke vraag van elk spel en rekent ze daarna nog eens onafhankelijk na,
 kind ziet: de tekening, de som en de vraagtekst (`test/<spel>.test.mjs`). Het controleert ook de
 sterren, stickerniveaus en het voorstel van de dag (`beloning.test.mjs`), het formaat van de
 bewaarbestanden en het samenvoegen (`bewaren.test.mjs`), de tekst die wordt voorgelezen
-(`voorlezen.test.mjs`) en of elke import echt bestaat. In de browser meet
-`(await import('/test/layout-meting.js')).meet()` of vraag, keuzes en de volgende-knop op het
-huidige scherm passen zonder te scrollen.
+(`voorlezen.test.mjs`) en of elke import echt bestaat.
+
+### Testen in de browser
+
+Drie tests draaien in de browser, op de lokale server. Open de console en typ:
+
+| Test | Wat hij doet |
+|---|---|
+| `location.hash = '#test'; location.reload()` | zelfcheck: elke toets van elk spel opbouwen en narekenen |
+| `(await import('/test/layout-meting.js')).meet()` | passen vraag, keuzes en volgende-knop zonder te scrollen? |
+| `(await import('/test/ui-test.js')).alles()` | klikt door de hele app, zie hieronder |
+
+`ui-test.js` duurt ongeveer een minuut en heeft vijf delen:
+
+1. **Schermen:** geen horizontaal scrollen, niets buiten beeld, elke knop een naam voor een
+   schermlezer. Als opmerking: raakvlakken kleiner dan 40px en te weinig contrast.
+2. **Acties:** Nieuw kind (Klaar pas met naam en leerjaar), wisselen, instellingen per kind,
+   terugknop, verwijderen (uit de lijst en écht wissen), een bestand terugzetten.
+3. **Spellen:** elk hoofdstuk van elk spel een volledige toets, deels juist en deels fout, en
+   de score op het resultaatscherm moet kloppen.
+4. **Stress:** 45 kinderen, namen in andere schriften, dubbel tikken, hameren op een antwoord,
+   razendsnel schermen wisselen, een volle opslag.
+5. **Aanvallen:** markup in een naam, in de opslag, in het adres en in een bewaarbestand,
+   vervuiling van `Object.prototype`, een bestand van een nieuwere versie en een kapot bestand.
+
+Alles wat de app bewaarde gaat eerst opzij en komt daarna terug. Stopt de test halverwege (tab
+dicht, herladen), dan zet de volgende run de oude gegevens eerst terug. De uitslag staat ook na
+het herladen nog in `localStorage.getItem('uitest-uitslag')`. Niet klikken in de pagina terwijl
+de test loopt.
+
+Draai `ui-test.js` op minstens vier formaten: 320×568 (kleine gsm), 375×812 (gsm), 768×1024
+(tablet) en een laptop. Kijk daarna zelf naar elk scherm in light en dark.
 
 Opvolger van de losse spellen klok-oefenen en maaltafelmonsters. Die zijn hier mee ingebouwd,
 zodat de opmaak, de puntentelling, de opslag en de zelfcheck maar op een plaats staan.
 
 ## Leerjaren
 
-Elk hoofdstuk hoort bij het leerjaar waarin het wordt aangebracht. Het leerjaar kies je in de
-instellingen op het startscherm (**Welk leerjaar?**), per kind, en die keuze blijft bewaard.
+Elk hoofdstuk hoort bij het leerjaar waarin het wordt aangebracht. Het leerjaar kies je bij
+**Nieuw kind**, en later in **Instellingen** (**Welk leerjaar?**), per kind, en die keuze blijft
+bewaard.
 
 Een leerjaar is cumulatief. Kies je het derde, dan zie je alles tot en met het derde: de hele
 uren van het eerste, de kwartieren van het tweede en de tijdsduur van het derde. Wie in het derde
@@ -68,8 +106,7 @@ in het eerste 17. Elk hoofdstuk hoort bij het leerjaar waarin het in de klas aan
 Bovenaan staat **Voor jou vandaag**, eerst uit je eigen leerjaar: een hoofdstuk dat je al speelde
 maar waar je nog geen 3 sterren voor hebt, anders een hoofdstuk dat je nog nooit speelde. Is je
 eigen leerjaar helemaal 3 sterren, dan zoekt het een leerjaar lager. Elke dag begint het zoeken
-bij een ander spel. Daaronder staat één regel met leerjaar, aantal vragen, tempo en voorlezen;
-tik erop en de instellingen klappen open. Dan volgen de spellen als tegels, en onderaan een korte
+bij een ander spel. Dan volgen de spellen als tegels, en onderaan een korte
 tekst over de app met de links **Voor ouders** en **Broncode op GitHub**.
 
 Elk hoofdstuk heeft 0 tot 3 sterren volgens je beste score: 1 vanaf 50%, 2 vanaf 70%, 3 vanaf
@@ -142,7 +179,7 @@ de lijst, waar het kind zelf kiest.
 | Verhoudingen | procent, schaal, btw en korting, verhoudingstabel, snelheid, gemiddelde, diagrammen |
 
 Elk spel heeft zeven tot eenendertig hoofdstukken, afhankelijk van hoeveel leerjaren het dekt.
-Een toets telt 10, 15 of 20 vragen, te kiezen in de instellingen op het startscherm, en evenveel
+Een toets telt 10, 15 of 20 vragen, te kiezen in **Instellingen**, en evenveel
 punten. Twintig is de bovengrens: langer houdt een kind van acht
 niet vol. De verdeling over de vraagtypes schaalt mee met het gekozen aantal.
 
@@ -153,10 +190,20 @@ eerst munten tellen. Tempotoetsen voor de tafels lopen in Vlaanderen al vanaf he
 leerjaar, dus de schakelaar is niet alleen voor de grootsten. Standaard staat hij uit.
 
 Elk kind heeft een eigen profiel: naam, gekozen leerjaar, instellingen en beste score per
-hoofdstuk. Tik op de naam naast het geluidsicoon om te wisselen of een nieuw profiel toe te
-voegen. In dat paneel zie je per kind ook het leerjaar, hoeveel hoofdstukken al geoefend zijn en
-hoeveel toetsen er gespeeld zijn. Meer staat er niet in: wat voor ouders is, staat op een eigen
-scherm.
+hoofdstuk, en een eigen kleur voor de letter van de naam.
+
+Spelen er twee of meer kinderen op een toestel, dan opent de app met **Wie speelt er?**: een grote
+tegel per kind en **Nieuw kind** om er een toe te voegen. Nieuw kind vraagt de naam, het
+leerjaar en een kleur; **Klaar, start!** kan pas als naam en leerjaar ingevuld zijn, en brengt je
+meteen naar de spellen. Met een kind, of nog geen, opent de app meteen op de spellen.
+
+Tik op de naam naast het geluidsicoon voor een klein menu: wie nu speelt, **Wissel van speler**
+(terug naar Wie speelt er?) en **Instellingen**. Het menu is van het kind, dus **Voor ouders**
+staat er niet in. Instellingen is een eigen scherm met leerjaar, aantal vragen, op tempo,
+voorlezen en **Jouw kleur**, en onderaan een rustigere rij **Voor ouders**. De terugknop van
+Android brengt je van elk scherm terug naar de spellen, in plaats van de app te sluiten.
+Verwijderen staat bewust alleen op het scherm voor ouders, zodat een kind niet per ongeluk een
+broer of zus wist.
 
 ### Voor ouders
 
