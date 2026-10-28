@@ -81,7 +81,7 @@ zodat de opmaak, de puntentelling, de opslag en de zelfcheck maar op een plaats 
 ## Leerjaren
 
 Elk hoofdstuk hoort bij het leerjaar waarin het wordt aangebracht. Het leerjaar kies je bij
-**Nieuw kind**, en later in **Instellingen** (**Welk leerjaar?**), per kind, en die keuze blijft
+**Nieuw kind**, en later in **Instellingen** (**Leerjaar**), per kind, en die keuze blijft
 bewaard.
 
 Een leerjaar is cumulatief. Kies je het derde, dan zie je alles tot en met het derde: de hele
@@ -148,7 +148,7 @@ antwoord gaat het na 3,5 seconden vanzelf verder; na een fout blijft de uitleg s
 
 Naast elke vraag staat een knop 🗣️ die de vraag en de keuzes voorleest, met een Nederlandse stem
 van het toestel zelf (Vlaams als die er is). Tekens worden woorden: `1/4` wordt "een vierde",
-`€ 3` "3 euro", `−4` "min 4". In de instellingen kan **Vragen voorlezen** op "ja, elke vraag";
+`€ 3` "3 euro", `−4` "min 4". In de instellingen kan **Voorlezen** op "Elke vraag";
 dan leest elke nieuwe vraag zichzelf voor, maar nooit voor een kind zelf iets aantikte. Heeft
 het toestel geen Nederlandse stem, dan verschijnen knop en instelling niet.
 
@@ -183,11 +183,11 @@ Een toets telt 10, 15 of 20 vragen, te kiezen in **Instellingen**, en evenveel
 punten. Twintig is de bovengrens: langer houdt een kind van acht
 niet vol. De verdeling over de vraagtypes schaalt mee met het gekozen aantal.
 
-In de instellingen staat ook een schakelaar **Op tempo?**. Staat die aan, dan loopt er per vraag
+In de instellingen staat ook **Tempo**: "Rustig" of "Met klok". Met klok loopt er per vraag
 een balk leeg en telt te traag als fout. Elk spel heeft zijn eigen tijd: de tafels krijgen 8
 seconden, want automatiseren betekent niet uitrekenen, en het winkeltje 30, want daar moet je
 eerst munten tellen. Tempotoetsen voor de tafels lopen in Vlaanderen al vanaf het tweede
-leerjaar, dus de schakelaar is niet alleen voor de grootsten. Standaard staat hij uit.
+leerjaar, dus "Met klok" is niet alleen voor de grootsten. Standaard staat het op "Rustig".
 
 Elk kind heeft een eigen profiel: naam, gekozen leerjaar, instellingen en beste score per
 hoofdstuk, en een eigen kleur voor de letter van de naam.
@@ -203,7 +203,7 @@ een zin uitleg en meteen dat formulier. Met één kind opent ze meteen op de spe
 Tik op de naam naast het geluidsicoon voor een klein menu: wie nu speelt, **Wissel van speler**
 (terug naar Wie speelt er?) en **Instellingen**. Het menu is van het kind, dus **Voor ouders**
 staat er niet in. Instellingen is een eigen scherm met leerjaar, aantal vragen, op tempo,
-voorlezen en **Jouw kleur**, en onderaan een rustigere rij **Voor ouders**. De terugknop van
+voorlezen en **Kleur**, en onderaan een rustigere rij **Voor ouders**. De terugknop van
 Android brengt je van elk scherm terug naar de spellen, in plaats van de app te sluiten.
 Verwijderen staat bewust alleen op het scherm voor ouders, zodat een kind niet per ongeluk een
 broer of zus wist.

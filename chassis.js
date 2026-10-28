@@ -679,8 +679,8 @@ function toonKeuzes(plek, naam, opties, gekozen, kies) {
 }
 var JAAR_KEUZES = LEERJAREN.map(function (lj) { return { w: lj, tekst: lj, label: jaarNaam(lj) }; });
 var AANTAL_KEUZES = AANTALLEN.map(function (a) { return { w: a, tekst: a }; });
-var TEMPO_KEUZES = [{ w: false, tekst: 'nee, rustig' }, { w: true, tekst: 'ja, met klok' }];
-var VOORLEES_KEUZES = [{ w: false, tekst: 'nee, enkel als ik tik' }, { w: true, tekst: 'ja, elke vraag' }];
+var TEMPO_KEUZES = [{ w: false, tekst: 'Rustig' }, { w: true, tekst: 'Met klok' }];
+var VOORLEES_KEUZES = [{ w: false, tekst: 'Als ik tik' }, { w: true, tekst: 'Elke vraag' }];
 // what a longer test is worth: the sticker level it can earn
 function aantalUitleg(a) {
   return a >= GOUD ? 'Met 3 sterren wordt je sticker goud.'
