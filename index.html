@@ -239,7 +239,8 @@
   /* who is playing: big tiles a child finds without reading */
   #wieScherm { display: flex; flex-direction: column; align-items: center; gap: 24px; padding-top: 24px; }
   .wiekop { margin: 0; font-family: Fredoka, sans-serif; font-size: 30px; text-align: center; }
-  .wieuitleg { margin-top: -16px; text-align: center; }
+  .wiekopblok { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .wieuitleg { text-align: center; }
   .wielijst { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; }
   .wiekies {
     display: flex; flex-direction: column; align-items: center; gap: 8px; width: 120px;
@@ -251,7 +252,9 @@
   .wienaam { font-family: Fredoka, sans-serif; font-size: 19px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   /* label, control and its explanation 8px apart; 24px between the groups, so an explanation
      visibly belongs to the choice above it */
-  .wienieuwkaart { width: min(420px, 100%); flex-direction: column; align-items: stretch; gap: 24px; padding: 24px 16px; }
+  .wienieuwkaart { width: min(640px, 100%); flex-direction: column; align-items: stretch; gap: 24px; padding: 24px; }
+  /* on a phone the sides give their room to the six school years and the colors */
+  @media (max-width: 460px) { .wienieuwkaart { padding: 24px 16px; } }
   .veldgroep { display: flex; flex-direction: column; gap: 8px; }
   .veldgroep input { flex: none; }
   #wieJaren .aantal { flex: 1 1 0; min-width: 0; padding: 8px 0; }
@@ -700,7 +703,7 @@
   }
   @media (prefers-reduced-motion: reduce) { .blad { animation: none; } }
   /* the start screen and the sticker book are wider, so four tiles fit on a laptop */
-  body[data-scherm="start"] .wrap, body[data-scherm="stickers"] .wrap { max-width: 900px; }
+  body[data-scherm="start"] .wrap, body[data-scherm="stickers"] .wrap, body[data-scherm="wie"] .wrap { max-width: 900px; }
   #startScherm { gap: 16px; }
   .voorjou {
     display: flex; flex-direction: column; gap: 4px; text-align: left; cursor: pointer;
@@ -907,8 +910,10 @@
   </div>
 
   <div id="wieScherm" hidden>
-    <h2 class="wiekop" id="wieKop">Wie speelt er?</h2>
-    <p class="lead wieuitleg" id="wieUitleg" hidden>Maak een profiel, gerust samen.</p>
+    <div class="wiekopblok">
+      <h2 class="wiekop" id="wieKop">Wie speelt er?</h2>
+      <p class="lead wieuitleg" id="wieUitleg" hidden>Maak een profiel, gerust samen.</p>
+    </div>
     <div class="wielijst" id="wieLijst"></div>
     <div class="naamkaart wienieuwkaart" id="wieNieuwKaart" hidden>
       <div class="veldgroep">
