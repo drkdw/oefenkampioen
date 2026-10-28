@@ -6,12 +6,14 @@ self.addEventListener('install', function () { self.skipWaiting(); });
 self.addEventListener('activate', function (e) { e.waitUntil(self.clients.claim()); });
 
 self.addEventListener('fetch', function (e) {
-  if (e.request.method !== 'GET') return;
+  // only web addresses: a browser extension's own files (chrome-extension://) cannot be cached
+  if (e.request.method !== 'GET' || !/^https?:/.test(e.request.url)) return;
   e.respondWith(fetch(e.request).then(function (antwoord) {
     // opaque answers (the Google font files) are cached too, so the letters also work offline
     if (antwoord.ok || antwoord.type === 'opaque') {
       var kopie = antwoord.clone();
-      caches.open(CACHE).then(function (c) { c.put(e.request, kopie); });
+      // a full or refused cache only costs offline play of this one file, never the answer itself
+      caches.open(CACHE).then(function (c) { return c.put(e.request, kopie); }).catch(function () {});
     }
     return antwoord;
   }).catch(function () {
