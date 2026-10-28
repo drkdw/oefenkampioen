@@ -18,15 +18,21 @@ export async function meet() {
     var spel = Array.prototype.find.call(document.querySelectorAll('#spellen .tegel, #spellen .hfd'), function (b) { return b.textContent.indexOf(spelNaam) > -1; });
     if (!spel) { fouten.push('spel niet gevonden: ' + spelNaam); return false; }
     spel.click();
-    var hfd = Array.prototype.find.call(document.querySelectorAll('#menu .hfd'), function (b) { return b.textContent.indexOf(hoofdstuk) > -1; });
+    function zoek() { return Array.prototype.find.call(document.querySelectorAll('#menu .hfd'), function (b) { return b.textContent.indexOf(hoofdstuk) > -1; }); }
+    var hfd = zoek();
+    // a chapter from an earlier school year sits behind the button for earlier years
+    while (!hfd && document.querySelector('#menu .vroeger-knop')) { document.querySelector('#menu .vroeger-knop').click(); hfd = zoek(); }
     if (!hfd) { fouten.push('hoofdstuk niet gevonden: ' + hoofdstuk); return false; }
     hfd.click();
     return true;
   }
-  // measure at school year 3, and put the child's own school year back afterwards
+  // measure at school year 3, and put the child's own school year back afterwards; the school
+  // years live on the settings screen, so open it first and go back to the start screen
+  $('instelBtn').click();
   var eigen = document.querySelector('#leerjaren [aria-pressed="true"]');
   var lj = document.querySelector('#leerjaren [data-lj="3"]');
   if (lj) lj.click();
+  $('instelTerugBtn').click();
   if (document.documentElement.scrollWidth > innerWidth + 1) fouten.push('startscherm scrollt horizontaal');
   // the header stays on one row, and neither the title nor the name button is cut off
   var kop = document.querySelector('header'), rijen = Array.prototype.map.call(kop.children, function (e) { return e.getBoundingClientRect().top; });
@@ -53,6 +59,6 @@ export async function meet() {
     $('homeBtn').click();
   }
   await wacht(50);
-  if (eigen) document.querySelector('#leerjaren [data-lj="' + eigen.dataset.lj + '"]').click();
+  if (eigen) { $('instelBtn').click(); document.querySelector('#leerjaren [data-lj="' + eigen.dataset.lj + '"]').click(); $('instelTerugBtn').click(); }
   return { ok: fouten.length === 0, fouten: fouten };
 }
