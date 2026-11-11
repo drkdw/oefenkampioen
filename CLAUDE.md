@@ -21,7 +21,7 @@ Gratis oefenspellen wiskunde voor de lagere school in Vlaanderen (leerjaar 1 tot
 3. Zelfcheck: open `/#test`, console moet "Zelfcheck klaar: ... geen fouten" tonen.
 4. UI-test, op 320×568, 375×812, 768×1024 en laptopbreedte:
    `(await import('/test/ui-test.js')).alles()`
-   - duurt ongeveer een minuut; niet klikken in de pagina terwijl hij loopt
+   - duurt ongeveer 4,5 minuten (laptop, nov 2026); het deel `spellen` speelt synchroon alle hoofdstukken van leerjaar 1 tot 6, de pagina reageert dan niet; niet klikken in de pagina terwijl hij loopt
    - hidden browserpane = trage timers: start hem zonder `await` en lees daarna `localStorage.getItem('uitest-uitslag')`
    - zet eerst alle data opzij en daarna terug; stopte hij halverwege, dan staat de data nog in `uitest-backup` en zet de volgende run ze terug
    - `fouten` moet leeg zijn; `opmerkingen` (raakvlak < 40px, contrast) nakijken en melden
@@ -71,5 +71,6 @@ Vindt een test een fout: eerst nagaan of het de app of de test is (bv. namen bev
 
 - Een naam bevat enkel letters, spaties, `-` en `'`: cijfers verdwijnen ("Kind 1" wordt "Kind").
 - Het eerste kind op een leeg toestel erft de naamloze sleutel `''` (oude data van voor profielen).
+- Opruimen bij een schermwissel (tempoklok, automatisch verder na een juist antwoord, naammenu, stickerkaart) gebeurt enkel in `toonScherm`. Geen `stopKlok`/`stopVerder`/`sluitProfielPaneel` in nieuwe `toonX`-functies; iets nieuws dat blijft lopen, ruim je daar op. Zonder dat bleef het naammenu open na de terugknop.
 - Terugknop: `history.back()` landt pas later; `terugBezig` in `chassis.js` vangt een dubbele back op. Niet weghalen.
 - iPad/iPhone: de app op het beginscherm heeft een eigen opslag, los van Safari.

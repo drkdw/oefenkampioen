@@ -512,6 +512,13 @@ var WORTELS = ['start', 'wie'];
 var terugBezig = false;
 function toonScherm(naam) {
   if (naam !== 'game') stilte();
+  // every screen change ends what the previous screen left running: the tempo clock, the
+  // auto-advance after a right answer, the name menu and the sticker card. Only here, so a new
+  // screen cannot forget it. A new question restarts the clock itself (volgendeVraag)
+  stopKlok();
+  stopVerder();
+  sluitProfielPaneel();
+  if ($('stickerDialoog').open) $('stickerDialoog').close();
   var binnen = history.state && history.state.binnen;
   if (WORTELS.indexOf(naam) === -1 && !binnen && !terugBezig) history.pushState({ binnen: true }, '', location.href);
   // back on its own through a button: drop the step again, or back would need two presses later
@@ -619,8 +626,6 @@ function kaart(ico, nr, titel, tekst, beste, badge, sticker, rand, keer, behaald
     (badge ? '<span class="badge ' + badge + '">' + badge + '</span>' : '') + '</span>';
 }
 function toonStart() {
-  // a running tempo timer would otherwise fire a fail beep on the start screen
-  stopKlok();
   // a game opened from here starts tidy again, with only the child's own school year
   state.vroegerOpen = null;
   var beste = lees();
@@ -662,7 +667,6 @@ function toonStart() {
   $('profielBtn').innerHTML = (naam() || 'Wie speelt er?') + ' <span class="chev">&#9662;</span>';
   $('lead').textContent = lead();
   $('kop').innerHTML = 'Oefen<span class="tick">kampioen</span>';
-  stopVerder();
   toonScherm('start');
 }
 /* ==================== settings ==================== */
@@ -699,8 +703,6 @@ function toonInstelKnoppen() {
   if (p) toonKleuren($('instelKleuren'), kleurVan(p), function (i) { zetKleur(p.sleutel, i); });
 }
 function toonInstellingen() {
-  sluitProfielPaneel();
-  stopKlok();
   toonInstelKnoppen();
   toonScherm('instellingen');
   $('leerjaren').querySelector('[aria-pressed="true"]').focus();
@@ -766,8 +768,6 @@ function toonStickerGroot(spel, i) {
 // streaming app; also the only place to add a child
 var nieuweKleur = 0, nieuwJaar = null, nieuwAantal, nieuwTempo, nieuwVoorlezen;
 function toonWie(nieuw) {
-  sluitProfielPaneel();
-  stopKlok();
   var lijst = profielen();
   $('wieLijst').innerHTML = lijst.map(function (p) {
     return '<button class="wiekies" data-sleutel="' + p.sleutel + '">' + avatarHtml(p) +
@@ -881,8 +881,6 @@ function ouderKindHtml(p) {
     '<button class="knop gevaar wisKind">🗑️ Verwijderen</button></div></div>';
 }
 function toonOuders() {
-  stopKlok();
-  sluitProfielPaneel();
   var lijst = profielen();
   $('ouderKinderen').innerHTML = lijst.map(ouderKindHtml).join('') ||
     '<p class="sectieuitleg">Nog geen kinderen op dit toestel. Voeg een kind toe via de naamknop bovenaan, of zet hieronder een bestand terug.</p>';
@@ -964,7 +962,6 @@ function verlaatOuders() {
   toonStart();
 }
 function toonMenu(spel) {
-  stopKlok();
   state.spel = spel;
   var beste = lees(), niveaus = leesNiveaus(actief()), gespeeld = leesGespeeld(actief()), behaald = leesBehaald(actief());
   // the child's own school year on top; the earlier years wait behind one button, so a child sees
@@ -1004,7 +1001,6 @@ function toonMenu(spel) {
     ? 'Kies een hoofdstuk. Elke toets telt ' + state.aantal + ' vragen.'
     : 'Hier staat nog niets voor het ' + jaarNaam(state.leerjaar) +
       '. Kies bovenaan een ander leerjaar, of een ander spel.';
-  stopVerder();
   toonScherm('menu');
 }
 // the chapter list with the earlier years open, scrolled to the given year
@@ -1023,7 +1019,6 @@ function vroegerTekst(i) {
 // round never counts for stars, or three right answers out of three would earn a sticker
 // aantal given: a test of that length regardless of the setting (the gold suggestion asks 20)
 function startHoofdstuk(i, soorten, aantal) {
-  stopKlok();
   // the test belongs to this child, even if another tab switches profile meanwhile
   state.profiel = actief();
   state.hfd = i;
@@ -1041,7 +1036,6 @@ function startHoofdstuk(i, soorten, aantal) {
   if (vroegerTekst(i)) state.vroegerOpen = state.spel.id;
   $('spelNaam').textContent = naam();
   $('spelNaam').hidden = !naam();
-  stopVerder();
   toonScherm('game');
   volgendeVraag();
 }

@@ -347,6 +347,11 @@ async function stress() {
   check(state.q <= state.lengte && !(scherm() === 'game' && state.answered && $('blad').hidden), 'hameren op Volgende brengt het spel in de war');
   $('homeBtn').click(); $('terugBtn').click();
 
+  // the name menu never stays open over the next screen, also not after back
+  $('profielBtn').click(); $('instelBtn').click(); $('profielBtn').click();
+  await terug();
+  check(scherm() === 'start' && $('profielPaneel').hidden && $('profielBackdrop').hidden, 'het naammenu blijft open na terug');
+
   // a full storage: the app keeps working and loses nothing that was there
   var vul = 'x'.repeat(100000), n = 0;
   try { for (; n < 2000; n++) localStorage.setItem('uitest-vol-' + n, vul); } catch (e) { /* full */ }
